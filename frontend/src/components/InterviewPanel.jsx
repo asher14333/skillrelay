@@ -9,6 +9,7 @@ export default function InterviewPanel({
   transcript,
   code,
   onError,
+  active = true,
 }) {
   const [history, setHistory] = useState([])
   const [currentAnswer, setCurrentAnswer] = useState('')
@@ -22,6 +23,10 @@ export default function InterviewPanel({
   const sessionBaseRef = useRef('')
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
+
+  useEffect(() => {
+    if (!active) recognitionRef.current?.stop()
+  }, [active])
 
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -71,7 +76,7 @@ export default function InterviewPanel({
     return () => {
       recognition.abort()
     }
-  }, [])
+  }, [onError])
 
   const startRecording = () => {
     onError(null)
