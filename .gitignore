@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+backend/venv/
+
+# Environment
+.env
+backend/.env
+
+# Build
+frontend/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
