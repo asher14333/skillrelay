@@ -2,23 +2,36 @@
 
 **Practice skills. Explain your thinking. Connect with people who help you grow.**
 
-SkillRelay is a new project based on the supplied SpeakCode source, with a
-proposed Code the Change YYC direction around **Prompt 2: in-demand skills and
-meaningful professional networks**. Suggested GitHub repository name: `skillrelay`.
+SkillRelay helps early-career developers practice explaining technical work and
+turn interview feedback into a concrete next learning step. Based on SpeakCode,
+it targets Code the Change YYC **Prompt 2**, particularly communication,
+career readiness, and AI-assisted skilling.
 
-## What works in the inherited baseline
+## Practice, learn, and track your next step
 
 - Five coding practice problems with a Monaco editor and Python test runner.
 - Spoken explanations with transcript review.
 - AI rubric feedback and interview follow-up questions.
+- Three learning goals: clear explanations, technical trade-offs, and interview
+  confidence.
+- Six curated micro-lessons, recommended from normalized rubric gaps. Your goal
+  breaks ties; lesson selection adds no extra model request.
+- A retry action that preserves your explanation and code while showing a
+  concrete practice prompt.
+- Saved practice summaries and score comparisons for the same problem and goal.
 
-The application currently retains SpeakCode branding. Personalized learning
-plans, practice history, portfolios, and peer matching are planned enhancements.
-See the [proposed roadmap](docs/ROADMAP.md).
+Choose a goal, solve a challenge, explain your thinking, and analyze it. Save
+your feedback, practice the recommended lesson, then save another attempt to
+compare practice scores. AI scores are learning signals, not credentials.
+
+History is saved in this browser, up to 100 attempts. Code and transcripts are
+not included in saved summaries. Cloud synchronization, portfolios, and peer
+matching are future work. See the [implementation plan](docs/IMPLEMENTATION_PLAN.md)
+and [demo walkthrough](docs/DEMO.md).
 
 ## Run locally
 
-Use Node.js compatible with the locked Vite version, Python 3.10+, and an OpenAI
+Use Node.js 22.14+ (the tested version), Python 3.10+, and an OpenAI
 API key. Chrome or Edge supports the inherited voice workflow.
 
 Backend:
@@ -46,6 +59,20 @@ Open the frontend at `http://localhost:5173`; the backend uses
 
 The inherited runner executes submitted Python on the local machine. Use trusted
 code during local development; public execution requires process isolation.
+
+## Verify
+
+From the repository root after installing frontend and backend dependencies:
+
+```sh
+backend/venv/bin/python -m unittest discover -s backend/tests -v
+npm --prefix frontend test
+npm --prefix frontend run build
+npm --prefix frontend run lint
+```
+
+The tests mock AI calls. See [validation](docs/VALIDATION.md) for checks and
+limitations, including the inherited dependency audit findings.
 
 ## Source and event context
 

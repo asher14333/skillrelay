@@ -232,5 +232,20 @@ and a record of their practice. Any seeded demonstration must be labeled.
 
 ## 11. Implementation record
 
-Update this section after implementation with completed behavior, verification,
-commit references, and any deferred acceptance criteria.
+Completed on this branch:
+
+- `bd864e7`: detailed plan and acceptance criteria.
+- `d22b291`: goal-based curated lesson selection and backend/API tests.
+- `8ad2fd8`: validated browser summaries and comparison/storage tests.
+- `a1be052`: SkillRelay goal, lesson, retry, save, and progress UI; recording
+  stops when its interview panel is inactive.
+
+The core journey is implemented. Nine backend and seven frontend tests pass;
+production build and lint pass. Browser checks covered typed input, the real
+runner, lessons and save/retry flows using labeled feedback, persistence,
+deletion, invalidation, and narrow layouts. See [validation](VALIDATION.md).
+
+Deferred verification: live AI feedback and live microphone/speech recognition.
+The API key was absent, so the browser feedback/history checks used an external,
+temporary fixture, not a shipped demo feature. Peer matching, cloud accounts,
+and portfolios remain outside this core delivery.
