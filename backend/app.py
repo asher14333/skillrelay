@@ -7,6 +7,7 @@ from flask_cors import CORS
 from openai import OpenAI
 
 from problems import get_problem
+from learning import DEFAULT_GOAL, LEARNING_GOALS, build_learning_plan
 from prompts import (
     build_analyze_prompt,
     build_interview_prompt,
@@ -64,6 +65,10 @@ def analyze():
     transcript = data.get("transcript", "").strip()
     code = data.get("code", "").strip()
     slug = data.get("problemId", "two-sum")
+    goal = data.get("learningGoal", DEFAULT_GOAL)
+
+    if not isinstance(goal, str) or goal not in LEARNING_GOALS:
+        return jsonify({"error": "Choose a supported learning goal"}), 400
 
     if not transcript:
         return jsonify({"error": "Transcript is required"}), 400
@@ -85,7 +90,10 @@ def analyze():
             ),
             build_analyze_prompt(problem, transcript, code),
         )
-        return jsonify(normalize_feedback(result, transcript))
+        feedback = normalize_feedback(result, transcript)
+        feedback["learningGoal"] = goal
+        feedback["learningPlan"] = build_learning_plan(feedback, problem, goal)
+        return jsonify(feedback)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
