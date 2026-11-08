@@ -1,5 +1,5 @@
 // Local regression with a labeled AI response and a simulated video frame.
-// Verifies explicit loading and teardown; it does not certify YouTube playback.
+// Verifies the embedded player, the external link and teardown; it does not certify YouTube playback.
 // eslint-disable-next-line no-unused-expressions -- Playwright CLI evaluates the function.
 async page => {
   const assert = (condition, message) => { if (!condition) throw new Error(message) }
@@ -28,34 +28,20 @@ async page => {
     await ui.getByRole('textbox', { name: 'Your solution explanation', exact: true }).fill('My map tracks earlier values. I look up a complement for each new value.')
     await ui.getByRole('button', { name: 'Get session feedback', exact: true }).click()
     await ui.getByRole('heading', { name: 'Your practice feedback', exact: true }).waitFor()
-    assert(external.length === 0 && await ui.locator('.lesson-video iframe').count() === 0, 'Feedback must not load YouTube or a thumbnail')
-    const disclosure = ui.locator('details.lesson-video')
-    await disclosure.locator('summary').click()
-    assert(external.length === 0, 'Opening the optional resource must not connect to YouTube')
-    const fallback = disclosure.getByRole('link', { name: 'Watch on YouTube', exact: true })
-    assert(await fallback.getAttribute('href') === 'https://www.youtube.com/watch?v=aWKEBEg55ps&t=0s', 'Resource must use the curated source URL')
-    await disclosure.getByRole('button', { name: 'Load video', exact: true }).click()
-    const frame = disclosure.locator('iframe')
+    const video = ui.locator('section.lesson-video')
+    const frame = video.locator('iframe')
     await frame.waitFor()
     const src = new URL(await frame.getAttribute('src'))
-    assert(src.hostname === 'www.youtube-nocookie.com' && src.searchParams.get('autoplay') === '0', 'Explicit loading must use the fixed YouTube host without autoplay')
-    assert(await disclosure.getByRole('button', { name: 'Close video', exact: true }).evaluate(el => el === document.activeElement), 'Loading must preserve keyboard focus on the same control')
+    assert(src.hostname === 'www.youtube-nocookie.com' && src.searchParams.get('autoplay') === '0', 'The embedded player must use the fixed YouTube host without autoplay')
     assert(Boolean(await frame.getAttribute('title')), 'The player needs an accessible title')
-    assert(await fallback.isVisible(), 'The external fallback must stay available while loaded')
-    await disclosure.getByRole('button', { name: 'Close video', exact: true }).click()
-    assert(await disclosure.locator('iframe').count() === 0, 'Close video must remove the player')
-    assert(await disclosure.getByRole('button', { name: 'Load video', exact: true }).evaluate(el => el === document.activeElement), 'Closing must preserve focus on the load control')
-    await disclosure.getByRole('button', { name: 'Load video', exact: true }).click()
-    await frame.waitFor()
-    await disclosure.locator('summary').click()
-    await ui.waitForFunction(() => document.querySelector('.lesson-video iframe') === null)
-    await disclosure.locator('summary').click()
-    assert(await disclosure.getByRole('button', { name: 'Load video', exact: true }).isVisible(), 'Reopening a closed disclosure must require loading again')
-    assert(await disclosure.getByText('Explain why your map grows with the input.', { exact: true }).isVisible(), 'The resource must lead back to the learner’s own practice prompt')
-    await disclosure.getByRole('button', { name: 'Load video', exact: true }).click()
-    await frame.waitFor()
+    const link = video.getByRole('link', { name: /Open on YouTube/ })
+    assert(await link.getAttribute('href') === 'https://www.youtube.com/watch?v=aWKEBEg55ps&t=0s', 'Resource must use the curated source URL')
+    assert(await link.getAttribute('target') === '_blank' && (await link.getAttribute('rel')).includes('noopener'), 'The YouTube link must open safely in a new tab')
+    assert(await ui.getByText('Explain why your map grows with the input.', { exact: true }).isVisible(), 'The lesson must lead back to the learner’s own practice prompt')
     await ui.getByRole('button', { name: 'Code & explain', exact: true }).click()
     assert(await ui.locator('.lesson-video iframe').count() === 0, 'Leaving feedback must unload the player')
-    return { checks: ['No YouTube requests or thumbnails before explicit Load video', 'Curated source, accessible player, no autoplay and visible fallback', 'Close and disclosure collapse unload the player', 'Practice prompt and player teardown when leaving feedback'], fixture }
+    await ui.getByRole('button', { name: 'Session feedback', exact: true }).click()
+    await frame.waitFor()
+    return { checks: ['Player embeds with feedback, no autoplay', 'Curated source link opens safely in a new tab', 'Practice prompt shown with the lesson', 'Player unloads when leaving feedback and returns with it'], fixture, externalRequests: external.length }
   } finally { await context.close() }
 }

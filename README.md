@@ -27,8 +27,8 @@ career readiness, and AI-assisted skilling.
   reference functions compute expected results; AI-written test code is never run.
 - Gemini-generated spoken interviewer responses, with mute, stop, replay, and
   microphone handoff. Text remains available if audio cannot play.
-- Curated, optional YouTube examples matched to the recommended lesson. The
-  player loads only on request, with captions preference and an external fallback.
+- Curated YouTube examples matched to the recommended lesson. The player embeds
+  beside the lesson (no autoplay, captions preferred), with an Open on YouTube link.
 - Reasoning replay with timestamped code/explanation checkpoints and
   evidence-linked observations.
 - Focused retries with three criteria, exact before/after quotes, and a saved

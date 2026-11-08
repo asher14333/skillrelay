@@ -6,19 +6,27 @@ export default function LearningPlan({ plan, onPractice, active = true }) {
   if (!plan) return null
   return (
     <section className="learning-card" aria-labelledby="learning-title">
-      <div className="lesson-heading"><h2 id="learning-title">{plan.title}</h2><span><Icon name="clock" size={15} />{plan.minutes} min</span></div>
-      <p className="learning-reason">{plan.reason}</p>
-      <Disclosure className="lesson-reading">
-        <summary>Read the lesson</summary>
-        <ol>{plan.steps.map((step) => <li key={step}>{step}</li>)}</ol>
-        <div className="lesson-prompt">
-          <strong>Your practice prompt</strong>
-          <p>{plan.practicePrompt}</p>
+      <span className="learning-kicker"><Icon name="target" size={14} />Recommended next step</span>
+      <div className="learning-card-body">
+        <div className="learning-card-main">
+          <div className="lesson-heading"><h2 id="learning-title">{plan.title}</h2><span><Icon name="clock" size={15} />{plan.minutes} min</span></div>
+          <p className="learning-reason">{plan.reason}</p>
+          <div className="lesson-prompt lesson-prompt-callout">
+            <strong>Your practice prompt</strong>
+            <p>{plan.practicePrompt}</p>
+          </div>
+          <Disclosure className="lesson-reading">
+            <summary>Read the lesson</summary>
+            <ol>{plan.steps.map((step) => <li key={step}>{step}</li>)}</ol>
+            <p className="lesson-self-check"><strong>Ask yourself:</strong> {plan.selfCheck}</p>
+          </Disclosure>
+          <div className="lesson-action">
+            <button className="learning-primary" onClick={onPractice}>{plan.action === 'transfer' ? 'Try another challenge' : 'Practice this lesson'}<Icon name="arrow" size={16} /></button>
+            <span>Write one focused answer, then compare it with your original.</span>
+          </div>
         </div>
-        <p className="lesson-self-check"><strong>Ask yourself:</strong> {plan.selfCheck}</p>
-      </Disclosure>
-      <LessonVideo dimension={plan.dimension} practicePrompt={plan.practicePrompt} active={active} />
-      <div className="lesson-action"><span>Practice one part of your explanation.</span><button className="learning-primary" onClick={onPractice}>{plan.action === 'transfer' ? 'Try another challenge' : 'Practice this lesson'}</button></div>
+        <LessonVideo dimension={plan.dimension} active={active} />
+      </div>
     </section>
   )
 }

@@ -12,6 +12,10 @@ const paths = {
   play: 'm8 5 11 7-11 7V5Z',
   save: 'M5 3h12l4 4v14H3V3h2Zm2 0v6h10V3M7 21v-7h10v7',
   pause: 'M9 5v14m6-14v14',
+  minus: 'M6 12h12',
+  external: 'M14 4h6v6m0-6-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
+  trendUp: 'm4 16 6-6 4 4 6-7m0 0h-5m5 0v5',
+  target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z',
   speaker: 'M4 9v6h4l5 4V5L8 9H4Zm12-1a5 5 0 0 1 0 8',
   keyboard: 'M3 6h18v12H3V6Zm4 4h.01M11 10h.01M15 10h.01M7 14h10',
 }

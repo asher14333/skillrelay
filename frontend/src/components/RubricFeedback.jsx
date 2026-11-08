@@ -1,83 +1,60 @@
 import { RUBRIC_LABELS } from '../data/problems'
+import Icon from './Icon'
+import { StatusBadge } from './FeedbackVisuals'
+import { rubricEntries, skillStatus } from '../data/feedbackStatus'
 
-const RUBRIC_ORDER = [
-  'problemUnderstanding',
-  'bruteForce',
-  'optimization',
-  'timeComplexity',
-  'spaceComplexity',
-  'clarity',
-]
+const itemText = item => (typeof item === 'string' ? item : item.text)
 
 export default function RubricFeedback({ feedback }) {
   if (!feedback) return null
-
-  const rubricEntries = RUBRIC_ORDER.filter((key) => feedback.rubric?.[key]).map(
-    (key) => [key, feedback.rubric[key]]
-  )
+  const entries = rubricEntries(feedback.rubric)
+  const strengths = feedback.strengths || []
+  const improvements = feedback.improvements || []
 
   return (
     <div className="feedback-pane-inner">
-      {rubricEntries.length > 0 && (
+      {(strengths.length > 0 || improvements.length > 0) && (
+        <div className="feedback-columns">
+          {strengths.length > 0 && <section className="feedback-list-card feedback-list-strengths" aria-labelledby="strengths-title">
+            <h3 id="strengths-title"><span className="feedback-list-icon"><Icon name="check" size={14} /></span>What went well</h3>
+            <ul className="strengths">
+              {strengths.map((item, i) => <li key={i}>
+                <span>{itemText(item)}</span>
+                {item.quote && <blockquote className="feedback-quote">&ldquo;{item.quote}&rdquo;</blockquote>}
+              </li>)}
+            </ul>
+          </section>}
+          {improvements.length > 0 && <section className="feedback-list-card feedback-list-improvements" aria-labelledby="improvements-title">
+            <h3 id="improvements-title"><span className="feedback-list-icon"><Icon name="arrow" size={14} /></span>What to improve</h3>
+            <ul className="improvements">
+              {improvements.map((item, i) => <li key={i}>{itemText(item)}</li>)}
+            </ul>
+          </section>}
+        </div>
+      )}
+
+      {entries.length > 0 && (
         <div className="feedback-block">
-          <h3>Rubric breakdown</h3>
+          <div className="feedback-block-heading">
+            <h3>Skill details</h3>
+            <p>Each score, with the words from your explanation that earned it.</p>
+          </div>
           <div className="rubric-grid">
-            {rubricEntries.map(([key, item]) => (
-              <div key={key} className="rubric-item">
+            {entries.map(([key, item]) => (
+              <article key={key} id={`rubric-${key}`} tabIndex={-1} className={`rubric-item status-${skillStatus(item).id}`}>
                 <div className="rubric-item-header">
-                  <span className="rubric-label">
-                    {RUBRIC_LABELS[key] || key}
-                  </span>
-                  <span className="rubric-score">
-                    {item.score}/{item.max}
-                  </span>
+                  <span className="rubric-label">{RUBRIC_LABELS[key] || key}</span>
+                  <span className="rubric-item-meta"><StatusBadge item={item} compact /><span className="rubric-score">{item.score}/{item.max}</span></span>
                 </div>
                 <div className="rubric-bar">
-                  <div
-                    className={`rubric-bar-fill ${item.score >= item.max ? 'rubric-bar-full' : item.score === 0 ? 'rubric-bar-empty' : ''}`}
-                    style={{ width: `${(item.score / item.max) * 100}%` }}
-                  />
+                  <div className={`rubric-bar-fill ${item.score >= item.max ? 'rubric-bar-full' : item.score === 0 ? 'rubric-bar-empty' : ''}`}
+                    style={{ width: `${(item.score / item.max) * 100}%` }} />
                 </div>
-                {item.quote && (
-                  <blockquote className="rubric-quote">
-                    &ldquo;{item.quote}&rdquo;
-                  </blockquote>
-                )}
+                {item.quote && <blockquote className="rubric-quote">&ldquo;{item.quote}&rdquo;</blockquote>}
                 {item.note && <p className="rubric-note">{item.note}</p>}
-              </div>
+              </article>
             ))}
           </div>
-        </div>
-      )}
-
-      {feedback.strengths?.length > 0 && (
-        <div className="feedback-block">
-          <h3>Strengths</h3>
-          <ul className="strengths">
-            {feedback.strengths.map((item, i) => (
-              <li key={i}>
-                <span>{typeof item === 'string' ? item : item.text}</span>
-                {item.quote && (
-                  <blockquote className="feedback-quote">
-                    &ldquo;{item.quote}&rdquo;
-                  </blockquote>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {feedback.improvements?.length > 0 && (
-        <div className="feedback-block">
-          <h3>Improvements</h3>
-          <ul className="improvements">
-            {feedback.improvements.map((item, i) => (
-              <li key={i}>
-                {typeof item === 'string' ? item : item.text}
-              </li>
-            ))}
-          </ul>
         </div>
       )}
     </div>

@@ -455,13 +455,12 @@ runner, analysis, focused retry, and follow-up. Revealing a requirement change
 starts fresh feedback/replay context. Saved summaries carry the variant label;
 comparisons require matching problem, goal, and variant.
 
-Recommended lessons offer a native Watch an example disclosure. Its curated
-resource names the creator, relevant segment, and connection to the current
-practice prompt. No remote thumbnail or player loads before Load video.
-The same button becomes Close video without losing keyboard focus. A titled,
-responsive iframe requests captions without autoplay; Watch on YouTube remains
-available if embedding fails. Closing, collapsing, or leaving feedback unloads
-the player. Watching does not automatically complete a lesson or earn credit.
+Recommended lessons show a Watch an example player beside the lesson. Its
+curated resource names the creator, relevant segment, and what to watch for.
+The titled, responsive, lazily loaded iframe embeds while feedback is on screen
+and requests captions without autoplay; Open on YouTube is always available if
+embedding fails. Leaving feedback unloads the player. Watching does not
+automatically complete a lesson or earn credit.
 
 
 ## Adaptive interviewer and Gemini voice
