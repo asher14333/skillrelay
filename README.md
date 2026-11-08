@@ -2,182 +2,178 @@
 
 **Not leet yet? Talk through it until you are.**
 
-Practice coding. Explain your thinking. Know what to work on next.
+You can solve the problem and still bomb the interview, because interviews grade how you *explain* your thinking, not just whether your code runs. NotLeetYet is a practice workspace for that part: solve a coding problem, talk (or type) through your approach, and get feedback on your explanation, a lesson for your biggest gap, and a way to track your progress.
 
-NotLeetYet helps early-career developers practice explaining technical work and
-turn interview feedback into a concrete next learning step. Based on SpeakCode,
-it targets Code the Change YYC **Prompt 2**, particularly communication,
-career readiness, and AI-assisted skilling.
+Built for Code the Change YYC, **Prompt 2** (career readiness and AI-assisted skill building).
 
-## Practice, learn, and track your next step
+---
 
-- Five coding practice problems with a Monaco editor and Python test runner.
-- Spoken or typed explanations alongside the editor, so you can explain while
-  coding and running tests.
-- AI rubric feedback and interview follow-up questions using Gemini or OpenAI.
-- Display settings for interface/editor text size, stacked or column layouts,
-  and reduced motion. Preferences apply immediately and stay in this browser.
-- Three learning goals: clear explanations, technical trade-offs, and interview
-  confidence.
-- Six curated micro-lessons, recommended from normalized rubric gaps. Your goal
-  breaks ties; lesson selection adds no extra model request.
-- A retry action that preserves your explanation and code while showing a
-  concrete practice prompt.
-- Saved practice summaries and score comparisons for the same problem and goal.
-- An opt-in live interviewer: Gemini decides whether to let you continue, ask
-  a question, or generate a fresh requirement change and test inputs. Trusted
-  reference functions compute expected results; AI-written test code is never run.
-- Gemini-generated spoken interviewer responses, with mute, stop, replay, and
-  microphone handoff. Text remains available if audio cannot play.
-- Curated YouTube examples matched to the recommended lesson. The player embeds
-  beside the lesson (no autoplay, captions preferred), with an Open on YouTube link.
-- Reasoning replay with timestamped code/explanation checkpoints and
-  evidence-linked observations.
-- Focused retries with three criteria, exact before/after quotes, and a saved
-  comparison summary.
+## What it does
 
-Choose a goal, talk through your thinking as you solve a challenge, then review
-the transcript and get session feedback. Save
-your feedback, practice the recommended lesson, then save another attempt to
-compare practice scores. AI scores are learning signals, not credentials.
+**Practice**
+- Solve coding problems in a real code editor.
+- Explain your approach by **voice or text** while you code, then run your Python against the test cases.
 
-Use a replay timestamp to inspect what you were coding and explaining at that
-moment. Choose Practice this gap, write a focused answer, and compare evidence.
-Replay is available during the current session; saved history keeps summaries
-only. See [reasoning replay](docs/REPLAY.md) for capture and privacy details.
+**Get feedback**
+- AI scores your explanation on 6 interview skills: problem understanding, brute force, optimization, time complexity, space complexity and clarity.
+- Every score quotes the **exact words** from your explanation that earned it.
+- A summary shows your score, your biggest gaps and each skill at a glance.
 
-Choose Start live interview once and allow microphone access. Explain your
-approach while coding; after about 1.5 seconds without new recognized speech,
-the app finalizes the turn and asks Gemini what would help next. Useful
-questions and requirement changes appear as chat bubbles beside the editor
-and play through Gemini voice. Listening resumes after playback ends, with
-no Check now or manual stop/start required for each turn. A continue decision
-can keep the interviewer quiet. Pause interview cancels the entire live loop.
+**Improve**
+- One short **recommended lesson** for your biggest gap, with a curated example video.
+- **Focused retry**: practice just that one skill and compare the evidence before and after.
+- **Checkpoint replay**: see your code and explanation at each moment of the session.
+- **Progress**: save attempts and track your score and skills over time.
 
-Interview input can be Voice or Text. Text turns are considered automatically
-after a typing pause. If speech recognition is unavailable, typed practice
-still works. Stop/replay/mute remain explicit controls; autoplay or permission
-errors keep text visible. Microphone input stays off during AI generation and
-playback, and late responses cannot restart a paused or hidden interview.
-Chat keeps a bounded, session-only conversation; full explanation text remains
-available below it for review. Nothing in the chat is added to saved summaries.
+**Live interview mode**
+- An AI interviewer that listens while you code, asks follow-up questions out loud and throws **curveball requirement changes** with matching test cases.
 
-Generated changes stay within supported, parameterized contracts for the five
-problems. Gemini selects timing, parameters, title, and new test inputs rather
-than a fixed scenario. Server-checked requirements replace original examples
-and recompute expectations. Generated IDs last one hour in the running backend;
-restart/expiry may invalidate them. Return to original requirements keeps your
-code and explanation when recovering from an expired change.
+**Accessible, private, transparent**
+- Voice or keyboard, keyboard shortcuts, and adjustable text size, layout and motion.
+- History stays in your browser. Code and transcripts are never saved.
+- AI scores are learning signals, not credentials.
 
-Curveball reviews keep runnable correctness separate from three communication
-checks: understanding the requirement, explaining the implementation decision,
-and explaining verification. Exact source quotes support the checks. Saved
-practice labels requirement changes and compares scores only within the same
-problem, goal, and variant. Raw before/after evidence stays in the session.
+## How a session works
 
-History is saved in this browser, up to 100 attempts. Code and transcripts are
-not included in saved summaries. Cloud synchronization, portfolios, and peer
-matching are future work. See the [implementation plan](docs/IMPLEMENTATION_PLAN.md)
-and [demo walkthrough](docs/DEMO.md).
+1. Pick a problem and your learning focus.
+2. Write your solution and explain it out loud (or type).
+3. Run the tests, then click **Get session feedback**.
+4. Read your scores and evidence, then practice the recommended lesson or a focused retry.
+5. Save the attempt and compare it with your next one in **Progress**.
 
-The interface uses a compact charcoal workspace, restrained amber actions,
-a locally bundled code editor, and self-hosted Manrope typography. See [design direction](docs/DESIGN.md)
-for the palette, layout decisions, and UI/UX guidance applied.
+---
 
-## Run locally
+## Quick start
 
-Use Node.js 22.14+ (the tested version), Python 3.10+, and a Gemini or OpenAI
-API key. Chrome or Edge supports the inherited voice workflow.
+**You'll need:**
+- Node.js 22+
+- Python 3.10+
+- A Gemini API key (free from [Google AI Studio](https://aistudio.google.com/apikey)), or an OpenAI key
+- Chrome or Edge, for voice input
 
-Backend:
+### 1. Start the backend
 
-```sh
+```bash
 cd backend
-python3 -m venv venv
-source venv/bin/activate
+python -m venv venv
+```
+
+Activate the virtual environment:
+
+- Windows (PowerShell): `.\venv\Scripts\Activate.ps1`
+- macOS / Linux: `source venv/bin/activate`
+
+Then install, configure and run:
+
+```bash
 pip install -r requirements.txt
+```
+
+```bash
 cp .env.example .env
-# Set GEMINI_API_KEY in .env (the template selects Gemini).
+```
+
+On Windows PowerShell, use `Copy-Item .env.example .env` instead.
+
+Open `backend/.env` and paste your key after `GEMINI_API_KEY=`, then start the server:
+
+```bash
 python app.py
 ```
 
-Frontend, in another terminal:
+The backend runs at `http://127.0.0.1:5001`.
 
-```sh
+### 2. Start the frontend (in a second terminal)
+
+```bash
 cd frontend
 npm ci
 npm run dev
 ```
 
-Open the frontend at `http://localhost:5173`; the backend uses
-`http://127.0.0.1:5001`. AI feedback requires the API key. Keep `.env` private.
+Open **http://localhost:5173**.
 
-### AI provider setup
+> **Tip:** The code editor and test runner work without an API key. Only the AI features (feedback, lessons, retries, live interview) need one.
 
-For Gemini, set these values in `backend/.env`:
+---
 
-```dotenv
-AI_PROVIDER=gemini
-GEMINI_API_KEY=your_actual_gemini_api_key
-GEMINI_MODEL=gemini-3.8-flash
+## Configuration
+
+All settings live in `backend/.env`. Restart the backend after changing them.
+
+| Setting | What it does | Default |
+|---|---|---|
+| `AI_PROVIDER` | `gemini` or `openai` | `gemini` |
+| `GEMINI_API_KEY` | Your Gemini key (also used for the interviewer's voice) | (none) |
+| `GEMINI_MODEL` | Gemini text model | `gemini-3.8-flash` |
+| `OPENAI_API_KEY` | Only needed if `AI_PROVIDER=openai` | (none) |
+| `OPENAI_MODEL` | OpenAI model | `gpt-4o-mini` |
+| `GEMINI_TTS_MODEL` | Voice model for the live interviewer | `gemini-3.1-flash-tts-preview` |
+| `GEMINI_TTS_VOICE` | Interviewer voice | `Kore` |
+
+Good to know:
+- **API keys stay on the backend.** Never put them in the frontend or in `VITE_` variables.
+- **One provider at a time.** All AI features use the provider you choose, and there's no automatic fallback.
+- **The interviewer's voice always uses Gemini**, even when text features use OpenAI. Without access to the voice model, replies still appear as text.
+
+## Keyboard shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl` + `Enter` | Run code |
+| `Ctrl` + `Shift` + `Enter` | Get session feedback |
+| `Alt` + `Shift` + `M` | Start or stop the mic (Practice) or interview (Live) |
+| `Alt` + `Shift` + `L` | Switch between Practice and Live interview |
+| `Esc` | Stop the AI voice |
+
+On a Mac, use `⌘` instead of `Ctrl`. You can turn shortcuts off in **Display settings**.
+
+---
+
+## Project structure
+
+```
+backend/              Flask API: AI feedback, lessons, retries, live interviewer, code runner
+  app.py              API routes (starts the server on port 5001)
+  ai_provider.py      Gemini / OpenAI client
+  runner.py           Runs submitted Python against the test cases
+  tests/              Backend unit tests
+frontend/             React + Vite app
+  src/App.jsx         Main workspace
+  src/components/     UI components (feedback, progress, live interviewer, ...)
+  src/data/           Problems, lessons, shortcuts, local storage (+ unit tests)
+  tests/              Browser regression scripts (Playwright)
+shared/               Curveball definitions shared by frontend and backend
 ```
 
-Get a key from [Google AI Studio](https://aistudio.google.com/apikey). The
-integration uses Google's [generateContent API](https://ai.google.dev/api/generate-content)
-with JSON output; `GEMINI_MODEL` can select another compatible text model.
+## Running the tests
 
-For OpenAI, set `AI_PROVIDER=openai` and `OPENAI_API_KEY`. Optionally set
-`OPENAI_MODEL` (default `gpt-4o-mini`). Only the selected provider's key is needed.
-If `AI_PROVIDER` is omitted, a non-empty Gemini key selects Gemini; otherwise
-OpenAI is used, preserving existing OpenAI-only setups. There is no automatic
-fallback to another provider after a failed request.
+From the repository root, after installing dependencies:
 
-AI output voice always uses Gemini TTS and the same `GEMINI_API_KEY`; it does
-not use browser speech synthesis. Optional settings in `backend/.env`:
-
-```dotenv
-GEMINI_TTS_MODEL=gemini-3.1-flash-tts-preview
-GEMINI_TTS_VOICE=Kore
+```bash
+npm --prefix frontend test
 ```
 
-The key needs access/quota for that audio model. Voice generation has additional
-latency and quota usage. The backend caches a few short audio replies privately
-for five minutes. Browser autoplay restrictions may require Replay voice.
-Spoken input still uses the browser's speech recognition; only finalized text
-is used by the interviewer. API keys remain on the backend.
-
-Restart the backend after editing `.env`. The backend loads `backend/.env`
-regardless of the working directory; existing shell environment variables take
-precedence. No frontend `.env` or additional Python package is required. Never
-put API keys in `VITE_` variables. All AI features use the same selected provider,
-including replay observations, focused retries, and interview follow-ups. Code
-and explanations are sent to that provider only when requesting AI features;
-the local code runner does not require an API key.
-
-The inherited runner executes submitted Python on the local machine. Use trusted
-code during local development; public execution requires process isolation.
-
-## Verify
-
-From the repository root after installing frontend and backend dependencies:
-
-```sh
-backend/venv/bin/python -m unittest discover -s backend/tests -v
-node --test frontend/src/data/*.test.js
-npm --prefix frontend run build
+```bash
 npm --prefix frontend run lint
 ```
 
-The tests mock AI calls. See [validation](docs/VALIDATION.md) for checks and
-limitations, including the inherited dependency audit findings.
+```bash
+npm --prefix frontend run build
+```
 
-See [development tooling](docs/DEVELOPMENT_TOOLS.md) for the Codex design skills,
-Playwright CLI setup, and the browser regression check.
+Backend tests (Windows; on macOS/Linux use `backend/venv/bin/python`):
 
-## Source and event context
+```bash
+backend\venv\Scripts\python -m unittest discover -s backend/tests
+```
 
-The backend and frontend import commits preserve the supplied source. See
-[provenance](docs/SOURCE.md) and the [original README](docs/UPSTREAM_README.md).
-The event runbook's rules about pre-existing application code need clarification
-before using this baseline in a competition submission; details are recorded in
-the [roadmap](docs/ROADMAP.md#event-context-and-provenance).
+The tests mock all AI calls, so they don't need an API key or use any quota.
+
+---
+
+## Privacy and safety
+
+- **Your history stays in your browser:** up to 100 saved attempts, with only scores and summaries. Code and transcripts are never saved.
+- **What's sent to the AI provider:** your code and explanation, only when you use an AI feature (feedback, retry, follow-up, live interview).
+- **Run it locally only.** The code runner executes submitted Python directly on your machine. It isn't sandboxed, so only run it locally with code you trust.
