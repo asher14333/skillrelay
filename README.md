@@ -1,6 +1,6 @@
 # SkillRelay
 
-**Practice skills. Explain your thinking. Connect with people who help you grow.**
+**Practice coding. Explain your thinking. Know what to work on next.**
 
 SkillRelay helps early-career developers practice explaining technical work and
 turn interview feedback into a concrete next learning step. Based on SpeakCode,

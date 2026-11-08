@@ -49,7 +49,9 @@ test checkpoint to show how the captured code and explanation differ. If a
 verified AI observation is available, use View to inspect its source. Do not
 claim an AI observation is guaranteed for every session.
 
-Choose Save practice for the baseline, then Practice this gap. Show its three
+Choose Save practice for the baseline, then Practice this gap. If no gap
+observation was returned, use Practice this lesson in the recommended lesson
+card; that action is always available for a detected rubric gap. Show its three
 criteria and write a focused retry. For a memory gap, explain what the map
 stores, how it grows with n, and why that means O(n) extra space. Choose Compare
 explanations and show the exact quotes supporting before/after judgments.

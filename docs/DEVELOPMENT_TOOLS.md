@@ -62,3 +62,8 @@ quality, microphone capture, or the Python runner.
 
 CLI snapshots and console artifacts under `frontend/.playwright-cli/` are
 ignored by Git. Keep credentials and browser storage exports out of commits.
+
+For interruption and delayed-response regressions, use another fresh isolated
+session and run `tests/reliability-ui.js` instead of `tests/practice-ui.js`.
+It installs a simulated SpeechRecognition API in that test browser; it never
+requests the microphone. Both scripts use the currently open local origin.

@@ -211,3 +211,20 @@ three existing quote-border warnings, retained as semantic quotation markers;
 it reported no errors. Marketing-page layout gates were not applied to this
 task-oriented app. This pass does not add raw-draft recovery or verify voice
 capture, model quality, or actual learner outcomes.
+
+## Full reliability review
+
+The subsequent review verifies 58 backend/API/catalog tests and 13 frontend
+storage/replay tests (71 total), including all 17 real challenge-runner cases.
+The backend tests cover malformed inputs/model output, Unicode-aware scoring,
+CORS preflights, the interview question cap, and debugging stdout. Build and
+lint pass. A live Valid Parentheses run and Gemini analysis both returned HTTP
+200 through the restarted frontend/backend; that smoke check is separate from
+the simulated browser regressions.
+
+The browser suite includes the original practice flow plus
+`frontend/tests/reliability-ui.js`: retry draft retention, delayed-request
+invalidation, frozen follow-up context, malformed-response recovery, simulated
+speech finalization, reset undo, and the dirty-draft navigation guard. AI and
+speech in that regression are labeled simulations. No real microphone recording
+or new learner-outcome measurement is implied. See [full review](REVIEW.md).
