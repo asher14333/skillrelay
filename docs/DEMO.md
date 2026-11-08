@@ -23,7 +23,7 @@ while feedback still uses the same six rubric dimensions.
 
 ### 0:25-1:00: solve and explain
 
-Choose Two Sum, enter a known solution, and click Run:
+Choose Two Sum, enter a known solution, and click Run code:
 
 ```python
 class Solution:
@@ -35,7 +35,8 @@ class Solution:
             seen[value] = index
 ```
 
-Use a short natural explanation by voice or text, then choose Analyze Interview.
+Use Explain your approach to move to the Explain step. Type or use the
+microphone, then choose Get feedback.
 For example, explain the input/output, a baseline, and why a map helps. Do not
 pretend that a scripted explanation guarantees a particular model score.
 
@@ -46,7 +47,7 @@ prompt, and the self-check. The recommendation uses the lowest `score / max`
 ratio; tied dimensions are prioritized by the goal. Fully covered rubrics
 receive transfer practice rather than a fabricated weakness.
 
-Save the first practice summary, then click Practice this lesson. The code and
+Choose Save practice for the first summary, then click Practice this lesson. The code and
 explanation stay in place, and the problem panel shows the current learning
 focus. Revise the explanation and analyze it again.
 

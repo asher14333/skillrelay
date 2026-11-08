@@ -29,6 +29,10 @@ not included in saved summaries. Cloud synchronization, portfolios, and peer
 matching are future work. See the [implementation plan](docs/IMPLEMENTATION_PLAN.md)
 and [demo walkthrough](docs/DEMO.md).
 
+The interface uses a light reading workspace, a locally bundled dark code
+editor, and self-hosted Manrope typography. See [design direction](docs/DESIGN.md)
+for the palette, layout decisions, and UI/UX guidance applied.
+
 ## Run locally
 
 Use Node.js 22.14+ (the tested version), Python 3.10+, and an OpenAI

@@ -74,3 +74,11 @@ action. The memorable element is the split study workspace, not decoration.
 
 The interface guidelines are applied to this app's relevant surfaces; they do
 not authorize unrelated account, hosting, or publication changes.
+
+## Delivered review
+
+The initial pass was visually checked in Chrome on desktop and at 390 px width.
+Refinements removed nested example borders, kept test inputs/results compact,
+and moved recording/feedback actions into the explanation step. The native
+challenge dialog and history Undo were checked interactively. See
+[validation](VALIDATION.md) for evidence and remaining limitations.

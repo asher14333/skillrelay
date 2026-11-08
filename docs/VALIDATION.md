@@ -64,3 +64,35 @@ does not establish a successful live model call.
 
 The inherited eight dependency vulnerabilities and local subprocess execution
 constraint remain. Saved summaries are local to one browser and do not sync.
+
+## UI and UX refinement
+
+Reviewed November 7, 2026 using the installed `frontend-design` and
+`web-design-guidelines` skills. The interface now has a light study workspace,
+a dark editor, local Manrope typography, contextual actions, and clear practice
+stages. No new dependencies were added.
+
+- Production build and lint passed; the 16 existing automated tests passed.
+- The real locally bundled editor accepted a known Two Sum solution and the
+  real code runner passed its three cases through the redesigned controls.
+- The challenge dialog received focus on open, closed with Escape, and returned
+  focus to its trigger. Selecting another challenge warned about the draft;
+  Keep working preserved the current code and explanation.
+- Using the temporary labeled feedback fixture, verified lesson rendering,
+  Save practice, history, and Undo after removing the only saved attempt.
+- Practice and Progress use hash links; browser Back restored the practice view.
+- Verified the friendly missing-key message against the normal backend, with
+  the typed explanation retained after the failed request.
+- Visually inspected practice, explanation, feedback, progress, and the dialog
+  at desktop size, plus practice and progress at 390 x 844. The viewport was
+  reset and generated history was cleared.
+- Monaco and its Python support/worker now ship as local lazy-loaded assets,
+  rather than requiring a separate editor CDN. Fonts and the favicon are local.
+
+The build reports an expected chunk-size warning for Monaco's editor bundle
+(about 3.6 MB uncompressed, 927 kB gzipped). It is separate from the main app
+chunk, and no large-chunk threshold was raised to hide the warning. Future
+performance work can reduce editor features or evaluate a lighter editor.
+
+Live AI and speech verification remain deferred. The browser fixture was
+stopped and the normal backend restored after UI verification.
