@@ -336,6 +336,29 @@ its first render starts at the measured position. Keep hidden
 work panes mounted so view changes preserve working state. Preserve the
 skip link and focus movement into feedback and retry headings.
 
+### Display Preferences
+
+The top navigation includes a labeled Display settings button (Display on
+phones) opening a native, nonmodal popover. Three native selects independently
+control text size (Default/Large/Larger), layout (Columns/Stacked), and reduced
+motion (Follow system/Reduce). The panel closes with Escape, its close button,
+or an outside click. Keyboard opening moves focus into the controls; native
+Escape and the close button restore focus to the trigger.
+
+Choices apply immediately and persist in a separate local-storage entry;
+clearing practice history does not reset them. Storage failures leave the
+controls functional and explain that the settings could not be saved. No
+account or AI request is needed. Interface type scales from a 14px root to
+16px or 18px; Monaco receives the same size with proportional line height.
+The default type sizes and charcoal/amber system stay unchanged.
+
+Stacked layout uses the existing mounted panes in a naturally scrolling page:
+problem, code/tests, then explanation. Hidden views stay hidden and drafts,
+undo history, active requests, and current challenge remain intact. Columns
+continues to adapt to screen width. OS motion reduction is always honored;
+the explicit Reduce preference also disables CSS motion and cancels active
+JavaScript arrivals and smooth scrolling immediately.
+
 ### Challenge Dialog and Draft Safety
 
 Keep the native challenge dialog with a close control, Escape handling,

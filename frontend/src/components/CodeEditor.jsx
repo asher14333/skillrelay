@@ -6,7 +6,7 @@ import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() }
 loader.config({ monaco })
 
-export default function CodeEditor({ value, onChange }) {
+export default function CodeEditor({ value, onChange, fontSize = 14, reducedMotion = false }) {
   return (
     <Editor
       height="100%"
@@ -49,8 +49,11 @@ export default function CodeEditor({ value, onChange }) {
       value={value}
       onChange={onChange}
       options={{
-        fontSize: 14,
-        lineHeight: 24,
+        fontSize,
+        lineHeight: Math.round(fontSize * 12 / 7),
+        smoothScrolling: false,
+        cursorBlinking: reducedMotion ? 'solid' : 'blink',
+        cursorSmoothCaretAnimation: 'off',
         fontFamily: 'Menlo, Consolas, Monaco, monospace',
         minimap: { enabled: false },
         scrollBeyondLastLine: false,

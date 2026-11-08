@@ -1,4 +1,5 @@
 const paths = {
+  settings: 'M4 7h9m4 0h3M4 17h3m4 0h9M13 4v6M7 14v6',
   code: 'm8 7-5 5 5 5m8-10 5 5-5 5m-3-14-2 18',
   progress: 'M4 19V5m0 14h16M8 15l4-4 3 2 5-7',
   check: 'm5 12 4 4L19 6',

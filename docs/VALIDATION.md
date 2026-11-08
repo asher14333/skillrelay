@@ -284,3 +284,32 @@ The final source detector returned no findings. Browser emulation and a local
 video demonstrate behavior; they do not establish physical-device frame rates,
 live microphone capture, model quality, or learner outcomes. No backend code
 changed in this pass.
+
+
+## Display preferences
+
+Display settings adds three independently saved preferences: interface/editor
+text size (Default/Large/Larger), layout (Columns/Stacked), and reduced motion
+(Follow system/Reduce). The native nonmodal popover is available in Practice
+and Progress, with immediate application and a separate local-storage key.
+
+Lint, production build, and all 13 frontend data tests pass; the existing large
+Monaco bundle warning remains. Practice and motion browser regressions pass.
+The new `frontend/tests/display-ui.js` uses isolated contexts and a labeled
+follow-up fixture, with no live AI or microphone request. It verifies:
+
+- Keyboard opening, Escape focus restoration, close, and outside-click focus.
+- Actual 18px interface and Monaco text, stacked section order, preserved code,
+  explanation and follow-up drafts, and surviving editor undo history.
+- Saved reduction cancelling an active arrival, OS reduction under Follow
+  system, and real Monaco cursor visibility across live OS preference changes.
+- Preference persistence across reload and availability in Progress.
+- Both layouts at Larger text at 320, 700, 1024, and 1440px, with no page-wide
+  horizontal overflow and fully visible workspace tab labels.
+- Safe defaults and working controls when preference storage is malformed or
+  blocked, including an accurate save-failure message.
+
+Desktop and phone screenshots were visually inspected. The rendered-page
+Impeccable check reported zero anti-patterns and one advisory about the existing
+compact heading scale. This feature does not establish full WCAG compliance;
+manual screen-reader and physical-device testing remain separate work.

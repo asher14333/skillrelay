@@ -11,17 +11,21 @@ import FocusedRetry from './components/FocusedRetry'
 import Icon, { BrandMark } from './components/Icon'
 import Disclosure from './components/Disclosure'
 import TabIndicator from './components/TabIndicator'
+import DisplaySettings from './components/DisplaySettings'
+import useDisplayPreferences from './lib/useDisplayPreferences'
 import { animateArrival, useArrival } from './lib/motion'
 import { getLearningGoal, LEARNING_GOALS } from './data/learning'
 import { addAttempt, loadPractice, writePractice } from './data/practiceStorage'
 import { appendCheckpoint, checkpointPayload, MAX_CODE, MAX_EXPLANATION } from './data/sessionReplay'
 import './App.css'
 import './Learning.css'
+import './DisplaySettings.css'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 const CodeEditor = lazy(() => import('./components/CodeEditor'))
 
 function App() {
+  const { preferences, warning: displayWarning, changePreference, reducedMotion } = useDisplayPreferences()
   const [initialPractice] = useState(loadPractice)
   const [learningGoal, setLearningGoal] = useState(initialPractice.goal)
   const [attempts, setAttempts] = useState(initialPractice.attempts)
@@ -489,7 +493,7 @@ function App() {
           <a href="#practice" aria-current={view === 'practice' ? 'page' : undefined}><Icon name="code" />Practice</a>
           <a href="#progress" aria-current={view === 'progress' ? 'page' : undefined}><Icon name="progress" />Progress{attempts.length > 0 && <span className="nav-count">{attempts.length}</span>}</a>
         </nav>
-        <span className="app-edition">Technical interview practice</span>
+        <DisplaySettings preferences={preferences} warning={displayWarning} onChange={changePreference} />
       </header>
 
       <main ref={mainRef} className="app-main" id="main-content" tabIndex={-1}>
@@ -589,7 +593,7 @@ function App() {
                       <button className="btn-run-lc" onClick={handleRun} disabled={isRunning}><PlayIcon />{isRunning ? 'Running…' : 'Run code'}</button>
                     </div>
                   </div>
-                  <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} /></Suspense></div>
+                  <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} fontSize={{ default: 14, large: 16, larger: 18 }[preferences.textSize]} reducedMotion={reducedMotion} /></Suspense></div>
                   <TestConsole problem={problem} consoleTab={consoleTab} setConsoleTab={setConsoleTab} selectedCase={selectedCase} setSelectedCase={setSelectedCase} runResults={runResults} />
                 </div>
                 <aside className="live-explanation" aria-labelledby="live-explanation-title">

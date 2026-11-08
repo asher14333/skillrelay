@@ -3,24 +3,34 @@ import { useLayoutEffect, useRef } from 'react'
 const running = new WeakMap()
 
 export function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return document.documentElement.dataset.motion === 'reduce' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function onMotionChange(listener) {
+  const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
+  preference.addEventListener('change', listener)
+  window.addEventListener('skillrelay:motionchange', listener)
+  return () => {
+    preference.removeEventListener('change', listener)
+    window.removeEventListener('skillrelay:motionchange', listener)
+  }
 }
 
 // Native scrolling is not a WAAPI animation. A live preference change must
 // explicitly finish it without motion rather than relying on CSS alone.
 export function scrollWithPreference(scroll, smooth = true) {
-  const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
-  scroll(smooth && !preference.matches ? 'smooth' : 'auto')
-  if (!smooth || preference.matches) return () => {}
+  scroll(smooth && !prefersReducedMotion() ? 'smooth' : 'auto')
+  if (!smooth || prefersReducedMotion()) return () => {}
   const release = () => {
     clearTimeout(timer)
-    preference.removeEventListener('change', finishWithoutMotion)
+    unsubscribe()
   }
   const finishWithoutMotion = () => {
-    if (preference.matches) { scroll('auto'); release() }
+    if (prefersReducedMotion()) { scroll('auto'); release() }
   }
   const timer = setTimeout(release, 1000)
-  preference.addEventListener('change', finishWithoutMotion)
+  const unsubscribe = onMotionChange(finishWithoutMotion)
   return release
 }
 
@@ -38,13 +48,12 @@ export function animateArrival(element, { offset = 0 } = {}) {
     : [{ opacity: 0.72 }, { opacity: 1 }]
   const animation = element.animate(frames, { duration, easing })
   running.set(element, animation)
-  const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
-  const cancelForPreference = () => { if (preference.matches) animation.cancel() }
+  const cancelForPreference = () => { if (prefersReducedMotion()) animation.cancel() }
   const release = () => {
-    preference.removeEventListener('change', cancelForPreference)
+    unsubscribe()
     if (running.get(element) === animation) running.delete(element)
   }
-  preference.addEventListener('change', cancelForPreference)
+  const unsubscribe = onMotionChange(cancelForPreference)
   animation.finished.then(release, release)
   return () => { animation.cancel(); release() }
 }

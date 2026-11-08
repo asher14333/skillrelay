@@ -13,6 +13,8 @@ career readiness, and AI-assisted skilling.
 - Spoken or typed explanations alongside the editor, so you can explain while
   coding and running tests.
 - AI rubric feedback and interview follow-up questions using Gemini or OpenAI.
+- Display settings for interface/editor text size, stacked or column layouts,
+  and reduced motion. Preferences apply immediately and stay in this browser.
 - Three learning goals: clear explanations, technical trade-offs, and interview
   confidence.
 - Six curated micro-lessons, recommended from normalized rubric gaps. Your goal
