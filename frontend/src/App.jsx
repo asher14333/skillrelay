@@ -670,7 +670,7 @@ function App() {
                   </div>
                   {analysisSnapshot?.retrySummary && <div className="retry-completed"><Icon name="check" /><span>Focused retry: {analysisSnapshot.retrySummary.beforeMet}/{analysisSnapshot.retrySummary.total} → {analysisSnapshot.retrySummary.afterMet}/{analysisSnapshot.retrySummary.total} criteria supported. {isCurrentSaved ? 'Summary saved with this practice.' : 'Save practice to keep this summary.'}</span></div>}
                   {curveballId && <p className="curveball-context">Requirement change: {curveballDefinition.title}. Feedback uses the updated problem.</p>}
-                  <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} />
+                  <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} active={view === 'practice' && activeTab === 'feedback'} />
                   <p className="feedback-storage"><Icon name="shield" size={15} />Saved summaries stay on this device. Code and explanations aren’t included.</p>
                   <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} active={view === 'practice' && activeTab === 'feedback'} />
                 </>}

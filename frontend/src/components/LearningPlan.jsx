@@ -1,7 +1,8 @@
 import Icon from './Icon'
 import Disclosure from './Disclosure'
+import LessonVideo from './LessonVideo'
 
-export default function LearningPlan({ plan, onPractice }) {
+export default function LearningPlan({ plan, onPractice, active = true }) {
   if (!plan) return null
   return (
     <section className="learning-card" aria-labelledby="learning-title">
@@ -16,6 +17,7 @@ export default function LearningPlan({ plan, onPractice }) {
         </div>
         <p className="lesson-self-check"><strong>Ask yourself:</strong> {plan.selfCheck}</p>
       </Disclosure>
+      <LessonVideo dimension={plan.dimension} practicePrompt={plan.practicePrompt} active={active} />
       <div className="lesson-action"><span>Practice one part of your explanation.</span><button className="learning-primary" onClick={onPractice}>{plan.action === 'transfer' ? 'Try another challenge' : 'Practice this lesson'}</button></div>
     </section>
   )

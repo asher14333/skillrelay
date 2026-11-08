@@ -25,6 +25,8 @@ career readiness, and AI-assisted skilling.
 - Optional interview curveballs across all five challenges: reveal a changed
   requirement while coding, run the added cases, and review your adaptation
   against the original code and explanation. No timer or extra AI call to reveal.
+- Curated, optional YouTube examples matched to the recommended lesson. The
+  player loads only on request, with captions preference and an external fallback.
 - Reasoning replay with timestamped code/explanation checkpoints and
   evidence-linked observations.
 - Focused retries with three criteria, exact before/after quotes, and a saved

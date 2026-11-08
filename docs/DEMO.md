@@ -99,8 +99,10 @@ stored in history. Peer matching and cloud accounts are future milestones.
 4. Choose Review my adaptation to see actual execution results alongside
    evidence-based communication checks. AI review requires the configured key;
    the test runner does not.
-5. Get session feedback. If a lesson is recommended, choose Practice this
-   lesson and apply the concept to your own code.
+5. Get session feedback. If a lesson is recommended, open Watch an example,
+   review the resource, and explicitly Load video (or Watch on YouTube).
+   Return to Practice this lesson and apply the concept to your own code.
+   Watching itself earns no credit.
 6. Save practice and show the requirement-change label in Progress. Comparisons
    stay within the same variant, and raw before/after evidence is session-only.
 

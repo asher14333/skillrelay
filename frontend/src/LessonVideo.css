@@ -1,0 +1,25 @@
+.lesson-video { margin: 16px 0 20px; padding-top: 14px; border-top: 1px solid var(--border); }
+.lesson-video > summary { display: flex; align-items: center; gap: 8px; width: fit-content; min-height: 44px; color: var(--accent); font-size: 0.928571rem; font-weight: 600; cursor: pointer; }
+.lesson-video > summary::before { content: ''; width: 6px; height: 6px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(-45deg); margin-right: 3px; }
+.lesson-video[open] > summary::before { transform: rotate(45deg); }
+.lesson-video-optional { margin-left: 4px; color: var(--muted); font-size: 0.857143rem; font-weight: 400; }
+.lesson-video-content { padding-top: 10px; min-width: 0; }
+.lesson-video-content h3 { margin: 0 0 6px; color: var(--ink); font-size: 1.071429rem; font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
+.lesson-video-source { margin: 0 0 14px; color: var(--muted); font-size: 0.857143rem; line-height: 1.7; }
+.lesson-video-focus, .lesson-video-consent > p { max-width: 72ch; margin: 0 0 12px; color: var(--body); font-size: 0.928571rem; line-height: 1.8; }
+.lesson-video-consent { margin-top: 16px; }
+.lesson-video-player { width: 100%; aspect-ratio: 16 / 9; min-height: 200px; margin-top: 16px; overflow: hidden; border-radius: var(--control-radius); background: var(--editor); }
+.lesson-video-player iframe { display: block; width: 100%; height: 100%; min-height: 200px; border: 0; }
+.lesson-video-fallback { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; margin: 16px 0; font-size: 0.857143rem; line-height: 1.8; }
+.lesson-video-fallback a { display: inline-flex; align-items: center; min-height: 36px; color: var(--accent); font-weight: 600; }
+.lesson-video-fallback a:hover { color: var(--accent-hover); }
+.lesson-video-fallback span { color: var(--muted); }
+.lesson-video-apply { max-width: 75ch; margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--border); }
+.lesson-video-apply strong { color: var(--ink); font-size: 0.928571rem; font-weight: 600; }
+.lesson-video-apply p { margin: 7px 0 0; color: var(--body); font-size: 0.928571rem; line-height: 1.8; }
+.lesson-video-apply p + p { color: var(--muted); font-size: 0.857143rem; }
+@media (max-width: 700px) {
+  .lesson-video-fallback { display: block; }
+  .lesson-video-fallback a { min-height: 44px; }
+  .lesson-video-fallback span { display: block; }
+}

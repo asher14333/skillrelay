@@ -315,24 +315,36 @@ compact heading scale. This feature does not establish full WCAG compliance;
 manual screen-reader and physical-device testing remain separate work.
 
 
-## Interview requirement changes
+## Requirement changes and curated video lessons
 
 All 70 backend tests and 14 frontend data tests pass, as do lint and production
-build. Five real variant solutions pass 28 combined original/added cases.
-Tests reject unknown or mismatched variants, carry updated requirements into
-AI prompts, validate adaptation output, and enforce exact source quotations.
-Saved summaries compare only matching problem, goal, and variant, and strip
-raw code and transcripts.
+build. Backend coverage includes five real variant solutions across 28 combined
+original/added cases, rejecting unknown or mismatched variants, propagating
+updated requirements into AI prompts, malformed adaptation output, and exact
+quote enforcement. Frontend storage tests ensure comparisons do not mix
+ordinary attempts with changed-requirement attempts and still strip raw code
+and transcripts.
 
-The curveball browser regression uses real local Python execution: 3/3 original
-Two Sum cases, 3/5 after revealing the no-match requirement, and 5/5 after
-adaptation. It verifies frozen original context, cancellation after edits,
-variant propagation to analysis/retry/follow-up, saved-history labels,
-320/1024/1440px layouts, and clearing variants after a challenge change.
-AI responses in this browser check are labeled fixtures. Existing practice,
-reliability, motion, and display browser flows also pass.
+Six browser flows pass: practice, reliability, motion, display preferences,
+curveballs, and lesson videos. The new `frontend/tests/curveball-ui.js` uses
+real local Python execution: 3/3 original Two Sum cases, 3/5 after revealing the
+no-match requirement, and 5/5 after adaptation. It verifies frozen before/after
+context, edit-triggered cancellation of delayed reviews, variant propagation
+to analysis/retry/follow-up, labeled saved history, 320/1024/1440px overflow,
+and clearing variant state after a confirmed challenge change. AI responses
+in the browser regression are labeled fixtures.
 
-Separately, a live adaptation review using synthetic code returned HTTP 200,
-5/5 runner cases, and three checks supported by verified source quotations.
-This is a smoke check, not learner-outcome evidence. The existing Monaco
-bundle warning and local-runner isolation limitation remain.
+`frontend/tests/video-ui.js` verifies no external requests before loading,
+curated URLs, no autoplay, accessible iframe title, focus retention, fallback,
+and teardown on close/collapse/navigation using a simulated frame. Separately,
+a real curated YouTube embed was loaded and visually inspected. Resource
+metadata, chapter starts where used, captions, and embeddability were checked;
+playback availability remains dependent on YouTube and the user's network.
+
+A separate live adaptation review with synthetic Two Sum code returned HTTP
+200 through the configured AI provider, 5/5 runner cases, and all three
+communication checks with verified source quotes. This is a smoke check, not
+learner-outcome evidence. No real microphone recording was needed. The changed
+UI source detector returned no findings; screenshots were visually inspected.
+The pre-existing large Monaco bundle warning remains. The local runner's
+public-execution isolation limitation is unchanged.

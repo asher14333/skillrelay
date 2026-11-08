@@ -438,7 +438,7 @@ Implementation QA evidence and limitations belong in [VALIDATION.md](VALIDATION.
 This visual-system record does not replace that evidence.
 
 
-## Interview curveballs
+## Interview curveballs and lesson resources
 
 Interview curveballs extend the existing Operate workspace rather than adding
 another destination. The problem pane offers a deliberate Reveal curveball
@@ -454,3 +454,11 @@ The shared server-owned catalog selects the exact same variant for the UI,
 runner, analysis, focused retry, and follow-up. Revealing a requirement change
 starts fresh feedback/replay context. Saved summaries carry the variant label;
 comparisons require matching problem, goal, and variant.
+
+Recommended lessons offer a native Watch an example disclosure. Its curated
+resource names the creator, relevant segment, and connection to the current
+practice prompt. No remote thumbnail or player loads before Load video.
+The same button becomes Close video without losing keyboard focus. A titled,
+responsive iframe requests captions without autoplay; Watch on YouTube remains
+available if embedding fails. Closing, collapsing, or leaving feedback unloads
+the player. Watching does not automatically complete a lesson or earn credit.
