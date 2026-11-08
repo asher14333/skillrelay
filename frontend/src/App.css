@@ -28,8 +28,12 @@
   letter-spacing: -0.03em;
   text-decoration: none;
 }
-.brand-mark { width: 27px; height: 27px; color: var(--accent); }
-.brand-mark path { stroke: var(--canvas); }
+.brand-mark { width: 27px; height: 27px; overflow: visible; }
+.brand-mark-bubble { fill: var(--accent); }
+.brand-mark-braces { stroke: var(--accent-ink); }
+.brand-mark-drop { fill: #8fd0ff; stroke: var(--surface); }
+.brand:hover .brand-mark-drop { animation: sweat 900ms var(--motion-ease); }
+@keyframes sweat { 40% { transform: translateY(2px); } }
 .learning-nav { display: flex; align-items: center; gap: 4px; height: 100%; }
 .learning-nav a {
   display: inline-flex;

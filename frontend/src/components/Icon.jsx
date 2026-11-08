@@ -25,8 +25,12 @@ export default function Icon({ name, size = 18, ...props }) {
 }
 
 export function BrandMark() {
-  return <svg className="brand-mark" width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-    <rect width="32" height="32" rx="9" fill="currentColor" />
-    <path d="m10 10 6 6-6 6m8-12 5 6-5 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+  return <svg className="brand-mark" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+    <path className="brand-mark-bubble" d="M9 3h13.5a7 7 0 0 1 7 7v8a7 7 0 0 1-7 7H14l-6.2 5.2V25A7 7 0 0 1 2 18v-8a7 7 0 0 1 7-7z" />
+    <g className="brand-mark-braces" fill="none" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12.6 8.6c-1.7 0-2.5.8-2.5 2.4v1.4c0 1.1-.6 1.6-1.7 1.6 1.1 0 1.7.5 1.7 1.6V17c0 1.6.8 2.4 2.5 2.4" />
+      <path d="M19.4 8.6c1.7 0 2.5.8 2.5 2.4v1.4c0 1.1.6 1.6 1.7 1.6-1.1 0-1.7.5-1.7 1.6V17c0 1.6-.8 2.4-2.5 2.4" transform="rotate(26 21.5 14) translate(0.2 1.4)" />
+    </g>
+    <path className="brand-mark-drop" d="M27.6 0.8c1.5 2.1 2.4 3.4 2.4 4.4a2.4 2.4 0 0 1-4.8 0c0-1 .9-2.3 2.4-4.4z" strokeWidth="1.1" strokeLinejoin="round" />
   </svg>
 }
