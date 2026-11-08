@@ -86,25 +86,27 @@ stored in history. Peer matching and cloud accounts are future milestones.
   disclosure, and submission are separate work from implementing this branch.
 
 
-## Optional standout sequence: adapt to a changed requirement
+## Hands-free interviewer and visible conversation
 
-1. Start Two Sum with a map solution that handles valid pairs but falls through
-   without a return when there is no match. Explain the approach. Run code: 3/3.
-2. Choose Reveal curveball in the problem pane. Read the no-match requirement;
-   the original explanation and code are available under Before the requirement
-   changed. The original cases remain and two new cases are added.
-3. Run again: 3/5. Add a final `return []` and explain why it belongs after the
-   loop, how the original behavior is preserved, and how the new cases verify
-   the change. Run again: 5/5.
-4. Choose Review my adaptation to see actual execution results alongside
-   evidence-based communication checks. AI review requires the configured key;
-   the test runner does not.
-5. Get session feedback. If a lesson is recommended, open Watch an example,
-   review the resource, and explicitly Load video (or Watch on YouTube).
-   Return to Practice this lesson and apply the concept to your own code.
-   Watching itself earns no credit.
-6. Save practice and show the requirement-change label in Progress. Comparisons
-   stay within the same variant, and raw before/after evidence is session-only.
+1. Choose a problem and Start live interview once. Allow microphone access.
+   Keep coding while explaining. A short pause finalizes your spoken turn.
+2. Read your utterance and the AI reply in Interview chat beside the editor.
+   The microphone stays off while Gemini thinks and speaks, then resumes
+   automatically after audio ends. No Check now button is part of the flow.
+3. Answer naturally, including short answers. Each spoken turn is appended
+   once; the AI can ask a question, change requirements, or let you continue
+   without a spoken interruption. Gemini chooses when a change is appropriate.
+4. A generated requirement appears as a marked chat bubble and updates the
+   problem, examples and runnable cases. Adapt your code and explain why.
+5. Pause interview stops capture, pending turns, playback and restart timers.
+   Navigating away also pauses; returning does not reopen the microphone.
+6. Choose Interview input=Text if preferred. Start the interview, type, and
+   pause for an automatic visible reply. Mute/replay and the full explanation
+   remain available independently of the chat history.
+7. Review adaptation or request session feedback when ready. Generated context
+   follows retries and follow-up practice. Expiry recovery preserves your work.
+8. Save the practice summary and continue to an optional lesson video/retry.
 
-The flow is untimed and supports typed explanations as well as the existing
-microphone input. Display preferences remain available throughout.
+Recognition and audio latency depend on the browser, network and Gemini quota.
+Rehearse with the actual microphone/speakers before presenting. Only finalized
+spoken text starts a turn; interim text remains a draft while recording.

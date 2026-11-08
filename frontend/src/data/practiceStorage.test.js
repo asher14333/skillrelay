@@ -125,3 +125,17 @@ test('curveball summaries persist without raw evidence and compare only the same
   assert.equal('beforeTranscript' in saved, false)
   assert.equal(cleanAttempt(attempt('wrong', 5, { curveballId: 'stock-empty-prices' })), null)
 })
+
+
+test('generated requirement labels persist without private generated definitions', () => {
+  const storage = memoryStorage()
+  const id = 'ai-0123456789abcdef0123456789abcdef'
+  const generated = attempt('generated', 8, { curveballId: id, curveballTitle: 'Return matching values', definition: { code: 'private', testCases: [] } })
+  writePractice('clear-explanations', [generated], storage)
+  const saved = loadPractice(storage).attempts[0]
+  assert.equal(saved.curveballId, id)
+  assert.equal(saved.curveballTitle, 'Return matching values')
+  assert.equal('definition' in saved, false)
+  assert.equal(compareLatest([generated, attempt('ordinary', 5)]), null)
+  assert.equal(cleanAttempt({ ...generated, curveballTitle: 'x'.repeat(161) }), null)
+})

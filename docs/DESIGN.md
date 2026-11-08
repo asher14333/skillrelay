@@ -462,3 +462,45 @@ The same button becomes Close video without losing keyboard focus. A titled,
 responsive iframe requests captions without autoplay; Watch on YouTube remains
 available if embedding fails. Closing, collapsing, or leaving feedback unloads
 the player. Watching does not automatically complete a lesson or earn credit.
+
+
+## Adaptive interviewer and Gemini voice
+
+The live interviewer replaces the fixed Reveal curveball entry point. Its
+opt-in Start live interview action makes data sharing explicit. After finalized
+explanation changes and a quiet pause, Gemini decides whether a question or
+requirement change helps; automatic checks are paced and bounded. Check now
+is an explicit request; Pause cancels pending turns. Typing, recording, view
+changes, and scope changes reject stale responses without losing the editor.
+
+Generated contracts use server-verified, bounded rule parameters and expected
+outputs. Current generated requirements, examples and cases replace the old
+contract consistently across runner/feedback/retry/follow-up. A frozen original
+snapshot remains available. Expiry recovery returns to original requirements
+while preserving work; saved history stores only a generated label/ID.
+
+AI voice is a shared Gemini audio player with text always visible. Controls
+are labeled AI voice on/off, Stop voice, and Replay voice, with loading and
+speaking status. Microphone starts synchronously stop synthesis/playback;
+final recognition events finish before AI turns. No queued voice resumes just
+because recording ends. Navigation cancels audio, and late hidden-pane replies
+cannot start a new player. Audio errors, quota limits and browser autoplay
+restrictions keep the text usable and provide a replay action.
+
+
+## Hands-free conversation
+
+The workspace keeps problem/code/chat columns. Interview chat is a wider
+reading pane with left-aligned AI and right-aligned candidate bubbles; a changed
+requirement has an explicit label. Pending, listening and voice status explain
+the current turn. New messages stay visible when following the conversation;
+scrolling up prevents an automatic jump. The full explanation remains in a
+short composer beneath the chat. Chat history is bounded and session-only.
+
+Start live interview controls the root-owned lifecycle: listening, finalizing,
+thinking, speaking, listening. Recognized speech resets a short quiet timer;
+final recognition events complete before an AI request. The microphone stays
+off until actual playback ends. Continue decisions need not speak. Short
+answers bypass typing thresholds. Pause, navigation, errors and scope changes
+cancel pending work and restart timers. Interview input offers Voice or Text;
+typed turns trigger after a pause without a separate checking button.

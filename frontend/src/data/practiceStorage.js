@@ -28,7 +28,8 @@ export function cleanAttempt(value) {
   const dimension = value.lesson.dimension
   if (dimension !== null && !Object.hasOwn(RUBRIC_MAX, dimension)) return null
   const curveball = value.curveballId ? findCurveball(value.curveballId) : null
-  if (value.curveballId && (!curveball || curveball.problemId !== value.problemId)) return null
+  const generated = typeof value.curveballId === 'string' && /^ai-[a-zA-Z0-9-]{16,80}$/.test(value.curveballId) && shortText(value.curveballTitle, 160)
+  if (value.curveballId && !generated && (!curveball || curveball.problemId !== value.problemId)) return null
   let run = null
   if (value.run !== null && value.run !== undefined) {
     if (!Number.isInteger(value.run.total) || value.run.total < 1 || value.run.total > 1000 ||
@@ -48,7 +49,7 @@ export function cleanAttempt(value) {
     problemId: value.problemId,
     problemTitle: problemById.get(value.problemId).title,
     goal: value.goal,
-    ...(curveball ? { curveballId: curveball.id, curveballTitle: curveball.title } : {}),
+    ...(curveball ? { curveballId: curveball.id, curveballTitle: curveball.title } : generated ? { curveballId: value.curveballId, curveballTitle: value.curveballTitle } : {}),
     score: value.score,
     rubric,
     lesson: { id: value.lesson.id, title: value.lesson.title, dimension },

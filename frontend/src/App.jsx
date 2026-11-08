@@ -4,7 +4,11 @@ import { problems, getProblemBySlug } from './data/problems'
 import RubricFeedback from './components/RubricFeedback'
 import TestConsole from './components/TestConsole'
 import CurveballPractice from './components/CurveballPractice'
-import { getCurveball, withCurveball } from './data/curveballs'
+import LiveInterviewer from './components/LiveInterviewer'
+import InterviewConversation from './components/InterviewConversation'
+import InterviewerVoice from './components/InterviewerVoice'
+import useInterviewerAudio from './lib/useInterviewerAudio'
+import { withCurveball } from './data/curveballs'
 import InterviewPanel from './components/InterviewPanel'
 import LearningPlan from './components/LearningPlan'
 import ProgressPanel from './components/ProgressPanel'
@@ -23,6 +27,7 @@ import './App.css'
 import './Learning.css'
 import './DisplaySettings.css'
 import './Curveball.css'
+import './LiveInterviewer.css'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 const CodeEditor = lazy(() => import('./components/CodeEditor'))
@@ -40,7 +45,7 @@ function App() {
   const [lessonFocus, setLessonFocus] = useState(null)
   const [problemSlug, setProblemSlug] = useState('two-sum')
   const [curveballSession, setCurveballSession] = useState(null)
-  const curveballDefinition = getCurveball(problemSlug)
+  const curveballDefinition = curveballSession?.definition || null
   const curveballId = curveballSession?.id || null
   const problem = withCurveball(getProblemBySlug(problemSlug), curveballId ? curveballDefinition : null)
 
@@ -62,6 +67,23 @@ function App() {
   const [pendingProblem, setPendingProblem] = useState(null)
   const [checkpoints, setCheckpoints] = useState([])
   const [retryTask, setRetryTask] = useState(null)
+  const [voiceEnabled, setVoiceEnabled] = useState(false)
+  const [liveInterview, setLiveInterview] = useState(false)
+  const [interviewInput, setInterviewInput] = useState('voice')
+  const [awaitingTurn, setAwaitingTurn] = useState(false)
+  const [interviewerBusy, setInterviewerBusy] = useState(false)
+  const [spokenTurn, setSpokenTurn] = useState({ number: 0, text: '' })
+  const [conversation, setConversation] = useState([])
+  const [interviewEpoch, setInterviewEpoch] = useState(0)
+  const [followupRecording, setFollowupRecording] = useState(false)
+  const interviewerAudio = useInterviewerAudio({ enabled: voiceEnabled, blocked: view !== 'practice' || isRecording || speechPhase !== 'idle' || followupRecording, scope: `${problemSlug}:${view}:${activeTab}:${interviewEpoch}` })
+  const { speak: speakAudio } = interviewerAudio
+  const audioContextRef = useRef({ view, tab: activeTab })
+  useLayoutEffect(() => { audioContextRef.current = { view, tab: activeTab } }, [view, activeTab])
+  const speakForPane = useCallback((pane, text) => {
+    const context = audioContextRef.current
+    if (context.view === 'practice' && context.tab === pane) return speakAudio(text)
+  }, [speakAudio])
   const retryTaskIdRef = useRef(null)
   const pickerRef = useRef(null)
   const feedbackHeadingRef = useRef(null)
@@ -90,6 +112,37 @@ function App() {
   const generationRef = useRef(0)
   const speechGenerationRef = useRef(null)
   const lastFinalSpeechRef = useRef('')
+  const liveControlRef = useRef({ enabled: false })
+  const silenceTimerRef = useRef(null)
+  const speechPhaseRef = useRef('idle')
+  const segmentErrorRef = useRef(null)
+  const segmentTextRef = useRef('')
+  const segmentStartedRef = useRef(0)
+  const rapidEndRef = useRef(0)
+  const spokenTurnNumberRef = useRef(0)
+  const { stop: stopAudio } = interviewerAudio
+  const appendConversation = useCallback(message => {
+    setConversation(previous => previous.some(item => item.id === message.id) ? previous : [...previous, message].slice(-30))
+  }, [])
+  const finishInterviewerTurn = useCallback(() => setAwaitingTurn(false), [])
+  const pauseLiveInterview = useCallback(() => {
+    liveControlRef.current.enabled = false
+    clearTimeout(silenceTimerRef.current)
+    setLiveInterview(false)
+    setAwaitingTurn(false)
+    setInterviewerBusy(false)
+    speechGenerationRef.current = null
+    recognitionRef.current?.abort()
+    speechPhaseRef.current = 'idle'
+    setSpeechPhase('idle')
+    setIsRecording(false)
+    stopAudio()
+  }, [stopAudio])
+
+  useLayoutEffect(() => {
+    if (view !== 'practice' || activeTab !== 'code') pauseLiveInterview()
+  }, [view, activeTab, pauseLiveInterview])
+  useEffect(() => () => { clearTimeout(silenceTimerRef.current); liveControlRef.current.enabled = false }, [])
 
   const captureMoment = useCallback((kind, extra = {}) => {
     const session = sessionRef.current
@@ -172,6 +225,9 @@ function App() {
 
   const switchProblem = useCallback((slug) => {
     const next = getProblemBySlug(slug)
+    pauseLiveInterview()
+    setConversation([])
+    setSpokenTurn({ number: 0, text: '' })
     generationRef.current += 1
     Object.values(sessionRef.current.timers).forEach(clearTimeout)
     Object.assign(sessionRef.current, { startedAt: null, moments: [], timers: {} })
@@ -186,6 +242,7 @@ function App() {
     sessionBaseRef.current = ''
     setProblemSlug(slug)
     setCurveballSession(null)
+    setFollowupRecording(false)
     setResetCodeDraft(null)
     setCode(next.starterCode)
     setTranscript('')
@@ -199,7 +256,7 @@ function App() {
     setError(null)
     setShowProblemList(false)
     setPendingProblem(null)
-  }, [invalidateFeedback])
+  }, [invalidateFeedback, pauseLiveInterview])
 
   const navigate = (next) => {
     window.location.hash = next
@@ -250,21 +307,32 @@ function App() {
 
     recognition.onresult = (event) => {
       if (speechGenerationRef.current !== generationRef.current) return
-      let sessionText = ''
-      let finalText = ''
+      let sessionText = '', finalText = ''
       for (let i = 0; i < event.results.length; i++) {
-        sessionText += event.results[i][0].transcript
-        if (event.results[i].isFinal) finalText += event.results[i][0].transcript
+        sessionText += `${event.results[i][0].transcript.trim()} `
+        if (event.results[i].isFinal) finalText += `${event.results[i][0].transcript.trim()} `
       }
+      segmentTextRef.current = sessionText
       changeTranscript((sessionBaseRef.current + sessionText).trim(), false)
       if (finalText && finalText !== lastFinalSpeechRef.current) {
         lastFinalSpeechRef.current = finalText
         captureMoment('explanation', { transcript: (sessionBaseRef.current + finalText).trim() })
       }
+      clearTimeout(silenceTimerRef.current)
+      if (liveControlRef.current.enabled && sessionText.trim() && speechPhaseRef.current === 'listening') {
+        silenceTimerRef.current = setTimeout(() => {
+          if (!liveControlRef.current.enabled || speechPhaseRef.current !== 'listening') return
+          setAwaitingTurn(true)
+          speechPhaseRef.current = 'stopping'
+          setSpeechPhase('stopping')
+          try { recognition.stop() } catch { pauseLiveInterview(); setError('Could not finish your spoken turn. Start the interview again or type your explanation.') }
+        }, 1500)
+      }
     }
 
     recognition.onstart = () => {
       if (speechGenerationRef.current === generationRef.current) {
+        speechPhaseRef.current = 'listening'
         setSpeechPhase('listening')
         captureMoment('microphone')
       }
@@ -272,24 +340,49 @@ function App() {
 
     recognition.onerror = (event) => {
       if (speechGenerationRef.current !== generationRef.current) return
-      if (event.error !== 'aborted') {
-        setError(`Speech recognition error: ${event.error}`)
+      clearTimeout(silenceTimerRef.current)
+      segmentErrorRef.current = event.error
+      if (liveControlRef.current.enabled && event.error === 'no-speech') {
+        speechPhaseRef.current = 'stopping'
+        setSpeechPhase('stopping')
+        return
       }
-      setIsRecording(false)
-      setSpeechPhase('idle')
+      if (event.error !== 'aborted') setError(`Speech recognition error: ${event.error}. You can type your explanation or restart the interview.`)
+      if (liveControlRef.current.enabled) pauseLiveInterview()
+      else { setIsRecording(false); setSpeechPhase('idle'); speechPhaseRef.current = 'idle' }
     }
 
     recognition.onend = () => {
       if (speechGenerationRef.current !== generationRef.current) return
+      clearTimeout(silenceTimerRef.current)
+      speechGenerationRef.current = null
+      speechPhaseRef.current = 'idle'
       setIsRecording(false)
       setSpeechPhase('idle')
-      if (speechGenerationRef.current === generationRef.current) captureMoment('explanation')
-      speechGenerationRef.current = null
+      if (liveControlRef.current.enabled) {
+        const utterance = lastFinalSpeechRef.current.trim()
+        if (utterance && !segmentErrorRef.current) {
+          rapidEndRef.current = 0
+          changeTranscript((sessionBaseRef.current + utterance).trim(), false)
+          const turn = { number: ++spokenTurnNumberRef.current, text: utterance }
+          appendConversation({ id: `candidate-turn-${turn.number}`, role: 'candidate', text: utterance })
+          setAwaitingTurn(true)
+          setSpokenTurn(turn)
+        } else if (segmentTextRef.current.trim() && !segmentErrorRef.current) {
+          pauseLiveInterview()
+          setError('The browser did not finalize that speech. Your draft is still visible. Restart the interview or type to continue.')
+        } else {
+          setAwaitingTurn(false)
+          rapidEndRef.current = Date.now() - segmentStartedRef.current < 2000 ? rapidEndRef.current + 1 : 0
+          if (rapidEndRef.current >= 3) { pauseLiveInterview(); setError('The microphone kept stopping. Restart the interview or continue by typing.') }
+        }
+      }
+      captureMoment('explanation')
     }
 
     recognitionRef.current = recognition
     return () => recognition.abort()
-  }, [changeTranscript, captureMoment])
+  }, [changeTranscript, captureMoment, appendConversation, pauseLiveInterview])
 
   const persistPractice = (nextAttempts, nextGoal = learningGoal) => {
     const result = writePractice(nextGoal, nextAttempts)
@@ -315,6 +408,7 @@ function App() {
         problemId: snapshot.problemId,
         goal: snapshot.goal,
         curveballId: snapshot.curveballId,
+        curveballTitle: snapshot.curveballTitle,
         score: snapshot.feedback.score,
         rubric: snapshot.feedback.rubric,
         lesson: snapshot.feedback.learningPlan,
@@ -357,16 +451,35 @@ function App() {
     setActiveTab('retry')
   }
 
-  const revealCurveball = () => {
-    if (!curveballDefinition || curveballSession || isRunning || isAnalyzing || isRecording) return
+  const applyCurveball = (definition, before) => {
+    if (curveballSession || isRunning || isAnalyzing || isRecording ||
+        before.code !== currentCodeRef.current || before.transcript !== currentTranscriptRef.current) return false
     flushPendingMoments()
-    setCurveballSession({ id: curveballDefinition.id, code, transcript })
+    setCurveballSession({ id: definition.id, definition, code: before.code, transcript: before.transcript })
     invalidateFeedback()
     codeRevisionRef.current += 1
     setRunSnapshot(null)
     setRunResults(null)
     setLessonFocus(null)
-    setSelectedCase(problem.testCases.length)
+    setSelectedCase(0)
+    setConsoleTab('testcase')
+    setActiveTab('code')
+    Object.values(sessionRef.current.timers).forEach(clearTimeout)
+    Object.assign(sessionRef.current, { startedAt: null, moments: [], timers: {} })
+    captureMoment('start')
+    return true
+  }
+
+  const returnToOriginal = () => {
+    pauseLiveInterview()
+    setInterviewEpoch(value => value + 1)
+    setCurveballSession(null)
+    interviewerAudio.stop()
+    invalidateFeedback()
+    codeRevisionRef.current += 1
+    setRunSnapshot(null)
+    setRunResults(null)
+    setSelectedCase(0)
     setConsoleTab('testcase')
     setActiveTab('code')
     Object.values(sessionRef.current.timers).forEach(clearTimeout)
@@ -374,29 +487,60 @@ function App() {
     captureMoment('start')
   }
 
-  const startRecording = () => {
+  const startRecording = useCallback(() => {
+    stopAudio()
     setError(null)
     invalidateFeedback()
     setActiveTab('code')
-    sessionBaseRef.current = transcript ? `${transcript} ` : ''
+    sessionBaseRef.current = currentTranscriptRef.current ? `${currentTranscriptRef.current} ` : ''
     speechGenerationRef.current = generationRef.current
     lastFinalSpeechRef.current = ''
+    segmentTextRef.current = ''
+    segmentErrorRef.current = null
+    segmentStartedRef.current = Date.now()
     if (!sessionRef.current.moments.length) captureMoment('start')
     try {
+      speechPhaseRef.current = 'starting'
       setSpeechPhase('starting')
-      recognitionRef.current?.start()
+      if (!recognitionRef.current) throw new Error('Speech recognition is not available')
+      recognitionRef.current.start()
       setIsRecording(true)
     } catch {
       setIsRecording(false)
       setSpeechPhase('idle')
-      setError('Could not start recording. Try again.')
+      speechPhaseRef.current = 'idle'
+      if (liveControlRef.current.enabled) pauseLiveInterview()
+      setError('Could not start recording. Try again or type your explanation.')
     }
-  }
+  }, [stopAudio, invalidateFeedback, captureMoment, pauseLiveInterview])
 
   const stopRecording = () => {
+    clearTimeout(silenceTimerRef.current)
+    speechPhaseRef.current = 'stopping'
+    if (liveControlRef.current.enabled) setAwaitingTurn(true)
     setSpeechPhase('stopping')
     recognitionRef.current?.stop()
   }
+
+  const startLiveInterview = () => {
+    rapidEndRef.current = 0
+    liveControlRef.current.enabled = true
+    setLiveInterview(true)
+    setVoiceEnabled(true)
+    setAwaitingTurn(false)
+    if (speechSupported && interviewInput === 'voice' && speechPhaseRef.current === 'idle') startRecording()
+  }
+
+  useEffect(() => {
+    if (!liveInterview || !speechSupported || interviewInput !== 'voice' || view !== 'practice' || activeTab !== 'code' ||
+        isRecording || speechPhase !== 'idle' || awaitingTurn || interviewerBusy || isRunning || isAnalyzing ||
+        interviewerAudio.status !== 'idle' || interviewerAudio.error) return
+    const timer = setTimeout(() => {
+      if (liveControlRef.current.enabled && speechPhaseRef.current === 'idle') startRecording()
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [liveInterview, speechSupported, interviewInput, view, activeTab, isRecording, speechPhase, awaitingTurn,
+      interviewerBusy, isRunning, isAnalyzing, interviewerAudio.status, interviewerAudio.error, startRecording])
 
   const handleRun = async () => {
     flushPendingMoments()
@@ -485,6 +629,7 @@ function App() {
         problemId: problemSlug,
         curveballId,
         goal: learningGoal,
+        curveballTitle: curveballDefinition?.title,
         feedback: data,
         code, transcript, checkpoints: reviewCheckpoints,
         run: runSnapshot?.code === code && runSnapshot.problemId === problemSlug && runSnapshot.curveballId === curveballId
@@ -572,9 +717,15 @@ function App() {
               </div>
             </div>
             <div className="problem-body">
+              <LiveInterviewer key={`${problemSlug}:${interviewEpoch}`} problemId={problemSlug} curveballId={curveballId}
+                code={code} transcript={transcript} blocked={isRecording || speechPhase !== 'idle' || isRunning || isAnalyzing || followupRecording || interviewerAudio.status !== 'idle'}
+                active={view === 'practice' && activeTab === 'code'} running={liveInterview} spokenTurn={spokenTurn} inputMode={interviewInput}
+                onInputModeChange={mode => { pauseLiveInterview(); setInterviewInput(mode) }}
+                onMessage={appendConversation} onBusyChange={setInterviewerBusy} onTurnComplete={finishInterviewerTurn} onCurveball={applyCurveball}
+                onSpeak={text => speakForPane('code', text)} onStop={pauseLiveInterview} onStart={startLiveInterview} />
               <CurveballPractice key={`${problemSlug}:${curveballId || 'base'}`} definition={curveballDefinition} session={curveballSession}
                 code={code} transcript={transcript} disabled={isRecording || isRunning || isAnalyzing}
-                onReveal={revealCurveball} onRunResult={data => {
+                onSpeak={text => speakForPane(activeTab, text)} onReturnToOriginal={returnToOriginal} onRunResult={data => {
                   setRunResults(data)
                   setRunSnapshot({ code, problemId: problemSlug, curveballId, passed: data.passed, total: data.total })
                   setConsoleTab('result')
@@ -633,17 +784,21 @@ function App() {
                   <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} fontSize={{ default: 14, large: 16, larger: 18 }[preferences.textSize]} reducedMotion={reducedMotion} /></Suspense></div>
                   <TestConsole problem={problem} consoleTab={consoleTab} setConsoleTab={setConsoleTab} selectedCase={selectedCase} setSelectedCase={setSelectedCase} runResults={runResults} />
                 </div>
-                <aside className="live-explanation" aria-labelledby="live-explanation-title">
+                <aside className="live-explanation live-explanation-chat" aria-labelledby="live-explanation-title">
                   <div className="live-explanation-heading">
-                    <h2 id="live-explanation-title">Live explanation</h2>
-                    <p>Talk through your choices as you code.</p>
+                    <h2 id="live-explanation-title">Interview chat</h2>
+                    <p>Speak naturally. Pause to let the interviewer respond.</p>
                   </div>
+                  <InterviewerVoice enabled={voiceEnabled} onToggle={() => setVoiceEnabled(value => !value)} audio={interviewerAudio} />
+                  <InterviewConversation messages={conversation} pending={interviewerBusy || (awaitingTurn && speechPhase === 'idle')}
+                    listening={speechPhase === 'listening'} speaking={interviewerAudio.status === 'speaking'}
+                    active={view === 'practice' && activeTab === 'code'} />
                   <div className="session-microphone">
                     {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording} disabled={speechPhase !== 'listening'}><StopIcon />{speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop microphone'}</button>}
-                    <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{speechPhase === 'listening' ? <><span className="pulse" />Listening while you code</> : speechPhase === 'starting' ? 'Waiting for microphone access…' : speechPhase === 'stopping' ? 'Waiting for the final transcript…' : 'You can also type your thinking below.'}</span>
+                    {(!liveInterview || ['starting', 'stopping'].includes(speechPhase)) && <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{speechPhase === 'listening' ? <><span className="pulse" />Listening while you code</> : speechPhase === 'starting' ? 'Waiting for microphone access…' : speechPhase === 'stopping' ? 'Waiting for the final transcript…' : 'You can also type your thinking below.'}</span>}
                   </div>
                   {!speechSupported && <p className="warning">Voice input isn’t available in this browser. You can type your explanation while coding.</p>}
-                  {activeTab === 'code' && <div className="writing-area live-writing-area">
+                  {activeTab === 'code' && <div className="writing-area live-writing-area conversation-composer">
                     <label className="sr-only" htmlFor="solution-explanation">Your solution explanation</label>
                     <textarea id="solution-explanation" name="transcript" autoComplete="off" className="transcript-editor" value={transcript} onChange={(event) => changeTranscript(event.target.value)} readOnly={isRecording}
                       placeholder="Start with your approach. Explain what you change and why." />
@@ -681,7 +836,7 @@ function App() {
                 return { ...snapshot, retrySummary: result ? { dimension: result.dimension, beforeMet: result.beforeMet, afterMet: result.afterMet, total: result.total, createdAt: result.createdAt } : null }
               })} /></div>}
               <div className={`interview-pane-wrapper ${activeTab !== 'interview' ? 'pane-hidden' : ''}`}>
-                <InterviewPanel key={`${problemSlug}:${curveballId || 'base'}`} problemId={problemSlug} curveballId={curveballId} transcript={transcript} code={code} active={view === 'practice' && activeTab === 'interview'} speechSupported={speechSupported} onError={setError} />
+                <InterviewPanel key={`${problemSlug}:${curveballId || 'base'}`} problemId={problemSlug} curveballId={curveballId} transcript={transcript} code={code} active={view === 'practice' && activeTab === 'interview'} speechSupported={speechSupported} onError={setError} onSpeak={text => speakForPane('interview', text)} onStopSpeaking={interviewerAudio.stop} onRecordingChange={setFollowupRecording} voiceEnabled={voiceEnabled} onVoiceToggle={() => setVoiceEnabled(value => !value)} audio={interviewerAudio} />
               </div>
             </div>
           </section>

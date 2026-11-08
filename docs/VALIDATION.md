@@ -348,3 +348,66 @@ learner-outcome evidence. No real microphone recording was needed. The changed
 UI source detector returned no findings; screenshots were visually inspected.
 The pre-existing large Monaco bundle warning remains. The local runner's
 public-execution isolation limitation is unchanged.
+
+
+## Adaptive live interview and Gemini audio
+
+The fixed curveball UI regression is replaced by `adaptive-ui.js`. It verifies
+opt-in quiet-pause checks, finalized-microphone turn-taking, cancellation on
+edits/Pause/navigation, generated sentinel-return requirements and replacement
+cases, expiry recovery without lost work, variant propagation and saved labels,
+and 320/1024/1440px layouts. `audio-ui.js` verifies the real playback hook using
+simulated Audio and WAV responses; `voice-flow-ui.js` covers spoken follow-ups,
+evaluation/next-question playback, microphone handoff, mute/replay, and late
+responses after navigation. Simulated audio/recognition do not establish
+physical microphone or speaker behavior.
+
+Backend tests exercise declarative generation across all five problems,
+independent reference expectations, malformed or unsupported proposals,
+registry expiry/capacity, prompt context, voice encoding, cache scope, quota,
+timeouts and invalid audio. Source test counts and build results accompany the
+release report. The original practice, reliability, motion, display and video
+flows continue to run independently of the new opt-in interviewer.
+
+Live Gemini smoke checks returned HTTP 200 for a generated curveball and WAV
+speech (mono 24kHz, 7.64 seconds). The fresh requirement returned values instead
+of indices and ignored zero; an adapted solution passed all 7 actual generated
+cases. These checks use synthetic practice input; they do not measure learning
+outcomes. Generated rule vocabulary is bounded, and server-written reference
+logic determines correctness. The local Python runner still needs isolation
+before public untrusted execution.
+
+
+Final verification: 94 backend tests, 15 frontend data tests, lint and production
+build pass. Eight browser flows pass: practice, reliability, motion, display,
+video, adaptive interviewer, audio hook, and spoken follow-up integration.
+A separate real browser session received a live Gemini continue response,
+generated its audio, reached the actual Audio playing state, and stopped it
+through the UI with no browser exceptions. This checks the player/decoder,
+not audibility through a particular physical speaker. Expiry recovery is also
+verified to pause the live interviewer and clear the generated ID while keeping
+code and explanation.
+
+
+## Hands-free turn-taking and chat
+
+`handsfree-ui.js` verifies one Start through silence detection, finalization,
+one AI request, visible candidate/AI bubbles, audio end and automatic listening
+restart. It covers short answers without full-transcript duplication, automatic
+curveball application and one marked bubble, silent continue decisions,
+Pause/navigation cancellation, denied microphone permission without a restart
+loop, typed fallback, and 320/1024/1440px layouts. The newest AI bubble is checked
+for complete visibility while following the conversation. Recognition, Gemini
+and audio are controlled fixtures; this does not certify physical hardware.
+
+`adaptive-ui.js` is updated for automatic typed replies and the chat surface,
+retaining generated-contract, expiry, API context, saved history and recovery
+coverage. The earlier Check now workflow and pacing description above are
+superseded by hands-free turns. Existing manual practice and follow-up recording
+remain available independently. Chat is kept only in the current session.
+
+Final hands-free verification: 94 backend tests, 15 frontend data tests, lint,
+production build and nine browser flows pass. The additional flow covers the
+automatic recognition/turn/audio loop and chat. Physical microphone and speaker
+quality still require a device rehearsal. The existing Monaco bundle warning
+remains.
