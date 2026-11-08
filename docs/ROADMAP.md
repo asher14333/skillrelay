@@ -1,37 +1,46 @@
-# SkillRelay: proposed hackathon scope
+# SkillRelay: hackathon scope and roadmap
 
 ## Prompt and audience
 
-Proposed direction: Prompt 2, helping people develop in-demand skills and build
+Direction: Prompt 2, helping people develop in-demand skills and build
 meaningful networks in a changing job market. Start with students, newcomers,
 and early-career developers who need practice explaining their technical work.
 
-The existing interview coach fits the career transitions and communication focus
-area. Personalized practice and peer connections are proposed extensions.
+The interview coach and guided learning loop fit the career transitions,
+communication, and AI-assisted skilling focus areas. Peer connections remain a
+future extension.
 
 ## Core demo loop
 
 1. Choose a technical skill and a practice challenge.
-2. Solve the challenge and explain the approach by voice or text.
+2. Explain the approach by voice or text while coding and running tests in the
+   shared workspace.
 3. Receive specific feedback and one recommended next practice step.
-4. Save a practice summary as evidence of progress.
-5. Find a compatible practice partner using learning goals and availability.
+4. Study the recommended micro-lesson and retry with a specific practice prompt.
+5. Save practice summaries and compare attempts on the same problem and goal.
+6. Inspect timestamped reasoning checkpoints, practice a specific gap, and save
+   the before/after criterion summary.
 
 ## Implementation order
 
 - **Existing baseline:** five coding challenges, editor, code execution,
   voice transcription, rubric feedback, and interview follow-up questions.
-- **First enhancement:** turn feedback into a short, actionable learning plan;
-  keep typed explanations available alongside voice.
-- **Second enhancement:** persist practice history and show progress across
-  sessions. Label AI feedback as practice feedback, rather than certification.
-- **Third enhancement:** add an opt-in peer practice directory with matching by
+- **Implemented on the learning-loop branch:** three learning goals, curated
+  lessons for six rubric dimensions, recommendations from relative score gaps,
+  and a guided retry flow. Typed explanations remain available alongside voice.
+- **Implemented on the learning-loop branch:** explicit saved practice summaries
+  in browser storage, progress across reloads, and comparisons within the same
+  problem and goal. AI scores are labeled as practice feedback.
+- **Implemented on the learning-loop branch:** evidence-linked reasoning replay
+  and focused typed retries with criterion-level before/after comparisons.
+- **Next milestone:** add an opt-in peer practice directory with matching by
   goals, skills, and availability. Clearly label seeded demo profiles.
 - **If time permits:** export a learner-controlled practice portfolio and add
   mentor profiles with explicit consent before sharing contact details.
 
-Only the existing baseline is implemented at repository creation. The features
-above are a proposal, not completed functionality.
+See the [implementation plan](IMPLEMENTATION_PLAN.md) for architecture, acceptance
+criteria, and verification of the delivered core flow. Persistence is local to
+one browser; accounts, cloud synchronization, and portfolios are not included.
 
 ## Demo and implementation considerations
 

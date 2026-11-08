@@ -9,6 +9,7 @@ export default function InterviewPanel({
   transcript,
   code,
   onError,
+  active = true,
 }) {
   const [history, setHistory] = useState([])
   const [currentAnswer, setCurrentAnswer] = useState('')
@@ -22,6 +23,10 @@ export default function InterviewPanel({
   const sessionBaseRef = useRef('')
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
+
+  useEffect(() => {
+    if (!active) recognitionRef.current?.stop()
+  }, [active])
 
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -71,7 +76,7 @@ export default function InterviewPanel({
     return () => {
       recognition.abort()
     }
-  }, [])
+  }, [onError])
 
   const startRecording = () => {
     onError(null)
@@ -176,7 +181,7 @@ export default function InterviewPanel({
     <div className="interview-pane">
       {history.length === 0 ? (
         <div className="interview-start">
-          <h3>Interview Follow-up Mode</h3>
+          <h3>Practice the follow-up questions.</h3>
           <p>
             The AI interviewer will ask up to {MAX_FOLLOWUPS} follow-up questions
             based on your explanation — just like a real interview.
@@ -186,11 +191,11 @@ export default function InterviewPanel({
             onClick={startInterview}
             disabled={isLoading || !transcript.trim()}
           >
-            {isLoading ? 'Starting…' : 'Start Follow-up Interview'}
+            {isLoading ? 'Starting…' : 'Start follow-up practice'}
           </button>
           {!transcript.trim() && (
             <p className="interview-hint">
-              Record your explanation first before starting follow-ups.
+              Add a spoken or typed explanation while coding to start.
             </p>
           )}
         </div>

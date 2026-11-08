@@ -1,19 +1,7 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, sans-serif;
-  background: #1a1a1a;
-  color: #eff1f6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
-  height: 100vh;
-}
+*, *::before, *::after { box-sizing: border-box; }
+html { color-scheme: light; }
+body { margin: 0; font-family: 'Manrope', 'Segoe UI', sans-serif; background: #F3F6F8; color: #182B3A; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; }
+button, a, select, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button:disabled { cursor: not-allowed; }
+#root { min-height: 100dvh; }

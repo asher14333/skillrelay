@@ -1,4 +1,6 @@
-# Baseline validation
+# Validation record
+
+## Original import
 
 Checked November 7, 2026 with Node.js 22.14.0 and npm 10.9.2.
 
@@ -18,5 +20,155 @@ high). Dependency remediation has not been performed as part of the source
 import. The local subprocess runner also needs isolation before public use.
 
 These checks were repeated in the Documents clone before the import commits.
-Live AI calls, browser speech recognition, and full backend integration have
+At the original import, live AI calls, browser speech recognition, and full backend integration had
 not been tested. No API key was configured during repository setup.
+
+## Learning-loop branch
+
+Checked November 7, 2026 on `codex/skillrelay-learning-loop`.
+
+- Nine backend tests passed: normalized-score comparisons, goal tie-breaks, all
+  six lesson mappings, full-score transfer practice, catalog immutability, and
+  analysis route compatibility/validation with mocked model calls.
+- Seven frontend tests passed: summary round trips, omitted private fields,
+  bounded/deduplicated history, corrupt data, storage failures, comparable
+  attempts, deletion, and persistence of the selected goal.
+- Frontend production build and lint passed. The inherited missing `onError`
+  dependency warning was fixed while updating interview recording lifecycle.
+- `git diff --check` passed.
+
+### Browser verification
+
+Used local React/Vite and Flask servers in Chrome at the default desktop size
+and a temporary 390 x 844 viewport. The viewport override was reset afterward.
+
+- Typed explanation and the real missing-API-key error were verified.
+- A known Two Sum solution ran successfully through Monaco and passed its three
+  cases against the real code runner.
+- A temporary backend fixture supplied clearly labeled feedback without a live
+  AI call. The fixture was outside the repository and is not an application mode.
+- Verified lesson content, retry preservation, old-feedback invalidation on
+  explanation edits, explicit save, duplicate-save disabling, progress display,
+  reload persistence, and stored run counts.
+- Verified that a different goal does not produce a score comparison against
+  the earlier goal. Verified individual removal, the bulk-clear confirmation,
+  and empty history after reload. All generated test attempts were removed.
+- Desktop and narrow progress/practice layouts were visually inspected.
+
+### Remaining limitations
+
+Live model quality, live speech recognition, and microphone behavior were not
+verified because no API key or microphone recording was used. Automated tests
+verify model-independent logic and mocked API integration; the browser fixture
+does not establish a successful live model call.
+
+The inherited eight dependency vulnerabilities and local subprocess execution
+constraint remain. Saved summaries are local to one browser and do not sync.
+
+## UI and UX refinement
+
+Reviewed November 7, 2026 using the installed `frontend-design` and
+`web-design-guidelines` skills. The interface now has a light study workspace,
+a dark editor, local Manrope typography, contextual actions, and clear practice
+stages. No new dependencies were added.
+
+- Production build and lint passed; the 16 existing automated tests passed.
+- The real locally bundled editor accepted a known Two Sum solution and the
+  real code runner passed its three cases through the redesigned controls.
+- The challenge dialog received focus on open, closed with Escape, and returned
+  focus to its trigger. Selecting another challenge warned about the draft;
+  Keep working preserved the current code and explanation.
+- Using the temporary labeled feedback fixture, verified lesson rendering,
+  Save practice, history, and Undo after removing the only saved attempt.
+- Practice and Progress use hash links; browser Back restored the practice view.
+- Verified the friendly missing-key message against the normal backend, with
+  the typed explanation retained after the failed request.
+- Visually inspected practice, explanation, feedback, progress, and the dialog
+  at desktop size, plus practice and progress at 390 x 844. The viewport was
+  reset and generated history was cleared.
+- Monaco and its Python support/worker now ship as local lazy-loaded assets,
+  rather than requiring a separate editor CDN. Fonts and the favicon are local.
+
+The build reports an expected chunk-size warning for Monaco's editor bundle
+(about 3.6 MB uncompressed, 927 kB gzipped). It is separate from the main app
+chunk, and no large-chunk threshold was raised to hide the warning. Future
+performance work can reduce editor features or evaluate a lighter editor.
+
+Live AI and speech verification remain deferred. The browser fixture was
+stopped and the normal backend restored after UI verification.
+
+## Concurrent coding and explanation
+
+Updated the practice flow so the editor, tests, and explanation share one
+workspace. On desktop, the transcript and microphone controls sit beside code;
+smaller screens stack them in one scrollable session. Running code and editing
+do not invoke microphone stop or clear the transcript. Feedback is requested
+after stopping speech and reviewing the explanation.
+
+- In Chrome, entered an explanation first, edited the code, and ran a known
+  Two Sum solution. The explanation stayed intact and all three cases passed.
+- Visually inspected the shared desktop layout and the stacked 390 x 844 layout,
+  including accessible microphone and feedback controls. Reset the viewport.
+- Production build, lint, and the 16 existing logic/API tests passed.
+- Microphone capture itself remains unverified; no actual recording was made.
+  This check confirms the shared UI and typed-input behavior, not a live speech
+  recognition result. Model calls remain unverified without an API key.
+
+## Reasoning replay and focused retries
+
+Checked November 7, 2026 on the learning-loop branch.
+
+- All 34 automated tests passed: 21 backend/API tests and 13 frontend data tests.
+- Replay validation rejects invalid chronology, duplicate or unknown IDs,
+  unsupported event types, oversized checkpoints, and invented evidence quotes.
+- Focused retry tests cover exact-quote requirements, missing criteria, invalid
+  inputs, empty original explanations, and comparisons that decline rather than
+  improve. Supported counts are computed from validated checks.
+- Frontend tests cover bounded checkpoint retention, stable IDs, event ordering,
+  checkpoint payloads, and updating a saved attempt with a summary that omits
+  raw before/after text, quotes, code, and checkpoint data.
+- Production build and lint passed; the known Monaco chunk warning remains.
+
+### Browser evidence
+
+Used Chrome with a temporary, clearly labeled model fixture outside the repo.
+The code runner remained real. Typed an initial plan, edited and ran Two Sum,
+then analyzed six actual captured checkpoints. Pending edit checkpoints appeared
+before the run and test-result checkpoints. All three code cases passed.
+
+Verified that selecting the starting point showed starter code and no captured
+explanation, while selecting the later review showed the entered solution and
+explanation. Opened a memory-focused retry from its linked gap, entered a new
+answer, and inspected before/after criterion quotes. The fixture showed 1/3
+before and 3/3 after; this was UI test data, not a live learner result.
+
+Saved the baseline first, then updated it after the retry. Progress still showed
+one attempt, and the focused retry summary survived reload. Inspected replay at
+390 x 844 and reset the viewport. Removed the generated test attempt and restored
+the normal backend afterward.
+
+Live model quality, microphone capture, and actual learner outcomes remain
+unverified. The app does not store or replay raw audio, and checkpoint timing is
+arrival-based rather than exact alignment of words with keystrokes.
+
+## Gemini and OpenAI provider support
+
+Checked November 7, 2026. All 51 automated tests passed: 38 backend/API tests
+and 13 frontend data tests. Production build and lint passed; the existing
+Monaco chunk-size warning remains.
+
+New provider tests verify Gemini header authentication, separate system/user
+content, JSON response mode, custom model selection, and exclusion of thought
+parts. All four AI routes were exercised through the real provider adapter
+with mocked Gemini HTTP responses. Existing OpenAI request behavior, explicit
+provider selection, and OpenAI-only configuration compatibility were checked.
+
+Missing credentials, invalid configuration, authentication failures, quota
+limits, network timeouts, and missing/truncated/blocked/malformed model output
+are covered. Errors returned to the frontend omit upstream exception details.
+No automatic cross-provider fallback occurs after an error.
+
+These checks mock external model services. No live Gemini or OpenAI request was
+made, and they do not establish model quality or account/model access. Add a
+valid key to `backend/.env`, restart the backend, and verify live feedback before
+the demo. No new dependencies were required for this integration.

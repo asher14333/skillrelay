@@ -21,11 +21,11 @@ export default function RubricFeedback({ feedback }) {
       <div
         className={`verdict ${feedback.passed ? 'verdict-pass' : 'verdict-fail'}`}
       >
-        {feedback.passed ? '✓ You passed!' : 'Keep practicing'}
+        {feedback.passed ? 'A strong practice attempt' : 'Keep building your explanation'}
       </div>
 
       <div className="score-row">
-        <span className="score-label">Communication Score</span>
+        <span className="score-label">AI practice score</span>
         <span className="score-value">{feedback.score}/10</span>
       </div>
 
