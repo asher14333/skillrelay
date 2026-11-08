@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from problems import get_problem
+from adaptive import dynamic_variant, resolve_dynamic_problem
 
 CURVEBALLS = json.loads((Path(__file__).resolve().parents[1] / "shared" / "curveballs.json").read_text())
 CHECKS = (
@@ -25,6 +26,13 @@ def get_problem_variant(slug, curveball_id=None):
         return problem
     if not isinstance(curveball_id, str):
         raise ValueError("Choose a supported interview curveball.")
+    if curveball_id.startswith('ai-'):
+        generated = dynamic_variant(curveball_id)
+        if generated is None:
+            raise ValueError('This AI curveball expired or the backend restarted. Start a new live interview.')
+        if generated['problemId'] != slug:
+            raise ValueError('This curveball is not available for the selected problem.')
+        return resolve_dynamic_problem(problem, generated)
     curveball = next((item for item in CURVEBALLS if item["id"] == curveball_id), None)
     if not curveball or curveball["problemId"] != slug:
         raise ValueError("This curveball is not available for the selected problem.")

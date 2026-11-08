@@ -10,6 +10,19 @@ RUN_TIMEOUT_SECONDS = 5
 RESULT_MARKER = "__SKILLRELAY_RESULTS__="
 
 VALIDATORS = {
+    "adaptive": """
+def validate(result, expected, case):
+    allowed = case.get('_validOutputs', [expected])
+    def same(actual, wanted):
+        if type(actual) is not type(wanted):
+            return False
+        if isinstance(wanted, list):
+            return len(actual) == len(wanted) and all(same(a, b) for a, b in zip(actual, wanted))
+        return actual == wanted
+    if not any(same(result, candidate) for candidate in allowed):
+        return False, f"Expected {expected!r} under the changed requirement, got {result!r}"
+    return True, None
+""",
     "equals": """
 def validate(result, expected, case):
     if result != expected:

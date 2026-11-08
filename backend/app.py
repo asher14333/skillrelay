@@ -6,6 +6,7 @@ from flask_cors import CORS
 from ai_provider import AIProviderError, call_model
 
 from curveballs import normalize_review, review_prompt
+from adaptive import checkpoint_prompt, normalize_checkpoint
 from learning import DEFAULT_GOAL, LEARNING_GOALS, build_learning_plan
 from prompts import (
     build_analyze_prompt,
@@ -133,6 +134,37 @@ def focused_retry():
         return jsonify({"error": str(exc)}), 502
     except Exception:
         return jsonify({"error": "Could not compare the practice answers. Try again."}), 502
+
+
+@app.route("/interview/checkpoint", methods=["POST"])
+def interview_checkpoint():
+    data = request_object()
+    problem, transcript, code = practice_context(data)
+    allow_curveball = data.get("allowCurveball", True)
+    if type(allow_curveball) is not bool:
+        raise RequestValidationError("allowCurveball must be true or false.")
+    if "curveballId" in problem:
+        allow_curveball = False
+    history = data.get("history", [])
+    if not isinstance(history, list) or len(history) > 5:
+        raise RequestValidationError("Live interview history must contain at most five turns.")
+    turns = []
+    for turn in history:
+        if not isinstance(turn, dict) or turn.get("kind") not in ("question", "continue", "curveball"):
+            raise RequestValidationError("Live interview history contains an invalid turn.")
+        turns.append({"kind": turn["kind"], "text": text_field(turn, "text", required=True, limit=1200)})
+    try:
+        raw = call_model(
+            "You are a careful live coding interviewer. Decide timing from evidence and return structured JSON only.",
+            checkpoint_prompt(problem, code, transcript, turns, allow_curveball),
+        )
+        return jsonify(normalize_checkpoint(raw, problem, allow_curveball))
+    except AIProviderError:
+        raise
+    except ValueError as exc:
+        return jsonify({"error": str(exc), "code": "AI_INVALID_RESPONSE"}), 502
+    except Exception:
+        return jsonify({"error": "Could not check this interview moment. Your code and explanation are still here; try again."}), 502
 
 
 @app.route("/interview/start", methods=["POST"])
