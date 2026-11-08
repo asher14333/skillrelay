@@ -1,4 +1,4 @@
-// Run with: npx playwright cli -s=skillrelay-ui run-code --filename=tests/practice-ui.js
+// Run with: npx playwright cli -s=notleetyet-ui run-code --filename=tests/practice-ui.js
 // The browser must already be open on the local app in a fresh session.
 // AI responses below are labeled fixtures; browser persistence remains real.
 // eslint-disable-next-line no-unused-expressions -- The CLI evaluates this file as a function expression.

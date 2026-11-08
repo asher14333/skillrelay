@@ -7,7 +7,7 @@ from pathlib import Path
 from curveballs import get_problem_variant
 
 RUN_TIMEOUT_SECONDS = 5
-RESULT_MARKER = "__SKILLRELAY_RESULTS__="
+RESULT_MARKER = "__NOTLEETYET_RESULTS__="
 
 VALIDATORS = {
     "adaptive": """

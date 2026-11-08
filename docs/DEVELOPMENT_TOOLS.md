@@ -45,9 +45,9 @@ Start the backend and frontend following the README. From `frontend`, open a
 fresh, isolated browser session, run the checked-in function, then close it:
 
 ```sh
-npx playwright cli -s=skillrelay-ui open http://127.0.0.1:5173/ --browser=chrome
-npx playwright cli -s=skillrelay-ui run-code --filename=tests/practice-ui.js
-npx playwright cli -s=skillrelay-ui close
+npx playwright cli -s=notleetyet-ui open http://127.0.0.1:5173/ --browser=chrome
+npx playwright cli -s=notleetyet-ui run-code --filename=tests/practice-ui.js
+npx playwright cli -s=notleetyet-ui close
 ```
 
 Close an existing session with the same name before rerunning the test. The

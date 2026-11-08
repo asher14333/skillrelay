@@ -1,4 +1,5 @@
-export const DISPLAY_STORAGE_KEY = 'skillrelay.display.v1'
+export const DISPLAY_STORAGE_KEY = 'notleetyet.display.v1'
+export const LEGACY_DISPLAY_STORAGE_KEY = 'skillrelay.display.v1'
 export const DEFAULT_DISPLAY = { textSize: 'default', layout: 'columns', motion: 'system', shortcuts: 'on' }
 
 export function normalizeDisplay(value) {
@@ -12,7 +13,14 @@ export function normalizeDisplay(value) {
 
 export function loadDisplay() {
   try {
-    return { preferences: normalizeDisplay(JSON.parse(window.localStorage.getItem(DISPLAY_STORAGE_KEY))), warning: '' }
+    let raw = window.localStorage.getItem(DISPLAY_STORAGE_KEY)
+    if (raw === null) {
+      raw = window.localStorage.getItem(LEGACY_DISPLAY_STORAGE_KEY)
+      if (raw !== null) {
+        try { window.localStorage.setItem(DISPLAY_STORAGE_KEY, raw); window.localStorage.removeItem(LEGACY_DISPLAY_STORAGE_KEY) } catch { /* keep reading the legacy copy */ }
+      }
+    }
+    return { preferences: normalizeDisplay(JSON.parse(raw)), warning: '' }
   } catch {
     return { preferences: { ...DEFAULT_DISPLAY }, warning: 'Display settings could not be loaded. You can still change them for this visit.' }
   }

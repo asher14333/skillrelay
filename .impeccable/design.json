@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-11-08T03:33:31.672359+00:00",
-  "title": "Design System: SkillRelay",
+  "title": "Design System: NotLeetYet",
   "extensions": {
     "colorMeta": {
       "canvas": {
@@ -441,7 +441,7 @@
   ],
   "narrative": {
     "northStar": "Focused engineering tool",
-    "overview": "SkillRelay is a deliberate practice workspace for coding, explaining technical choices, and reviewing session feedback. The user-approved system uses neutral charcoal throughout, restrained warm amber, and compact controls. It keeps the problem, code, and explanation adjacent on desktop, with the largest flexible area reserved for code. A compact session toolbar leads directly into the work.\n\nThis document merges the existing workspace and interaction constraints with the implemented dark system. The visual source of truth is `frontend/src/index.css`, `App.css`, `Learning.css`, the Monaco theme in `components/CodeEditor.jsx`, and shared behavior in `lib/motion.js`, `components/TabIndicator.jsx`, and `components/Disclosure.jsx`. Interface copy must continue to describe real capabilities and saved data accurately; styling does not establish learner outcomes or microphone capture quality.",
+    "overview": "NotLeetYet is a deliberate practice workspace for coding, explaining technical choices, and reviewing session feedback. The user-approved system uses neutral charcoal throughout, restrained warm amber, and compact controls. It keeps the problem, code, and explanation adjacent on desktop, with the largest flexible area reserved for code. A compact session toolbar leads directly into the work.\n\nThis document merges the existing workspace and interaction constraints with the implemented dark system. The visual source of truth is `frontend/src/index.css`, `App.css`, `Learning.css`, the Monaco theme in `components/CodeEditor.jsx`, and shared behavior in `lib/motion.js`, `components/TabIndicator.jsx`, and `components/Disclosure.jsx`. Interface copy must continue to describe real capabilities and saved data accurately; styling does not establish learner outcomes or microphone capture quality.",
     "keyCharacteristics": [
       "Neutral dark surfaces separated by tone and thin borders.",
       "Warm amber for the primary action, selection, and keyboard focus.",

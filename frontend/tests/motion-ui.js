@@ -1,4 +1,4 @@
-// Run with: npx playwright cli -s=skillrelay-ui run-code --filename=tests/motion-ui.js
+// Run with: npx playwright cli -s=notleetyet-ui run-code --filename=tests/motion-ui.js
 // Open the local app first. This function creates and closes its own isolated
 // context; all AI replies are labeled fixtures, with no runner or microphone use.
 // eslint-disable-next-line no-unused-expressions -- The CLI evaluates a function expression.

@@ -1,4 +1,4 @@
-# SkillRelay: hackathon scope and roadmap
+# NotLeetYet: hackathon scope and roadmap
 
 ## Prompt and audience
 

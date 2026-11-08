@@ -1,5 +1,5 @@
 // Run in a fresh isolated local-app browser session with:
-// npx playwright cli -s=skillrelay-ui run-code --filename=tests/reliability-ui.js
+// npx playwright cli -s=notleetyet-ui run-code --filename=tests/reliability-ui.js
 // All AI/runner responses are labeled fixtures. SpeechRecognition below is a
 // simulated browser API: this test never requests microphone access or records.
 // eslint-disable-next-line no-unused-expressions -- The CLI evaluates this file as a function expression.
@@ -19,7 +19,7 @@ async page => {
   await page.addInitScript(() => {
     class SimulatedRecognition {
       start() {
-        window.__skillrelaySimulatedSpeech = this
+        window.__notleetyetSimulatedSpeech = this
         queueMicrotask(() => this.onstart?.())
       }
       // The test deliberately controls when the final result/end arrive.
@@ -160,13 +160,13 @@ async page => {
   await page.getByRole('button', { name: 'Stop recording', exact: true }).waitFor()
   await page.evaluate(() => {
     const result = Object.assign([{ transcript: 'An interim answer' }], { isFinal: false })
-    window.__skillrelaySimulatedSpeech.onresult({ results: [result] })
+    window.__notleetyetSimulatedSpeech.onresult({ results: [result] })
   })
   await page.getByRole('button', { name: 'Stop recording', exact: true }).click()
   assert(await page.getByRole('button', { name: 'Submit answer', exact: true }).isDisabled(), 'Submit enabled before speech finalization')
   await page.getByRole('button', { name: 'Finishing transcript…', exact: true }).waitFor()
   await page.evaluate(() => {
-    const recognition = window.__skillrelaySimulatedSpeech
+    const recognition = window.__notleetyetSimulatedSpeech
     const result = Object.assign([{ transcript: 'The final answer includes O(n) extra space.' }], { isFinal: true })
     recognition.onresult({ results: [result] })
     recognition.onend()

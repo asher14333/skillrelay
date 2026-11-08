@@ -2,7 +2,9 @@ import { DEFAULT_GOAL, getLearningGoal } from './learning.js'
 import { problems } from './problems.js'
 import { findCurveball } from './curveballs.js'
 
-export const STORAGE_KEY = 'skillrelay.practice.v1'
+export const STORAGE_KEY = 'notleetyet.practice.v1'
+// Saves from before the rename are read once from this key and moved over.
+export const LEGACY_STORAGE_KEY = 'skillrelay.practice.v1'
 export const MAX_ATTEMPTS = 100
 const RUBRIC_MAX = {
   problemUnderstanding: 2, bruteForce: 2, optimization: 2,
@@ -70,8 +72,13 @@ function cleanHistory(values) {
 export function loadPractice(storage) {
   const empty = { goal: DEFAULT_GOAL, attempts: [], warning: '' }
   try {
-    const raw = (storage ?? globalThis.localStorage).getItem(STORAGE_KEY)
-    if (!raw) return empty
+    const store = storage ?? globalThis.localStorage
+    let raw = store.getItem(STORAGE_KEY)
+    if (!raw) {
+      raw = store.getItem(LEGACY_STORAGE_KEY)
+      if (!raw) return empty
+      try { store.setItem(STORAGE_KEY, raw); store.removeItem(LEGACY_STORAGE_KEY) } catch { /* keep reading the legacy copy */ }
+    }
     const value = JSON.parse(raw)
     if (value?.version !== 1 || !Array.isArray(value.attempts)) throw new Error('Invalid saved practice')
     const attempts = cleanHistory(value.attempts)

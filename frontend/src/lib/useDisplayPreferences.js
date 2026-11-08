@@ -25,7 +25,7 @@ export default function useDisplayPreferences() {
 
   useLayoutEffect(() => {
     document.documentElement.dataset.motion = preferences.motion
-    window.dispatchEvent(new Event('skillrelay:motionchange'))
+    window.dispatchEvent(new Event('notleetyet:motionchange'))
   }, [preferences.motion])
 
   function changePreference(key, value) {

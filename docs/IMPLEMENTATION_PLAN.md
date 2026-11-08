@@ -1,4 +1,6 @@
-# SkillRelay learning loop: implementation plan
+# NotLeetYet learning loop: implementation plan
+
+_The project was called SkillRelay when this plan was written._
 
 Branch: `codex/skillrelay-learning-loop`
 

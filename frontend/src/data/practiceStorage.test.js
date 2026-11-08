@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { addAttempt, cleanAttempt, compareLatest, loadPractice, MAX_ATTEMPTS, STORAGE_KEY, writePractice } from './practiceStorage.js'
+import { addAttempt, cleanAttempt, compareLatest, LEGACY_STORAGE_KEY, loadPractice, MAX_ATTEMPTS, STORAGE_KEY, writePractice } from './practiceStorage.js'
 
 function attempt(id = 'a', score = 0, overrides = {}) {
   return {
@@ -16,7 +16,7 @@ function attempt(id = 'a', score = 0, overrides = {}) {
 
 function memoryStorage() {
   const values = new Map()
-  return { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) }
+  return { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) }
 }
 
 test('round trip retains summaries and strips code, transcripts, and unknown fields', () => {
@@ -138,4 +138,14 @@ test('generated requirement labels persist without private generated definitions
   assert.equal('definition' in saved, false)
   assert.equal(compareLatest([generated, attempt('ordinary', 5)]), null)
   assert.equal(cleanAttempt({ ...generated, curveballTitle: 'x'.repeat(161) }), null)
+})
+
+test('moves practice saved under the old SkillRelay key to the new key', () => {
+  const storage = memoryStorage()
+  storage.setItem(LEGACY_STORAGE_KEY, JSON.stringify({ version: 1, goal: 'clear-explanations', attempts: [attempt('legacy', 5)] }))
+  const loaded = loadPractice(storage)
+  assert.deepEqual(loaded.attempts.map(item => item.id), ['legacy'])
+  assert.equal(storage.getItem(LEGACY_STORAGE_KEY), null)
+  assert.ok(storage.getItem(STORAGE_KEY))
+  assert.equal(loadPractice(storage).attempts.length, 1)
 })

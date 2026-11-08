@@ -12,7 +12,7 @@ async page => {
   const checks = []
   const errors = []
   ui.on('pageerror', error => errors.push(error.message))
-  const storageKey = 'skillrelay.display.v1'
+  const storageKey = 'notleetyet.display.v1'
   const frame = () => ui.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
   const trigger = ui.getByRole('button', { name: 'Display settings', exact: true })
   const panel = ui.getByRole('dialog', { name: 'Display settings', exact: true })

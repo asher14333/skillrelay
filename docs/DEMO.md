@@ -1,4 +1,4 @@
-# SkillRelay demo walkthrough
+# NotLeetYet demo walkthrough
 
 ## Before the demo
 
@@ -15,7 +15,7 @@ if demonstrating speech; typed explanations are a complete alternative.
 ### 0:00-0:25: introduce the learner
 
 "A developer can know how to solve a problem and still struggle to explain the
-reasoning in an interview. SkillRelay turns one practice explanation into a
+reasoning in an interview. NotLeetYet turns one practice explanation into a
 specific next lesson and a record of practice."
 
 Select **Explain clearly**. Point out that goals prioritize tied learning gaps,

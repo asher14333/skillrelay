@@ -1,8 +1,10 @@
-# SkillRelay
+# NotLeetYet
 
-**Practice coding. Explain your thinking. Know what to work on next.**
+**Not leet yet? Talk through it until you are.**
 
-SkillRelay helps early-career developers practice explaining technical work and
+Practice coding. Explain your thinking. Know what to work on next.
+
+NotLeetYet helps early-career developers practice explaining technical work and
 turn interview feedback into a concrete next learning step. Based on SpeakCode,
 it targets Code the Change YYC **Prompt 2**, particularly communication,
 career readiness, and AI-assisted skilling.

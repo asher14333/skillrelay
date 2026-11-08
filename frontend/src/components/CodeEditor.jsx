@@ -12,8 +12,8 @@ export default function CodeEditor({ value, onChange, fontSize = 14, reducedMoti
       height="100%"
       loading={<div className="editor-loading" role="status">Opening your editor…</div>}
       language="python"
-      theme="skillrelay-night"
-      beforeMount={(monaco) => monaco.editor.defineTheme('skillrelay-night', {
+      theme="notleetyet-night"
+      beforeMount={(monaco) => monaco.editor.defineTheme('notleetyet-night', {
         base: 'vs-dark',
         inherit: true,
         rules: [

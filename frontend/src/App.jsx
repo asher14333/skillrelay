@@ -728,8 +728,8 @@ function App() {
     <div className="app">
       <a className="skip-link" href="#main-content">Skip to workspace</a>
       <header className="topbar">
-        <a href="#practice" className="brand" aria-label="SkillRelay practice" translate="no">
-          <BrandMark /><span>SkillRelay</span>
+        <a href="#practice" className="brand" aria-label="NotLeetYet practice" translate="no">
+          <BrandMark /><span>NotLeetYet</span>
         </a>
         <nav className="learning-nav" aria-label="Main navigation">
           <a href="#practice" aria-current={view === 'practice' ? 'page' : undefined}><Icon name="code" />Practice</a>

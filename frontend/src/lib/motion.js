@@ -10,10 +10,10 @@ export function prefersReducedMotion() {
 function onMotionChange(listener) {
   const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
   preference.addEventListener('change', listener)
-  window.addEventListener('skillrelay:motionchange', listener)
+  window.addEventListener('notleetyet:motionchange', listener)
   return () => {
     preference.removeEventListener('change', listener)
-    window.removeEventListener('skillrelay:motionchange', listener)
+    window.removeEventListener('notleetyet:motionchange', listener)
   }
 }
 

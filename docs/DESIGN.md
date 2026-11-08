@@ -1,5 +1,5 @@
 ---
-name: SkillRelay
+name: NotLeetYet
 description: A focused charcoal workspace for coding and explaining technical choices.
 colors:
   canvas: "#141414"
@@ -121,13 +121,13 @@ components:
     padding: "5px 9px"
 ---
 
-# Design System: SkillRelay
+# Design System: NotLeetYet
 
 ## Overview
 
 **Creative North Star: "Focused engineering tool"**
 
-SkillRelay is a deliberate practice workspace for coding, explaining technical
+NotLeetYet is a deliberate practice workspace for coding, explaining technical
 choices, and reviewing session feedback. The user-approved system uses neutral
 charcoal throughout, restrained warm amber, and compact controls. It keeps the
 problem, code, and explanation adjacent on desktop, with the largest flexible
