@@ -172,3 +172,42 @@ These checks mock external model services. No live Gemini or OpenAI request was
 made, and they do not establish model quality or account/model access. Add a
 valid key to `backend/.env`, restart the backend, and verify live feedback before
 the demo. No new dependencies were required for this integration.
+
+### Subsequent live validation
+
+After the user configured the backend environment, all four AI endpoints
+returned successful live Gemini responses through the frontend proxy. The
+Python runner passed all three Two Sum cases. A Chrome learner session captured
+seven checkpoints, received evidence-linked feedback about an omitted memory
+analysis, and completed a scripted focused retry from 0/3 to 3/3 supported
+criteria. Interview questions and answer evaluation also worked. The saved
+retry summary survived reload without duplicating the attempt. These are
+functional checks with scripted explanations, not learner-outcome evidence.
+
+## Codex design skills and UI polish
+
+Installed Impeccable 4.8.0, Taste 2.5.1, and Playwright CLI skills for Codex.
+Added `@playwright/cli` 0.1.23 as a frontend development dependency. The skills
+remain outside the app repository; see [tooling](DEVELOPMENT_TOOLS.md).
+
+All 51 existing automated tests pass (38 backend and 13 frontend data tests).
+Build and lint pass, with the existing Monaco bundle-size warning. The
+additional checked-in Playwright CLI function passes in an isolated Chrome
+session with explicitly labeled AI response fixtures. It verifies:
+
+- Score and recommended lesson precede replay, and the next action fits in the
+  desktop viewport. Lesson reading opens and closes with native disclosure.
+- Feedback and retry headings receive focus. The follow-up answer has a visible
+  label and receives focus, and the conversation has an accessible live log.
+- Changing the learning goal during a focused retry returns to the coding view
+  while preserving the working explanation, fixing the blank-workspace bug.
+- The retry summary updates one saved attempt and survives reload.
+- The practice layout has no page-wide horizontal overflow at 1440, 1024, 768,
+  and 390 pixels. Separate feedback checks also passed at 320 pixels.
+
+Inspected desktop and mobile screenshots. The mobile lesson disclosure has a
+44-pixel minimum height and works with Enter. The Impeccable source scan found
+three existing quote-border warnings, retained as semantic quotation markers;
+it reported no errors. Marketing-page layout gates were not applied to this
+task-oriented app. This pass does not add raw-draft recovery or verify voice
+capture, model quality, or actual learner outcomes.

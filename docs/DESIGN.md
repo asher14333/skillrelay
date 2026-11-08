@@ -76,6 +76,32 @@ action. The memorable element is the split study workspace, not decoration.
 The interface guidelines are applied to this app's relevant surfaces; they do
 not authorize unrelated account, hosting, or publication changes.
 
+## Codex skill polish
+
+The follow-up pass applies Impeccable's Operate guidance and Taste's applicable
+clarity, consistency, and accessibility guidance to this existing application.
+It preserves the Manrope/teal study workspace rather than introducing a
+marketing-page hero or decorative effects.
+
+The feedback view now leads with the practice score and next lesson. Lesson
+steps use native disclosure, keeping the practice action visible before replay
+and detailed rubric evidence. Entering feedback or a focused retry moves focus
+to its heading. The follow-up form has a visible answer label, an accessible
+conversation log, and answer focus after the interviewer responds.
+
+Changing the learning goal during a retry returns to Code & explain while
+preserving the working explanation and code. It clears feedback for the old
+goal, so the learner requests feedback for the new focus.
+
+The Impeccable source detector reported three existing side-border warnings:
+rubric quotes in `App.css`, saved-history quotes, and retry quotes in
+`Learning.css`. They remain intentional quotation markers rather than
+decorative card accents. The modified lesson callout no longer uses one.
+
+See [development tooling](DEVELOPMENT_TOOLS.md) for skill locations and the
+repeatable Playwright CLI check. Raw drafts and replay remain session-only;
+this pass does not add draft recovery or establish learner outcomes.
+
 ## Delivered review
 
 The initial pass was visually checked in Chrome on desktop and at 390 px width.

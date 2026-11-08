@@ -120,15 +120,27 @@
 .feedback-save { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 25px 26px 0; }
 .feedback-save h2 { margin: 0 0 5px; font-size: 20px; font-weight: 750; letter-spacing: -0.6px; }
 .feedback-save p { color: var(--muted); margin: 0; font-size: 11px; }
+.feedback-overview { display: flex; align-items: center; gap: 24px; margin: 20px 26px 0; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.feedback-overview > div { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.feedback-overview span { color: var(--body); font-size: 12px; }
+.feedback-overview strong { font-size: 30px; font-weight: 750; color: var(--teal); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.feedback-overview strong small { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+.feedback-overview p { color: var(--ink); font-size: 12px; line-height: 1.6; margin: 0; }
+.feedback-overview p small { display: block; color: var(--body); font-size: 11px; }
 .learning-card { margin: 22px 26px 14px; padding: 22px; border: 1px solid #d1e4dd; border-radius: 10px; background: #f1f8f5; }
-.lesson-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #437568; font-size: 10px; font-weight: 650; }
-.lesson-meta > span { display: inline-flex; align-items: center; gap: 6px; }
-.learning-card h2 { margin: 14px 0 10px; font-size: 21px; line-height: 1.4; letter-spacing: -0.6px; font-weight: 750; color: #1d433b; text-wrap: balance; }
+.lesson-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.lesson-heading > span { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; color: #3f6055; font-size: 11px; padding-top: 5px; }
+.lesson-reading { margin: 15px 0; }
+.lesson-reading > summary { width: fit-content; color: var(--teal); font-size: 12px; font-weight: 700; padding: 8px 0; cursor: pointer; }
+.lesson-reading > summary:hover { color: var(--teal-hover); text-decoration: underline; text-underline-offset: 4px; }
+.interview-answer-label { display: block; color: var(--ink); font-size: 12px; font-weight: 650; margin-bottom: 8px; }
+.feedback-save h2:focus-visible, .focused-retry h2:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; border-radius: 2px; }
+.learning-card h2 { margin: 0 0 10px; font-size: 21px; line-height: 1.4; letter-spacing: -0.6px; font-weight: 750; color: #1d433b; text-wrap: balance; }
 .learning-reason { color: #5b756c; font-size: 11px; line-height: 1.8; max-width: 72ch; }
 .learning-card ol { padding-left: 20px; color: #3f6055; font-size: 12px; line-height: 1.8; margin: 20px 0; }
 .learning-card li { padding-left: 6px; margin-bottom: 10px; }
 .learning-card li::marker { font-weight: 750; color: #227162; }
-.lesson-prompt { border-left: 3px solid #6aab95; padding: 10px 14px; background: #e5f0eb; }
+.lesson-prompt { padding: 10px 14px; background: #e5f0eb; }
 .lesson-prompt strong { font-size: 10px; color: #367160; }
 .lesson-prompt p { font-size: 12px; line-height: 1.8; color: #365d50; margin: 5px 0 0; }
 .lesson-self-check { color: #5b756c; font-size: 11px; line-height: 1.7; margin: 15px 0 20px; }
@@ -308,9 +320,13 @@ svg { flex-shrink: 0; }
   .feedback-save { padding: 21px 18px 0; align-items: flex-start; }
   .feedback-save h2 { font-size: 18px; max-width: 180px; }
   .feedback-save p { font-size: 10px; }
+  .feedback-overview { margin: 18px 18px 0; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .feedback-overview p small { font-size: 12px; }
   .feedback-save .learning-secondary { padding: 7px 9px; font-size: 10px; min-height: 34px; }
   .learning-card { margin: 20px 16px 14px; padding: 17px; }
   .learning-card h2 { font-size: 20px; }
+  .lesson-heading { gap: 10px; }
+  .lesson-reading > summary { min-height: 44px; padding: 12px 0; }
   .learning-card ol, .lesson-prompt p { font-size: 12px; }
   .learning-reason { font-size: 11px; }
   .feedback-storage { margin: 0 18px; font-size: 10px; align-items: flex-start; }

@@ -117,6 +117,9 @@ npm --prefix frontend run lint
 The tests mock AI calls. See [validation](docs/VALIDATION.md) for checks and
 limitations, including the inherited dependency audit findings.
 
+See [development tooling](docs/DEVELOPMENT_TOOLS.md) for the Codex design skills,
+Playwright CLI setup, and the browser regression check.
+
 ## Source and event context
 
 The backend and frontend import commits preserve the supplied source. See

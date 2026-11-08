@@ -49,6 +49,7 @@ function App() {
   const [checkpoints, setCheckpoints] = useState([])
   const [retryTask, setRetryTask] = useState(null)
   const pickerRef = useRef(null)
+  const feedbackHeadingRef = useRef(null)
 
   const recognitionRef = useRef(null)
   const sessionBaseRef = useRef('')
@@ -103,8 +104,12 @@ function App() {
     setAnalysisSnapshot(null)
     setRetryTask(null)
     setNotice('')
-    setActiveTab((tab) => tab === 'feedback' ? 'code' : tab)
+    setActiveTab((tab) => ['feedback', 'retry'].includes(tab) ? 'code' : tab)
   }, [])
+
+  useEffect(() => {
+    if (view === 'practice' && activeTab === 'feedback') feedbackHeadingRef.current?.focus()
+  }, [activeTab, view])
 
   const changeTranscript = useCallback((value, shouldCapture = true) => {
     if (currentTranscriptRef.current === value) return
@@ -576,16 +581,20 @@ function App() {
 
               <div className={`feedback-pane ${activeTab !== 'feedback' || !feedback ? 'pane-hidden' : ''}`}>
                 {feedback && <>
-                  <div className="feedback-save"><div><h2>Your session, in focus.</h2><p>{getLearningGoal(analysisSnapshot?.goal || learningGoal).title}</p></div>
+                  <div className="feedback-save"><div><h2 ref={feedbackHeadingRef} tabIndex={-1}>Your practice feedback</h2><p>{getLearningGoal(analysisSnapshot?.goal || learningGoal).title}</p></div>
                     <button className="learning-secondary" onClick={saveAttempt} disabled={!analysisSnapshot || isCurrentSaved}>
                       <Icon name={isCurrentSaved ? 'check' : 'save'} size={16} />
                       {isCurrentSaved ? 'Practice saved' : savedAttempt ? 'Update saved practice' : 'Save practice'}
                     </button>
                   </div>
-                  <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} />
+                  <div className="feedback-overview">
+                    <div><span>AI practice score</span><strong>{feedback.score}<small>/10</small></strong></div>
+                    <p>{feedback.passed ? 'A strong practice attempt' : 'Keep building your explanation'}<small>Use this feedback to choose what to practice next.</small></p>
+                  </div>
                   {analysisSnapshot?.retrySummary && <div className="retry-completed"><Icon name="check" /><span>Focused retry: {analysisSnapshot.retrySummary.beforeMet}/{analysisSnapshot.retrySummary.total} → {analysisSnapshot.retrySummary.afterMet}/{analysisSnapshot.retrySummary.total} criteria supported. {isCurrentSaved ? 'Summary saved with this practice.' : 'Save practice to keep this summary.'}</span></div>}
                   <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} />
                   <p className="feedback-storage"><Icon name="shield" size={15} />Saved summaries stay on this device. Code and explanations aren’t included.</p>
+                  <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} />
                 </>}
                 <RubricFeedback feedback={feedback} />
               </div>

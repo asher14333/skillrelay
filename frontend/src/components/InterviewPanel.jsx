@@ -23,6 +23,11 @@ export default function InterviewPanel({
   const sessionBaseRef = useRef('')
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
+  const answerRef = useRef(null)
+
+  useEffect(() => {
+    if (active && history.length && !complete && !isLoading) answerRef.current?.focus()
+  }, [active, history.length, complete, isLoading])
 
   useEffect(() => {
     if (!active) recognitionRef.current?.stop()
@@ -201,7 +206,7 @@ export default function InterviewPanel({
         </div>
       ) : (
         <div className="interview-chat">
-          <div className="interview-messages" ref={messagesContainerRef}>
+          <div className="interview-messages" ref={messagesContainerRef} role="log" aria-label="Follow-up conversation" aria-live="polite">
             {history.map((msg, i) => (
               <div key={i} className={`interview-msg interview-msg-${msg.role}`}>
                 {msg.role === 'interviewer' && (
@@ -276,11 +281,17 @@ export default function InterviewPanel({
                 </p>
               )}
 
+              <label htmlFor="followup-answer" className="interview-answer-label">Your follow-up answer</label>
               <textarea
+                ref={answerRef}
+                id="followup-answer"
+                name="followupAnswer"
+                autoComplete="off"
                 className="interview-answer"
                 value={currentAnswer}
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 readOnly={isRecording}
+                disabled={isLoading}
                 placeholder="Click Start Answer and speak, or type your response…"
                 rows={3}
               />

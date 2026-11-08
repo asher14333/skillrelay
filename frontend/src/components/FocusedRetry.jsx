@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { RUBRIC_LABELS } from '../data/problems'
 import Icon from './Icon'
@@ -10,6 +10,8 @@ export default function FocusedRetry({ task, onComplete, onBack }) {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const headingRef = useRef(null)
+  useEffect(() => { headingRef.current?.focus() }, [])
   const compare = async () => {
     if (!answer.trim()) return
     setLoading(true); setError(''); setResult(null)
@@ -23,7 +25,7 @@ export default function FocusedRetry({ task, onComplete, onBack }) {
   }
   return <section className="focused-retry" aria-labelledby="retry-title">
     <div className="retry-heading"><button className="learning-secondary" onClick={onBack}>Back to feedback</button><span>One skill. One focused retry.</span></div>
-    <h2 id="retry-title">{RUBRIC_LABELS[task.dimension]}</h2>
+    <h2 id="retry-title" ref={headingRef} tabIndex={-1}>{RUBRIC_LABELS[task.dimension]}</h2>
     <p className="retry-instruction">{task.prompt}</p>
     <ul className="retry-criteria">{task.criteria.map((criterion) => <li key={criterion.id}>{criterion.label}</li>)}</ul>
     <details className="retry-baseline"><summary>Your original explanation</summary><blockquote>{task.before || 'No explanation was captured at this checkpoint.'}</blockquote><pre><code>{task.code}</code></pre></details>
