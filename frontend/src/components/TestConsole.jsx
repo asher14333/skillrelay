@@ -25,20 +25,23 @@ export default function TestConsole({
         <div className="lc-console-tabs">
           <button
             className={`lc-console-tab ${consoleTab === 'testcase' ? 'lc-console-tab-active' : ''}`}
+            aria-pressed={consoleTab === 'testcase'}
             onClick={() => setConsoleTab('testcase')}
           >
-            Testcase
+            Test cases
           </button>
           <button
             className={`lc-console-tab ${consoleTab === 'result' ? 'lc-console-tab-active' : ''}`}
+            aria-pressed={consoleTab === 'result'}
             onClick={() => setConsoleTab('result')}
           >
-            Test Result
+            Test results
           </button>
         </div>
       </div>
 
       <div className="lc-console-body">
+        {problem.curveballStartIndex !== undefined && <p className="curveball-context">Includes the original checks and new requirement cases.</p>}
         {consoleTab === 'testcase' && (
           <>
             <div className="case-pills">
@@ -46,9 +49,10 @@ export default function TestConsole({
                 <button
                   key={i}
                   className={`case-pill ${selectedCase === i ? 'case-pill-active' : ''}`}
+                  aria-pressed={selectedCase === i}
                   onClick={() => setSelectedCase(i)}
                 >
-                  Case {i + 1}
+                  {i >= (problem.curveballStartIndex ?? Infinity) ? 'New case' : 'Case'} {i + 1}
                 </button>
               ))}
             </div>
@@ -60,7 +64,7 @@ export default function TestConsole({
           <>
             {!runResults ? (
               <p className="console-empty">
-                Click <strong>Run</strong> to execute your code against the test
+                Choose <strong>Run code</strong> to execute your code against the test
                 cases.
               </p>
             ) : runResults.error && !runResults.results?.length ? (
@@ -72,9 +76,9 @@ export default function TestConsole({
               <div className="result-view">
                 <div className="result-summary">
                   <div
-                    className={`result-status ${runResults.all_passed ? 'result-accepted' : 'result-wrong'}`}
+                    role="status" className={`result-status ${runResults.all_passed ? 'result-accepted' : 'result-wrong'}`}
                   >
-                    {runResults.all_passed ? 'Accepted' : 'Wrong Answer'}
+                    {runResults.all_passed ? 'Accepted' : 'Wrong Answer'} · {runResults.passed}/{runResults.total} checks passed
                   </div>
 
                   <div className="case-pills">
@@ -82,6 +86,8 @@ export default function TestConsole({
                       <button
                         key={r.case}
                         className={`case-pill ${selectedCase === i ? 'case-pill-active' : ''} ${r.passed ? 'case-pill-pass' : 'case-pill-fail'}`}
+                        aria-pressed={selectedCase === i}
+                        aria-label={`Case ${r.case}, ${r.passed ? 'passed' : 'failed'}`}
                         onClick={() => setSelectedCase(i)}
                       >
                         <span

@@ -1,7 +1,85 @@
+@font-face {
+  font-family: 'Manrope';
+  src: url('./assets/fonts/manrope-variable.ttf') format('truetype');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-synthesis: none;
+  --canvas: #141414;
+  --surface: #1c1c1c;
+  --raised: #232323;
+  --editor: #181818;
+  --hover: #2b2b2b;
+  --ink: #ededed;
+  --body: #c5c5c5;
+  --muted: #a0a0a0;
+  --border: #343434;
+  --border-strong: #505050;
+  --accent: #eab86b;
+  --accent-hover: #f1c887;
+  --accent-soft: #30291f;
+  --accent-ink: #241b0e;
+  --success: #8ec5a3;
+  --success-soft: #202e26;
+  --danger: #ee9aab;
+  --danger-soft: #35242a;
+  --radius: 8px;
+  --control-radius: 6px;
+  --mono: 'Menlo', 'Consolas', 'Monaco', monospace;
+  --motion-fast: 120ms;
+  --motion-standard: 180ms;
+  --motion-dialog: 200ms;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 *, *::before, *::after { box-sizing: border-box; }
-html { color-scheme: light; }
-body { margin: 0; font-family: 'Manrope', 'Segoe UI', sans-serif; background: #F3F6F8; color: #182B3A; -webkit-font-smoothing: antialiased; }
+html { background: var(--canvas); }
+body {
+  margin: 0;
+  min-width: 320px;
+  color: var(--ink);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+}
 button, input, select, textarea { font: inherit; }
-button, a, select, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button, a, select, summary {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
+button, a, select, summary, textarea {
+  transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease, transform var(--motion-fast) var(--motion-ease);
+}
+button:focus-visible, a:focus-visible, select:focus-visible,
+summary:focus-visible, textarea:focus-visible, [tabindex='-1']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+textarea {
+  caret-color: var(--accent);
+  scrollbar-color: var(--border-strong) transparent;
+}
+textarea:focus-visible { outline-offset: -1px; }
+textarea::placeholder { color: var(--muted); opacity: 1; }
+::selection { color: var(--ink); background: #5d492f; }
+h1, h2, h3 { text-wrap: balance; }
+a { text-underline-offset: 3px; }
+svg { flex-shrink: 0; }
+pre, code { font-family: var(--mono); }
 #root { min-height: 100dvh; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

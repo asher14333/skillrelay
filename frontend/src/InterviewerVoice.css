@@ -1,0 +1,9 @@
+.interviewer-voice { min-width: 0; margin-bottom: 12px; }
+.interviewer-voice-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 10px; }
+.interviewer-voice-controls > button { min-height: 44px; white-space: normal; }
+.interviewer-voice-toggle[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
+.interviewer-voice-status { color: var(--muted); font-size: 0.857143rem; line-height: 1.6; }
+.interviewer-voice-error { max-width: 75ch; margin: 7px 0 0; color: var(--danger); font-size: 0.928571rem; line-height: 1.7; overflow-wrap: anywhere; }
+@media (max-width: 700px) {
+  .interviewer-voice-status { flex-basis: 100%; }
+}

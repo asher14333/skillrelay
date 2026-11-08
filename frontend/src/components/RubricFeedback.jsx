@@ -18,20 +18,9 @@ export default function RubricFeedback({ feedback }) {
 
   return (
     <div className="feedback-pane-inner">
-      <div
-        className={`verdict ${feedback.passed ? 'verdict-pass' : 'verdict-fail'}`}
-      >
-        {feedback.passed ? 'A strong practice attempt' : 'Keep building your explanation'}
-      </div>
-
-      <div className="score-row">
-        <span className="score-label">AI practice score</span>
-        <span className="score-value">{feedback.score}/10</span>
-      </div>
-
       {rubricEntries.length > 0 && (
         <div className="feedback-block">
-          <h3>Rubric Breakdown</h3>
+          <h3>Rubric breakdown</h3>
           <div className="rubric-grid">
             {rubricEntries.map(([key, item]) => (
               <div key={key} className="rubric-item">

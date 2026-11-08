@@ -1,0 +1,22 @@
+.curveball-practice { margin: 0 0 22px; padding: 15px; border: 1px solid var(--border-strong); border-radius: var(--control-radius); background: var(--raised); }
+.curveball-practice h3 { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; color: var(--ink); font-size: 1rem; font-weight: 650; line-height: 1.5; }
+.curveball-practice h3 svg { color: var(--accent); }
+.curveball-practice p { margin: 0 0 13px; color: var(--body); font-size: 0.928571rem; line-height: 1.75; overflow-wrap: anywhere; }
+.curveball-practice .curveball-requirement { color: var(--ink); }
+.curveball-requirement strong { display: block; margin-bottom: 7px; color: var(--accent); font-weight: 600; }
+.curveball-practice .curveball-note { margin: 10px 0 0; color: var(--muted); font-size: 0.857143rem; }
+.curveball-practice > button { white-space: normal; text-align: left; }
+.curveball-baseline { margin: 14px 0; }
+.curveball-baseline summary { width: fit-content; padding: 7px 0; color: var(--body); font-size: 0.928571rem; line-height: 1.6; cursor: pointer; }
+.curveball-baseline p { margin-top: 10px; }
+.curveball-baseline pre { max-height: 240px; padding: 10px; overflow: auto; border-radius: var(--control-radius); background: var(--editor); color: var(--body); font-size: 0.857143rem; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.curveball-practice blockquote { margin: 8px 0 14px; padding-left: 10px; border-left: 1px solid var(--border-strong); color: var(--body); font-size: 0.928571rem; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.curveball-review { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-strong); }
+.curveball-review h4 { margin: 0 0 12px; font-size: 1.071429rem; font-weight: 650; }
+.curveball-review ul { margin: 16px 0; padding-left: 18px; }
+.curveball-review li { margin-top: 14px; color: var(--body); font-size: 0.928571rem; line-height: 1.75; }
+.curveball-review li > strong { color: var(--ink); font-weight: 600; }
+.curveball-review li p { margin: 5px 0 0; }
+.curveball-practice .curveball-error { margin-top: 12px; color: var(--danger); }
+.curveball-context { margin: 10px 0; color: var(--accent); font-size: 0.928571rem; line-height: 1.7; }
+.curveball-history { color: var(--accent); }

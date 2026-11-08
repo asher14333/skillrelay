@@ -13,10 +13,10 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onRestor
     <section className="progress-panel" aria-labelledby="progress-title">
       <div className="progress-heading">
         <div>
-          <h1 id="progress-title">Every attempt is a step forward.</h1>
-          <p>Keep a record of what you practiced and what to work on next.</p>
+          <h1 id="progress-title">Practice history</h1>
+          <p>Review your saved feedback and choose what to practice next.</p>
         </div>
-        {latest && <button className="learning-primary" onClick={onPractice}>Continue practice <Icon name="arrow" size={16} /></button>}
+        {latest && <button className="learning-primary" onClick={onPractice}>Back to workspace</button>}
       </div>
 
       <p className="storage-note"><Icon name="shield" size={16} />Saved on this device, up to {MAX_ATTEMPTS} attempts. Code and explanations aren’t included.</p>
@@ -25,11 +25,10 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onRestor
 
       {!latest ? (
         <section className="progress-empty">
-          <div className="empty-journey" aria-hidden="true"><span><Icon name="code" size={28} /></span><i /><span><Icon name="mic" size={28} /></span><i /><span><Icon name="book" size={28} /></span></div>
-          <h2>Your first attempt belongs here.</h2>
-          <p>Choose a challenge, explain your approach, and save your feedback. Your practice history will grow with you.</p>
-          <button className="learning-primary" onClick={onPractice}>Start practicing <Icon name="arrow" size={16} /></button>
-          <div className="empty-steps"><span>Find your focus</span><span>Practice your explanation</span><span>Keep your next step</span></div>
+          <Icon name="progress" size={24} />
+          <h2>No saved practice yet</h2>
+          <p>Work through a challenge, get feedback, then choose Save practice. Your summary and next lesson will appear here.</p>
+          <button className="learning-primary" onClick={onPractice}>Start practicing</button>
         </section>
       ) : (
         <>
@@ -40,9 +39,9 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onRestor
           </div>
           <div className="practice-comparison">
             {comparison ? (
-              <p><strong>{comparison.delta > 0 ? '+' : ''}{comparison.delta} points</strong> compared with your previous saved attempt on {latest.problemTitle}, with the goal “{getLearningGoal(latest.goal).title}.”</p>
+              <p><strong>{comparison.delta > 0 ? '+' : ''}{comparison.delta} points</strong> compared with your previous saved attempt on {latest.problemTitle}, with the goal “{getLearningGoal(latest.goal).title}”{latest.curveballId ? ` and the curveball “${latest.curveballTitle}.”` : '.'}</p>
             ) : (
-              <p>Save another attempt on <strong>{latest.problemTitle}</strong> with the goal “{getLearningGoal(latest.goal).title}” to compare your practice scores.</p>
+              <p>Save another attempt on <strong>{latest.problemTitle}</strong> with the goal “{getLearningGoal(latest.goal).title}”{latest.curveballId ? ` and the curveball “${latest.curveballTitle}”` : ''} to compare your practice scores.</p>
             )}
             <span>AI practice feedback can vary. These scores are learning signals, not a credential or hiring assessment.</span>
           </div>
@@ -65,6 +64,7 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onRestor
                     <time dateTime={attempt.createdAt}>{new Date(attempt.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</time>
                     <h3>{attempt.problemTitle}</h3>
                     <p>{getLearningGoal(attempt.goal).title}</p>
+                    {attempt.curveballId && <p className="curveball-history">Curveball: {attempt.curveballTitle}</p>}
                   </div>
                   <strong className="history-score">{attempt.score}<small>/10</small></strong>
                 </div>

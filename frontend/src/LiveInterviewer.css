@@ -1,0 +1,30 @@
+.live-interviewer { margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.live-interviewer h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 1rem; font-weight: 650; }
+.live-interviewer h3 svg { color: var(--accent); }
+.live-interviewer p { margin: 0 0 12px; color: var(--body); font-size: 0.928571rem; line-height: 1.75; overflow-wrap: anywhere; }
+.live-interviewer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.live-interviewer .live-interviewer-status { margin-top: 12px; color: var(--accent); }
+.live-interviewer .live-interviewer-privacy { margin-top: 12px; font-size: 0.857143rem; color: var(--muted); }
+.live-interviewer .curveball-error { color: var(--danger); }
+.live-interviewer-messages { max-height: 280px; overflow-y: auto; scrollbar-color: var(--border-strong) transparent; }
+.live-interviewer-messages p { margin: 14px 0 0; padding-top: 13px; border-top: 1px solid var(--border); }
+.live-interviewer-messages strong { display: block; margin-bottom: 5px; color: var(--ink); font-weight: 600; }
+
+/* The conversation and composer share the explanation pane without moving code. */
+.live-explanation-chat { gap: 12px; }
+.live-explanation-chat .live-explanation-heading h2 { margin-bottom: 6px; }
+.live-explanation-chat .live-explanation-heading > p { margin-bottom: 0; }
+.live-explanation-chat .session-microphone { margin-bottom: 0; }
+.live-explanation-chat .session-status { min-height: 18px; }
+.live-explanation-chat .conversation-composer { flex: none; min-height: 108px; height: 130px; }
+.live-explanation-chat .conversation-composer .transcript-editor { min-height: 108px; }
+.live-explanation-chat .session-feedback-action { padding-top: 0; }
+.live-explanation-chat .session-feedback-action > p { margin-bottom: 8px; }
+
+.interview-input-mode { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 0; color: var(--body); font-size: 0.928571rem; }
+.interview-input-mode select { min-height: 36px; padding: 7px 26px 7px 10px; border: 1px solid var(--border-strong); border-radius: var(--control-radius); background: var(--raised); color: var(--ink); font-size: inherit; }
+@media (max-width: 700px) { .interview-input-mode select { min-height: 44px; } }
+
+@media (min-width: 701px) { .concurrent-session { grid-template-columns: minmax(0, 1fr) clamp(300px, 25vw, 360px); } }
+
+.live-explanation-chat .interview-conversation { margin: 0; }

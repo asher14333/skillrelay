@@ -1,0 +1,100 @@
+/* Preferences extend the existing charcoal controls; the popover uses the top layer. */
+:root[data-text-size='large'] { font-size: 16px; }
+:root[data-text-size='larger'] { font-size: 18px; }
+.topbar { grid-template-columns: 1fr auto 1fr; }
+.display-settings { justify-self: end; }
+.display-settings-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--control-radius);
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 0.928571rem;
+  font-weight: 600;
+}
+.display-settings-trigger:hover, .display-settings-trigger[aria-expanded='true'] { background: var(--hover); border-color: var(--muted); }
+.display-settings-short { display: none; }
+.display-settings-panel {
+  position: fixed;
+  inset: 60px 16px auto auto;
+  width: min(340px, calc(100vw - 24px));
+  max-height: calc(100dvh - 76px);
+  margin: 0;
+  padding: 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.display-settings-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.display-settings-heading h2 { margin: 0; font-size: 1.142857rem; font-weight: 650; letter-spacing: -0.02em; }
+.display-setting + .display-setting { margin-top: 20px; }
+.display-setting label { display: block; margin-bottom: 5px; font-size: 1rem; font-weight: 600; }
+.display-setting p { margin: 0 0 10px; color: var(--muted); font-size: 0.928571rem; line-height: 1.6; }
+.display-setting select {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 30px 9px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--control-radius);
+  background: var(--editor);
+  color: var(--ink);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.display-setting select:hover { border-color: var(--muted); }
+.display-settings-note { margin: 20px 0 0; padding-top: 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.857143rem; line-height: 1.7; }
+.display-settings-warning { color: var(--accent); }
+
+/* Layout changes reflow the mounted panes, preserving drafts, editor undo and requests. */
+:root[data-layout='stacked'] .app { height: auto; min-height: 100dvh; overflow: visible; }
+:root[data-layout='stacked'] .app-main { flex: none; }
+:root[data-layout='stacked'] .workspace:not(.workspace-hidden) { display: flex; flex-direction: column; overflow: visible; }
+:root[data-layout='stacked'] .problem-panel, :root[data-layout='stacked'] .editor-panel { flex: none; }
+:root[data-layout='stacked'] .problem-panel { height: auto; }
+:root[data-layout='stacked'] .problem-body { max-width: 80ch; overflow: visible; }
+:root[data-layout='stacked'] .panel-content { flex: none; overflow: visible; }
+:root[data-layout='stacked'] :is(.code-pane, .feedback-pane, .interview-pane-wrapper, .retry-pane) { position: relative; inset: auto; overflow: visible; }
+:root[data-layout='stacked'] .pane-hidden { display: none; }
+:root[data-layout='stacked'] .concurrent-session { grid-template-columns: minmax(0, 1fr); }
+:root[data-layout='stacked'] .monaco-wrapper { flex: none; height: clamp(360px, 50dvh, 600px); }
+:root[data-layout='stacked'] .lc-console { height: 240px; }
+:root[data-layout='stacked'] .live-explanation { overflow: visible; border-left: 0; border-top: 1px solid var(--border); }
+:root[data-layout='stacked'] .writing-area, :root[data-layout='stacked'] .transcript-editor { min-height: 240px; }
+:root[data-layout='stacked'] .progress-panel { overflow: visible; }
+
+/* A saved reduction is additive: Follow system never overrides an OS reduction. */
+:root[data-motion='reduce'], :root[data-motion='reduce'] *,
+:root[data-motion='reduce'] *::before, :root[data-motion='reduce'] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+:root[data-motion='reduce'] .problem-picker::backdrop { animation: none !important; }
+:root[data-motion='reduce'] button:active { transform: none !important; }
+
+@media (max-width: 1100px) {
+  .topbar { grid-template-columns: 1fr auto auto; gap: 12px; }
+  .learning-toolbar { flex-wrap: wrap; gap: 10px; }
+}
+@media (max-width: 700px) {
+  .topbar { height: auto; min-height: 52px; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 6px 12px; }
+  .brand { font-size: 1.142857rem; }
+  .learning-nav { grid-row: 2; grid-column: 1 / -1; justify-content: center; }
+  .display-settings { grid-row: 1; grid-column: 2; }
+  .display-settings-trigger { min-height: 44px; }
+  .display-settings-full { display: none; }
+  .display-settings-short { display: inline; }
+  .display-settings-panel { inset: 56px 12px auto auto; max-height: calc(100dvh - 68px); }
+  .goal-control { flex-shrink: 1; }
+  .panel-tabs .tab { flex: 1; min-width: 0; white-space: normal; line-height: 1.5; }
+}

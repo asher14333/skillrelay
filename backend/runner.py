@@ -4,11 +4,25 @@ import sys
 import tempfile
 from pathlib import Path
 
-from problems import get_problem
+from curveballs import get_problem_variant
 
 RUN_TIMEOUT_SECONDS = 5
+RESULT_MARKER = "__SKILLRELAY_RESULTS__="
 
 VALIDATORS = {
+    "adaptive": """
+def validate(result, expected, case):
+    allowed = case.get('_validOutputs', [expected])
+    def same(actual, wanted):
+        if type(actual) is not type(wanted):
+            return False
+        if isinstance(wanted, list):
+            return len(actual) == len(wanted) and all(same(a, b) for a, b in zip(actual, wanted))
+        return actual == wanted
+    if not any(same(result, candidate) for candidate in allowed):
+        return False, f"Expected {expected!r} under the changed requirement, got {result!r}"
+    return True, None
+""",
     "equals": """
 def validate(result, expected, case):
     if result != expected:
@@ -21,6 +35,8 @@ def validate(result, expected, case):
     target = case["target"]
     if not isinstance(result, list):
         return False, f"Expected list, got {type(result).__name__}"
+    if expected == []:
+        return (True, None) if result == [] else (False, "Expected [] when no matching pair exists")
     if len(result) != 2:
         return False, f"Expected 2 indices, got {len(result)}"
     i, j = result
@@ -79,14 +95,15 @@ for index, case in enumerate(TEST_CASES):
         entry["error"] = str(exc)
     results.append(entry)
 
-print(json.dumps(results))
+print("{result_marker}" + json.dumps(results))
 '''
 
 
-def run_code(slug: str, code: str) -> dict:
-    problem = get_problem(slug)
-    if not problem:
-        return {"error": f"Unknown problem: {slug}"}
+def run_code(slug: str, code: str, curveball_id=None) -> dict:
+    try:
+        problem = get_problem_variant(slug, curveball_id)
+    except ValueError as exc:
+        return {"error": str(exc)}
 
     if not code.strip():
         return {"error": "No code provided"}
@@ -100,6 +117,7 @@ def run_code(slug: str, code: str) -> dict:
         test_cases=repr(problem["test_cases"]),
         method=problem["method"],
         args=repr(problem["args"]),
+        result_marker=RESULT_MARKER,
     )
 
     with tempfile.NamedTemporaryFile(
@@ -125,9 +143,17 @@ def run_code(slug: str, code: str) -> dict:
         return {"error": stderr or "Code failed to run"}
 
     try:
-        results = json.loads(completed.stdout.strip())
+        # A learner's print() diagnostics are useful during practice and must
+        # not make an otherwise correct solution look like a runner failure.
+        _, marker, payload = completed.stdout.rpartition(RESULT_MARKER)
+        if not marker:
+            return {"error": "Code did not return test results"}
+        results = json.loads(payload.strip())
     except json.JSONDecodeError:
         return {"error": "Could not parse execution output"}
+
+    if not isinstance(results, list) or len(results) != len(problem["test_cases"]) or any(not isinstance(item, dict) for item in results):
+        return {"error": "Code returned incomplete test results"}
 
     passed_count = sum(1 for r in results if r.get("passed"))
     return {

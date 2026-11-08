@@ -1,24 +1,39 @@
-import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, lazy, Suspense } from 'react'
 import axios from 'axios'
 import { problems, getProblemBySlug } from './data/problems'
 import RubricFeedback from './components/RubricFeedback'
 import TestConsole from './components/TestConsole'
+import CurveballPractice from './components/CurveballPractice'
+import LiveInterviewer from './components/LiveInterviewer'
+import InterviewConversation from './components/InterviewConversation'
+import InterviewerVoice from './components/InterviewerVoice'
+import useInterviewerAudio from './lib/useInterviewerAudio'
+import { withCurveball } from './data/curveballs'
 import InterviewPanel from './components/InterviewPanel'
 import LearningPlan from './components/LearningPlan'
 import ProgressPanel from './components/ProgressPanel'
 import ReasoningReplay from './components/ReasoningReplay'
 import FocusedRetry from './components/FocusedRetry'
 import Icon, { BrandMark } from './components/Icon'
+import Disclosure from './components/Disclosure'
+import TabIndicator from './components/TabIndicator'
+import DisplaySettings from './components/DisplaySettings'
+import useDisplayPreferences from './lib/useDisplayPreferences'
+import { animateArrival, useArrival } from './lib/motion'
 import { getLearningGoal, LEARNING_GOALS } from './data/learning'
 import { addAttempt, loadPractice, writePractice } from './data/practiceStorage'
 import { appendCheckpoint, checkpointPayload, MAX_CODE, MAX_EXPLANATION } from './data/sessionReplay'
 import './App.css'
 import './Learning.css'
+import './DisplaySettings.css'
+import './Curveball.css'
+import './LiveInterviewer.css'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 const CodeEditor = lazy(() => import('./components/CodeEditor'))
 
 function App() {
+  const { preferences, warning: displayWarning, changePreference, reducedMotion } = useDisplayPreferences()
   const [initialPractice] = useState(loadPractice)
   const [learningGoal, setLearningGoal] = useState(initialPractice.goal)
   const [attempts, setAttempts] = useState(initialPractice.attempts)
@@ -29,7 +44,10 @@ function App() {
   const [runSnapshot, setRunSnapshot] = useState(null)
   const [lessonFocus, setLessonFocus] = useState(null)
   const [problemSlug, setProblemSlug] = useState('two-sum')
-  const problem = getProblemBySlug(problemSlug)
+  const [curveballSession, setCurveballSession] = useState(null)
+  const curveballDefinition = curveballSession?.definition || null
+  const curveballId = curveballSession?.id || null
+  const problem = withCurveball(getProblemBySlug(problemSlug), curveballId ? curveballDefinition : null)
 
   const [code, setCode] = useState(problem.starterCode)
   const [transcript, setTranscript] = useState('')
@@ -39,6 +57,7 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [runResults, setRunResults] = useState(null)
+  const [resetCodeDraft, setResetCodeDraft] = useState(null)
   const [consoleTab, setConsoleTab] = useState('testcase')
   const [selectedCase, setSelectedCase] = useState(0)
   const [feedback, setFeedback] = useState(null)
@@ -48,7 +67,40 @@ function App() {
   const [pendingProblem, setPendingProblem] = useState(null)
   const [checkpoints, setCheckpoints] = useState([])
   const [retryTask, setRetryTask] = useState(null)
+  const [voiceEnabled, setVoiceEnabled] = useState(false)
+  const [liveInterview, setLiveInterview] = useState(false)
+  const [interviewInput, setInterviewInput] = useState('voice')
+  const [awaitingTurn, setAwaitingTurn] = useState(false)
+  const [interviewerBusy, setInterviewerBusy] = useState(false)
+  const [spokenTurn, setSpokenTurn] = useState({ number: 0, text: '' })
+  const [conversation, setConversation] = useState([])
+  const [interviewEpoch, setInterviewEpoch] = useState(0)
+  const [followupRecording, setFollowupRecording] = useState(false)
+  const interviewerAudio = useInterviewerAudio({ enabled: voiceEnabled, blocked: view !== 'practice' || isRecording || speechPhase !== 'idle' || followupRecording, scope: `${problemSlug}:${view}:${activeTab}:${interviewEpoch}` })
+  const { speak: speakAudio } = interviewerAudio
+  const audioContextRef = useRef({ view, tab: activeTab })
+  useLayoutEffect(() => { audioContextRef.current = { view, tab: activeTab } }, [view, activeTab])
+  const speakForPane = useCallback((pane, text) => {
+    const context = audioContextRef.current
+    if (context.view === 'practice' && context.tab === pane) return speakAudio(text)
+  }, [speakAudio])
+  const retryTaskIdRef = useRef(null)
   const pickerRef = useRef(null)
+  const feedbackHeadingRef = useRef(null)
+  const mainRef = useRef(null)
+  const panelTabsRef = useRef(null)
+  const panelContentRef = useRef(null)
+  const noticeRef = useRef(null)
+  const previousNavigation = useRef({ view, tab: activeTab })
+  useArrival(noticeRef, notice)
+
+  useLayoutEffect(() => {
+    const previous = previousNavigation.current
+    previousNavigation.current = { view, tab: activeTab }
+    if (previous.view === view && previous.tab === activeTab) return
+    if (view === 'progress') return animateArrival(mainRef.current?.querySelector('.progress-panel'))
+    if (activeTab !== 'code') return animateArrival(panelContentRef.current?.querySelector(':scope > :not(.pane-hidden)'))
+  }, [view, activeTab])
 
   const recognitionRef = useRef(null)
   const sessionBaseRef = useRef('')
@@ -60,6 +112,37 @@ function App() {
   const generationRef = useRef(0)
   const speechGenerationRef = useRef(null)
   const lastFinalSpeechRef = useRef('')
+  const liveControlRef = useRef({ enabled: false })
+  const silenceTimerRef = useRef(null)
+  const speechPhaseRef = useRef('idle')
+  const segmentErrorRef = useRef(null)
+  const segmentTextRef = useRef('')
+  const segmentStartedRef = useRef(0)
+  const rapidEndRef = useRef(0)
+  const spokenTurnNumberRef = useRef(0)
+  const { stop: stopAudio } = interviewerAudio
+  const appendConversation = useCallback(message => {
+    setConversation(previous => previous.some(item => item.id === message.id) ? previous : [...previous, message].slice(-30))
+  }, [])
+  const finishInterviewerTurn = useCallback(() => setAwaitingTurn(false), [])
+  const pauseLiveInterview = useCallback(() => {
+    liveControlRef.current.enabled = false
+    clearTimeout(silenceTimerRef.current)
+    setLiveInterview(false)
+    setAwaitingTurn(false)
+    setInterviewerBusy(false)
+    speechGenerationRef.current = null
+    recognitionRef.current?.abort()
+    speechPhaseRef.current = 'idle'
+    setSpeechPhase('idle')
+    setIsRecording(false)
+    stopAudio()
+  }, [stopAudio])
+
+  useLayoutEffect(() => {
+    if (view !== 'practice' || activeTab !== 'code') pauseLiveInterview()
+  }, [view, activeTab, pauseLiveInterview])
+  useEffect(() => () => { clearTimeout(silenceTimerRef.current); liveControlRef.current.enabled = false }, [])
 
   const captureMoment = useCallback((kind, extra = {}) => {
     const session = sessionRef.current
@@ -102,9 +185,21 @@ function App() {
     setFeedback(null)
     setAnalysisSnapshot(null)
     setRetryTask(null)
+    retryTaskIdRef.current = null
     setNotice('')
-    setActiveTab((tab) => tab === 'feedback' ? 'code' : tab)
+    setActiveTab((tab) => ['feedback', 'retry'].includes(tab) ? 'code' : tab)
   }, [])
+
+  useEffect(() => {
+    if (view === 'practice' && activeTab === 'feedback') feedbackHeadingRef.current?.focus()
+  }, [activeTab, view])
+
+  useEffect(() => {
+    if (view !== 'practice' || (code === problem.starterCode && !transcript.trim())) return
+    const warnBeforeLeaving = (event) => { event.preventDefault(); event.returnValue = '' }
+    window.addEventListener('beforeunload', warnBeforeLeaving)
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving)
+  }, [view, code, transcript, problem.starterCode])
 
   const changeTranscript = useCallback((value, shouldCapture = true) => {
     if (currentTranscriptRef.current === value) return
@@ -119,6 +214,7 @@ function App() {
     if (currentCodeRef.current === value) return
     if (!sessionRef.current.moments.length) captureMoment('start')
     currentCodeRef.current = value
+    setResetCodeDraft(null)
     codeRevisionRef.current += 1
     invalidateFeedback()
     setCode(value)
@@ -129,6 +225,9 @@ function App() {
 
   const switchProblem = useCallback((slug) => {
     const next = getProblemBySlug(slug)
+    pauseLiveInterview()
+    setConversation([])
+    setSpokenTurn({ number: 0, text: '' })
     generationRef.current += 1
     Object.values(sessionRef.current.timers).forEach(clearTimeout)
     Object.assign(sessionRef.current, { startedAt: null, moments: [], timers: {} })
@@ -142,6 +241,9 @@ function App() {
     currentTranscriptRef.current = ''
     sessionBaseRef.current = ''
     setProblemSlug(slug)
+    setCurveballSession(null)
+    setFollowupRecording(false)
+    setResetCodeDraft(null)
     setCode(next.starterCode)
     setTranscript('')
     setFeedback(null)
@@ -154,7 +256,7 @@ function App() {
     setError(null)
     setShowProblemList(false)
     setPendingProblem(null)
-  }, [invalidateFeedback])
+  }, [invalidateFeedback, pauseLiveInterview])
 
   const navigate = (next) => {
     window.location.hash = next
@@ -205,21 +307,32 @@ function App() {
 
     recognition.onresult = (event) => {
       if (speechGenerationRef.current !== generationRef.current) return
-      let sessionText = ''
-      let finalText = ''
+      let sessionText = '', finalText = ''
       for (let i = 0; i < event.results.length; i++) {
-        sessionText += event.results[i][0].transcript
-        if (event.results[i].isFinal) finalText += event.results[i][0].transcript
+        sessionText += `${event.results[i][0].transcript.trim()} `
+        if (event.results[i].isFinal) finalText += `${event.results[i][0].transcript.trim()} `
       }
+      segmentTextRef.current = sessionText
       changeTranscript((sessionBaseRef.current + sessionText).trim(), false)
       if (finalText && finalText !== lastFinalSpeechRef.current) {
         lastFinalSpeechRef.current = finalText
         captureMoment('explanation', { transcript: (sessionBaseRef.current + finalText).trim() })
       }
+      clearTimeout(silenceTimerRef.current)
+      if (liveControlRef.current.enabled && sessionText.trim() && speechPhaseRef.current === 'listening') {
+        silenceTimerRef.current = setTimeout(() => {
+          if (!liveControlRef.current.enabled || speechPhaseRef.current !== 'listening') return
+          setAwaitingTurn(true)
+          speechPhaseRef.current = 'stopping'
+          setSpeechPhase('stopping')
+          try { recognition.stop() } catch { pauseLiveInterview(); setError('Could not finish your spoken turn. Start the interview again or type your explanation.') }
+        }, 1500)
+      }
     }
 
     recognition.onstart = () => {
       if (speechGenerationRef.current === generationRef.current) {
+        speechPhaseRef.current = 'listening'
         setSpeechPhase('listening')
         captureMoment('microphone')
       }
@@ -227,24 +340,49 @@ function App() {
 
     recognition.onerror = (event) => {
       if (speechGenerationRef.current !== generationRef.current) return
-      if (event.error !== 'aborted') {
-        setError(`Speech recognition error: ${event.error}`)
+      clearTimeout(silenceTimerRef.current)
+      segmentErrorRef.current = event.error
+      if (liveControlRef.current.enabled && event.error === 'no-speech') {
+        speechPhaseRef.current = 'stopping'
+        setSpeechPhase('stopping')
+        return
       }
-      setIsRecording(false)
-      setSpeechPhase('idle')
+      if (event.error !== 'aborted') setError(`Speech recognition error: ${event.error}. You can type your explanation or restart the interview.`)
+      if (liveControlRef.current.enabled) pauseLiveInterview()
+      else { setIsRecording(false); setSpeechPhase('idle'); speechPhaseRef.current = 'idle' }
     }
 
     recognition.onend = () => {
       if (speechGenerationRef.current !== generationRef.current) return
+      clearTimeout(silenceTimerRef.current)
+      speechGenerationRef.current = null
+      speechPhaseRef.current = 'idle'
       setIsRecording(false)
       setSpeechPhase('idle')
-      if (speechGenerationRef.current === generationRef.current) captureMoment('explanation')
-      speechGenerationRef.current = null
+      if (liveControlRef.current.enabled) {
+        const utterance = lastFinalSpeechRef.current.trim()
+        if (utterance && !segmentErrorRef.current) {
+          rapidEndRef.current = 0
+          changeTranscript((sessionBaseRef.current + utterance).trim(), false)
+          const turn = { number: ++spokenTurnNumberRef.current, text: utterance }
+          appendConversation({ id: `candidate-turn-${turn.number}`, role: 'candidate', text: utterance })
+          setAwaitingTurn(true)
+          setSpokenTurn(turn)
+        } else if (segmentTextRef.current.trim() && !segmentErrorRef.current) {
+          pauseLiveInterview()
+          setError('The browser did not finalize that speech. Your draft is still visible. Restart the interview or type to continue.')
+        } else {
+          setAwaitingTurn(false)
+          rapidEndRef.current = Date.now() - segmentStartedRef.current < 2000 ? rapidEndRef.current + 1 : 0
+          if (rapidEndRef.current >= 3) { pauseLiveInterview(); setError('The microphone kept stopping. Restart the interview or continue by typing.') }
+        }
+      }
+      captureMoment('explanation')
     }
 
     recognitionRef.current = recognition
     return () => recognition.abort()
-  }, [changeTranscript, captureMoment])
+  }, [changeTranscript, captureMoment, appendConversation, pauseLiveInterview])
 
   const persistPractice = (nextAttempts, nextGoal = learningGoal) => {
     const result = writePractice(nextGoal, nextAttempts)
@@ -269,6 +407,8 @@ function App() {
         createdAt: snapshot.createdAt,
         problemId: snapshot.problemId,
         goal: snapshot.goal,
+        curveballId: snapshot.curveballId,
+        curveballTitle: snapshot.curveballTitle,
         score: snapshot.feedback.score,
         rubric: snapshot.feedback.rubric,
         lesson: snapshot.feedback.learningPlan,
@@ -298,36 +438,109 @@ function App() {
     if (!analysisSnapshot || !dimension) return
     const spec = analysisSnapshot.feedback.focusedPractice?.[dimension]
     if (!spec) return
+    if (retryTask?.analysisId === analysisSnapshot.id && retryTask.dimension === dimension && retryTask.checkpointId === checkpointId) {
+      setActiveTab('retry')
+      return
+    }
     const moment = checkpointId ? analysisSnapshot.checkpoints.find((item) => item.id === checkpointId) : null
-    setRetryTask({ id: crypto.randomUUID(), analysisId: analysisSnapshot.id, problemId: analysisSnapshot.problemId,
+    const task = { id: crypto.randomUUID(), analysisId: analysisSnapshot.id, problemId: analysisSnapshot.problemId, curveballId: analysisSnapshot.curveballId, checkpointId,
       dimension, code: moment ? moment.code : analysisSnapshot.code,
-      before: moment ? moment.transcript : analysisSnapshot.transcript, prompt: spec.prompt, criteria: spec.criteria })
+      before: moment ? moment.transcript : analysisSnapshot.transcript, prompt: spec.prompt, criteria: spec.criteria }
+    retryTaskIdRef.current = task.id
+    setRetryTask(task)
     setActiveTab('retry')
   }
 
-  const startRecording = () => {
+  const applyCurveball = (definition, before) => {
+    if (curveballSession || isRunning || isAnalyzing || isRecording ||
+        before.code !== currentCodeRef.current || before.transcript !== currentTranscriptRef.current) return false
+    flushPendingMoments()
+    setCurveballSession({ id: definition.id, definition, code: before.code, transcript: before.transcript })
+    invalidateFeedback()
+    codeRevisionRef.current += 1
+    setRunSnapshot(null)
+    setRunResults(null)
+    setLessonFocus(null)
+    setSelectedCase(0)
+    setConsoleTab('testcase')
+    setActiveTab('code')
+    Object.values(sessionRef.current.timers).forEach(clearTimeout)
+    Object.assign(sessionRef.current, { startedAt: null, moments: [], timers: {} })
+    captureMoment('start')
+    return true
+  }
+
+  const returnToOriginal = () => {
+    pauseLiveInterview()
+    setInterviewEpoch(value => value + 1)
+    setCurveballSession(null)
+    interviewerAudio.stop()
+    invalidateFeedback()
+    codeRevisionRef.current += 1
+    setRunSnapshot(null)
+    setRunResults(null)
+    setSelectedCase(0)
+    setConsoleTab('testcase')
+    setActiveTab('code')
+    Object.values(sessionRef.current.timers).forEach(clearTimeout)
+    Object.assign(sessionRef.current, { startedAt: null, moments: [], timers: {} })
+    captureMoment('start')
+  }
+
+  const startRecording = useCallback(() => {
+    stopAudio()
     setError(null)
     invalidateFeedback()
     setActiveTab('code')
-    sessionBaseRef.current = transcript ? `${transcript} ` : ''
+    sessionBaseRef.current = currentTranscriptRef.current ? `${currentTranscriptRef.current} ` : ''
     speechGenerationRef.current = generationRef.current
     lastFinalSpeechRef.current = ''
+    segmentTextRef.current = ''
+    segmentErrorRef.current = null
+    segmentStartedRef.current = Date.now()
     if (!sessionRef.current.moments.length) captureMoment('start')
     try {
+      speechPhaseRef.current = 'starting'
       setSpeechPhase('starting')
-      recognitionRef.current?.start()
+      if (!recognitionRef.current) throw new Error('Speech recognition is not available')
+      recognitionRef.current.start()
       setIsRecording(true)
     } catch {
       setIsRecording(false)
       setSpeechPhase('idle')
-      setError('Could not start recording. Try again.')
+      speechPhaseRef.current = 'idle'
+      if (liveControlRef.current.enabled) pauseLiveInterview()
+      setError('Could not start recording. Try again or type your explanation.')
     }
-  }
+  }, [stopAudio, invalidateFeedback, captureMoment, pauseLiveInterview])
 
   const stopRecording = () => {
+    clearTimeout(silenceTimerRef.current)
+    speechPhaseRef.current = 'stopping'
+    if (liveControlRef.current.enabled) setAwaitingTurn(true)
     setSpeechPhase('stopping')
     recognitionRef.current?.stop()
   }
+
+  const startLiveInterview = () => {
+    rapidEndRef.current = 0
+    liveControlRef.current.enabled = true
+    setLiveInterview(true)
+    setVoiceEnabled(true)
+    setAwaitingTurn(false)
+    if (speechSupported && interviewInput === 'voice' && speechPhaseRef.current === 'idle') startRecording()
+  }
+
+  useEffect(() => {
+    if (!liveInterview || !speechSupported || interviewInput !== 'voice' || view !== 'practice' || activeTab !== 'code' ||
+        isRecording || speechPhase !== 'idle' || awaitingTurn || interviewerBusy || isRunning || isAnalyzing ||
+        interviewerAudio.status !== 'idle' || interviewerAudio.error) return
+    const timer = setTimeout(() => {
+      if (liveControlRef.current.enabled && speechPhaseRef.current === 'idle') startRecording()
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [liveInterview, speechSupported, interviewInput, view, activeTab, isRecording, speechPhase, awaitingTurn,
+      interviewerBusy, isRunning, isAnalyzing, interviewerAudio.status, interviewerAudio.error, startRecording])
 
   const handleRun = async () => {
     flushPendingMoments()
@@ -345,6 +558,7 @@ function App() {
       const { data } = await axios.post(`${API_URL}/run`, {
         code,
         problemId: problemSlug,
+        curveballId,
       }, { timeout: 30000 })
       if (revision !== codeRevisionRef.current) return
       if (data.error && !data.results) {
@@ -353,7 +567,7 @@ function App() {
       } else {
         setRunResults(data)
         if (Number.isInteger(data.passed) && Number.isInteger(data.total) && data.total > 0) {
-          setRunSnapshot({ code, problemId: problemSlug, passed: data.passed, total: data.total })
+          setRunSnapshot({ code, problemId: problemSlug, curveballId, passed: data.passed, total: data.total })
           captureMoment('run-result', { run: { passed: data.passed, total: data.total } })
         }
         const firstFail = data.results?.findIndex((r) => !r.passed)
@@ -373,6 +587,7 @@ function App() {
   }
 
   const handleAnalyze = async () => {
+    if (isRunning || isAnalyzing) return
     if (isRecording) {
       setError('Stop your explanation before analyzing.')
       return
@@ -402,6 +617,7 @@ function App() {
         transcript,
         code,
         problemId: problemSlug,
+        curveballId,
         learningGoal,
         checkpoints: reviewCheckpoints,
       }, { timeout: 60000 })
@@ -411,10 +627,12 @@ function App() {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         problemId: problemSlug,
+        curveballId,
         goal: learningGoal,
+        curveballTitle: curveballDefinition?.title,
         feedback: data,
         code, transcript, checkpoints: reviewCheckpoints,
-        run: runSnapshot?.code === code && runSnapshot.problemId === problemSlug
+        run: runSnapshot?.code === code && runSnapshot.problemId === problemSlug && runSnapshot.curveballId === curveballId
           ? { passed: runSnapshot.passed, total: runSnapshot.total } : null,
       })
       setLessonFocus(null)
@@ -448,12 +666,12 @@ function App() {
           <a href="#practice" aria-current={view === 'practice' ? 'page' : undefined}><Icon name="code" />Practice</a>
           <a href="#progress" aria-current={view === 'progress' ? 'page' : undefined}><Icon name="progress" />Progress{attempts.length > 0 && <span className="nav-count">{attempts.length}</span>}</a>
         </nav>
-        <span className="app-edition">Technical interview practice</span>
+        <DisplaySettings preferences={preferences} warning={displayWarning} onChange={changePreference} />
       </header>
 
-      <main className="app-main" id="main-content" tabIndex={-1}>
+      <main ref={mainRef} className="app-main" id="main-content" tabIndex={-1}>
         {storageWarning && <div className="storage-warning" role="alert">{storageWarning}</div>}
-        {notice && <div className="learning-notice" role="status"><Icon name="check" />{notice}</div>}
+        {notice && <div ref={noticeRef} className="learning-notice" role="status"><Icon name="check" /><span>{notice}</span><button className="icon-button" aria-label="Dismiss notice" onClick={() => setNotice('')}><Icon name="close" size={16} /></button></div>}
 
         {view === 'progress' && <ProgressPanel
           attempts={attempts}
@@ -473,25 +691,25 @@ function App() {
 
         {view === 'practice' && <section className="learning-toolbar" aria-label="Learning goal">
           <div className="learning-intro">
-            <h1>Make your thinking clear.</h1>
-            <p>Talk through your approach as you code. Get feedback when you’re ready.</p>
+            <h1>Practice workspace</h1>
+            <p>Explain your choices as you code.</p>
           </div>
           <div className="goal-control">
             <label htmlFor="learning-goal">Your learning focus</label>
-            <select id="learning-goal" name="learningGoal" value={learningGoal} onChange={(event) => changeGoal(event.target.value)} disabled={isRecording}>
+            <select id="learning-goal" name="learningGoal" aria-describedby="learning-goal-description" value={learningGoal} onChange={(event) => changeGoal(event.target.value)} disabled={isRecording}>
               {LEARNING_GOALS.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}
             </select>
-            <p>{getLearningGoal(learningGoal).description}</p>
+            <p id="learning-goal-description">{getLearningGoal(learningGoal).description}</p>
           </div>
         </section>}
 
         <div className={`workspace ${view !== 'practice' ? 'workspace-hidden' : ''}`}>
           <aside className="problem-panel" aria-labelledby="challenge-title">
+            <div className="problem-panel-toolbar">
+              <span><Icon name="book" size={15} />Problem</span>
+              <button className="change-challenge" onClick={() => setShowProblemList(true)} disabled={isRecording} aria-haspopup="dialog">Change <ChevronIcon /></button>
+            </div>
             <div className="problem-header">
-              <div className="challenge-heading">
-                <span>Challenge {String(problem.id).padStart(2, '0')} <span className="challenge-total">/ {String(problems.length).padStart(2, '0')}</span></span>
-                <button className="change-challenge" onClick={() => setShowProblemList(true)} disabled={isRecording} aria-haspopup="dialog">Change <ChevronIcon /></button>
-              </div>
               <h2 id="challenge-title">{problem.title}</h2>
               <div className="problem-meta">
                 <span className={`difficulty difficulty-${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</span>
@@ -499,6 +717,21 @@ function App() {
               </div>
             </div>
             <div className="problem-body">
+              <LiveInterviewer key={`${problemSlug}:${interviewEpoch}`} problemId={problemSlug} curveballId={curveballId}
+                code={code} transcript={transcript} blocked={isRecording || speechPhase !== 'idle' || isRunning || isAnalyzing || followupRecording || interviewerAudio.status !== 'idle'}
+                active={view === 'practice' && activeTab === 'code'} running={liveInterview} spokenTurn={spokenTurn} inputMode={interviewInput}
+                onInputModeChange={mode => { pauseLiveInterview(); setInterviewInput(mode) }}
+                onMessage={appendConversation} onBusyChange={setInterviewerBusy} onTurnComplete={finishInterviewerTurn} onCurveball={applyCurveball}
+                onSpeak={text => speakForPane('code', text)} onStop={pauseLiveInterview} onStart={startLiveInterview} />
+              <CurveballPractice key={`${problemSlug}:${curveballId || 'base'}`} definition={curveballDefinition} session={curveballSession}
+                code={code} transcript={transcript} disabled={isRecording || isRunning || isAnalyzing}
+                onSpeak={text => speakForPane(activeTab, text)} onReturnToOriginal={returnToOriginal} onRunResult={data => {
+                  setRunResults(data)
+                  setRunSnapshot({ code, problemId: problemSlug, curveballId, passed: data.passed, total: data.total })
+                  setConsoleTab('result')
+                  const failed = data.results.findIndex(result => !result.passed)
+                  setSelectedCase(failed >= 0 ? failed : 0)
+                }} />
               {lessonFocus && <div className="lesson-reminder" role="note">
                 <span className="focus-label"><Icon name="book" /> Your practice focus</span>
                 <h3>{lessonFocus.title}</h3>
@@ -507,7 +740,7 @@ function App() {
               </div>}
               <p className="problem-text">{problem.description}</p>
               {problem.details.map((line, i) => <p key={i} className="problem-text">{line}</p>)}
-              <details className="example-disclosure" open>
+              <Disclosure className="example-disclosure" open>
                 <summary>Examples <span>{problem.examples.length}</span></summary>
                 {problem.examples.map((ex, i) => <div key={i} className="example-block">
                   <p className="example-title">Example {i + 1}</p>
@@ -515,11 +748,11 @@ function App() {
                     {ex.explanation && <>{'\n'}<strong>Why:</strong> {ex.explanation}</>}
                   </pre>
                 </div>)}
-              </details>
-              <details className="constraints-block">
+              </Disclosure>
+              <Disclosure className="constraints-block">
                 <summary>Constraints</summary>
                 <ul>{problem.constraints.map((item, i) => <li key={i}>{item}</li>)}</ul>
-              </details>
+              </Disclosure>
               {!lessonFocus && <div className="explanation-guide">
                 <Icon name="book" /><div><h3>Talk as you work</h3><p>Share your plan, explain the choices you make, and walk through what you’re checking as you test.</p></div>
               </div>}
@@ -527,74 +760,83 @@ function App() {
           </aside>
 
           <section className="editor-panel" aria-label="Practice workspace">
-            <nav className="panel-tabs" aria-label="Practice views">
+            <nav ref={panelTabsRef} className="panel-tabs" aria-label="Practice views">
               <button className={`tab ${activeTab === 'code' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'code'} onClick={() => setActiveTab('code')}>
                 <Icon name="code" size={16} />Code & explain{isRecording && <span className="tab-recording-dot" />}
               </button>
               <button className={`tab ${['feedback', 'retry'].includes(activeTab) ? 'tab-active' : ''}`} aria-pressed={['feedback', 'retry'].includes(activeTab)} disabled={!feedback || isRecording} onClick={() => setActiveTab('feedback')}>
                 <Icon name="book" size={16} />{activeTab === 'retry' ? 'Focused retry' : 'Session feedback'}
               </button>
-              <button className={`tab tab-followup ${activeTab === 'interview' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'interview'} onClick={() => { recognitionRef.current?.stop(); setActiveTab('interview') }}>Follow-up</button>
+              <button className={`tab tab-followup ${activeTab === 'interview' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'interview'} disabled={isRecording} onClick={() => setActiveTab('interview')}>Follow-up</button>
+              <TabIndicator trackRef={panelTabsRef} activeKey={activeTab} />
             </nav>
             {error && <div className="error-banner" role="alert">{error}</div>}
-            <div className="panel-content">
+            <div ref={panelContentRef} className="panel-content">
               <div className={`code-pane concurrent-session ${activeTab !== 'code' ? 'pane-hidden' : ''}`}>
                 <div className="coding-column">
                   <div className="code-toolbar">
                     <span className="lang-label"><span className="language-dot" />Python 3 <span className="checkpoint-count">{checkpoints.length} replay moments</span></span>
                     <div className="code-toolbar-right">
-                      <button className="btn-text" onClick={() => { changeCode(problem.starterCode); setRunResults(null); setConsoleTab('testcase') }}>Reset code</button>
+                      <button className="btn-text" disabled={code === problem.starterCode && !resetCodeDraft} onClick={() => { if (resetCodeDraft) { changeCode(resetCodeDraft) } else { const previousCode = code; changeCode(problem.starterCode); setResetCodeDraft(previousCode); setConsoleTab('testcase') } }}>{resetCodeDraft ? 'Undo reset' : 'Reset code'}</button>
                       <button className="btn-run-lc" onClick={handleRun} disabled={isRunning}><PlayIcon />{isRunning ? 'Running…' : 'Run code'}</button>
                     </div>
                   </div>
-                  <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} /></Suspense></div>
+                  <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} fontSize={{ default: 14, large: 16, larger: 18 }[preferences.textSize]} reducedMotion={reducedMotion} /></Suspense></div>
                   <TestConsole problem={problem} consoleTab={consoleTab} setConsoleTab={setConsoleTab} selectedCase={selectedCase} setSelectedCase={setSelectedCase} runResults={runResults} />
                 </div>
-                <aside className="live-explanation" aria-labelledby="live-explanation-title">
+                <aside className="live-explanation live-explanation-chat" aria-labelledby="live-explanation-title">
                   <div className="live-explanation-heading">
-                    <span className="live-label"><Icon name="mic" size={15} />Your explanation</span>
-                    <h2 id="live-explanation-title">Think out loud.</h2>
-                    <p>Explain your choices while you code. Your transcript stays here as you edit and run tests.</p>
+                    <h2 id="live-explanation-title">Interview chat</h2>
+                    <p>Speak naturally. Pause to let the interviewer respond.</p>
                   </div>
+                  <InterviewerVoice enabled={voiceEnabled} onToggle={() => setVoiceEnabled(value => !value)} audio={interviewerAudio} />
+                  <InterviewConversation messages={conversation} pending={interviewerBusy || (awaitingTurn && speechPhase === 'idle')}
+                    listening={speechPhase === 'listening'} speaking={interviewerAudio.status === 'speaking'}
+                    active={view === 'practice' && activeTab === 'code'} />
                   <div className="session-microphone">
                     {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording} disabled={speechPhase !== 'listening'}><StopIcon />{speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop microphone'}</button>}
-                    <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{speechPhase === 'listening' ? <><span className="pulse" />Listening while you code</> : speechPhase === 'starting' ? 'Waiting for microphone access…' : speechPhase === 'stopping' ? 'Waiting for the final transcript…' : 'You can also type your thinking below.'}</span>
+                    {(!liveInterview || ['starting', 'stopping'].includes(speechPhase)) && <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{speechPhase === 'listening' ? <><span className="pulse" />Listening while you code</> : speechPhase === 'starting' ? 'Waiting for microphone access…' : speechPhase === 'stopping' ? 'Waiting for the final transcript…' : 'You can also type your thinking below.'}</span>}
                   </div>
                   {!speechSupported && <p className="warning">Voice input isn’t available in this browser. You can type your explanation while coding.</p>}
-                  {activeTab === 'code' && <div className="writing-area live-writing-area">
+                  {activeTab === 'code' && <div className="writing-area live-writing-area conversation-composer">
                     <label className="sr-only" htmlFor="solution-explanation">Your solution explanation</label>
                     <textarea id="solution-explanation" name="transcript" autoComplete="off" className="transcript-editor" value={transcript} onChange={(event) => changeTranscript(event.target.value)} readOnly={isRecording}
-                      placeholder="Talk or type as you work. For example: I’ll start by comparing each pair, then look for a way to avoid repeated work…" />
+                      placeholder="Start with your approach. Explain what you change and why." />
                     <span className="word-count">{transcript.trim() ? transcript.trim().split(/\s+/).length : 0} words</span>
                   </div>}
                   <div className="session-feedback-action">
-                    <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : 'Feedback uses your code, explanation, and session checkpoints.'}</p>
-                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}<Icon name="arrow" size={16} /></button>
+                    <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : isRunning ? 'Wait for code checks to finish before getting feedback.' : 'Feedback uses your code, explanation, and checkpoints.'}</p>
+                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || isRunning || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}</button>
                   </div>
                 </aside>
               </div>
 
               <div className={`feedback-pane ${activeTab !== 'feedback' || !feedback ? 'pane-hidden' : ''}`}>
                 {feedback && <>
-                  <div className="feedback-save"><div><h2>Your session, in focus.</h2><p>{getLearningGoal(analysisSnapshot?.goal || learningGoal).title}</p></div>
+                  <div className="feedback-save"><div><h2 ref={feedbackHeadingRef} tabIndex={-1}>Your practice feedback</h2><p>{getLearningGoal(analysisSnapshot?.goal || learningGoal).title}</p></div>
                     <button className="learning-secondary" onClick={saveAttempt} disabled={!analysisSnapshot || isCurrentSaved}>
                       <Icon name={isCurrentSaved ? 'check' : 'save'} size={16} />
                       {isCurrentSaved ? 'Practice saved' : savedAttempt ? 'Update saved practice' : 'Save practice'}
                     </button>
                   </div>
-                  <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} />
+                  <div className="feedback-overview">
+                    <div><span>AI practice score</span><strong>{feedback.score}<small>/10</small></strong></div>
+                    <p>{feedback.passed ? 'A strong practice attempt' : 'Keep building your explanation'}<small>Use this feedback to choose what to practice next.</small></p>
+                  </div>
                   {analysisSnapshot?.retrySummary && <div className="retry-completed"><Icon name="check" /><span>Focused retry: {analysisSnapshot.retrySummary.beforeMet}/{analysisSnapshot.retrySummary.total} → {analysisSnapshot.retrySummary.afterMet}/{analysisSnapshot.retrySummary.total} criteria supported. {isCurrentSaved ? 'Summary saved with this practice.' : 'Save practice to keep this summary.'}</span></div>}
-                  <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} />
+                  {curveballId && <p className="curveball-context">Requirement change: {curveballDefinition.title}. Feedback uses the updated problem.</p>}
+                  <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} active={view === 'practice' && activeTab === 'feedback'} />
                   <p className="feedback-storage"><Icon name="shield" size={15} />Saved summaries stay on this device. Code and explanations aren’t included.</p>
+                  <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} active={view === 'practice' && activeTab === 'feedback'} />
                 </>}
                 <RubricFeedback feedback={feedback} />
               </div>
-              {activeTab === 'retry' && retryTask && <div className="retry-pane"><FocusedRetry key={retryTask.id} task={retryTask} onBack={() => setActiveTab('feedback')} onComplete={(result) => setAnalysisSnapshot((snapshot) => {
-                if (!snapshot || snapshot.id !== retryTask.analysisId) return snapshot
+              {retryTask && <div className={`retry-pane ${activeTab !== 'retry' ? 'pane-hidden' : ''}`}><FocusedRetry key={retryTask.id} task={retryTask} active={view === 'practice' && activeTab === 'retry'} onBack={() => setActiveTab('feedback')} onComplete={(result) => setAnalysisSnapshot((snapshot) => {
+                if (!snapshot || snapshot.id !== retryTask.analysisId || retryTaskIdRef.current !== retryTask.id) return snapshot
                 return { ...snapshot, retrySummary: result ? { dimension: result.dimension, beforeMet: result.beforeMet, afterMet: result.afterMet, total: result.total, createdAt: result.createdAt } : null }
               })} /></div>}
               <div className={`interview-pane-wrapper ${activeTab !== 'interview' ? 'pane-hidden' : ''}`}>
-                <InterviewPanel key={problemSlug} problemId={problemSlug} transcript={transcript} code={code} active={view === 'practice' && activeTab === 'interview'} speechSupported={speechSupported} onError={setError} />
+                <InterviewPanel key={`${problemSlug}:${curveballId || 'base'}`} problemId={problemSlug} curveballId={curveballId} transcript={transcript} code={code} active={view === 'practice' && activeTab === 'interview'} speechSupported={speechSupported} onError={setError} onSpeak={text => speakForPane('interview', text)} onStopSpeaking={interviewerAudio.stop} onRecordingChange={setFollowupRecording} voiceEnabled={voiceEnabled} onVoiceToggle={() => setVoiceEnabled(value => !value)} audio={interviewerAudio} />
               </div>
             </div>
           </section>

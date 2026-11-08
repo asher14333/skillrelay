@@ -172,3 +172,242 @@ These checks mock external model services. No live Gemini or OpenAI request was
 made, and they do not establish model quality or account/model access. Add a
 valid key to `backend/.env`, restart the backend, and verify live feedback before
 the demo. No new dependencies were required for this integration.
+
+### Subsequent live validation
+
+After the user configured the backend environment, all four AI endpoints
+returned successful live Gemini responses through the frontend proxy. The
+Python runner passed all three Two Sum cases. A Chrome learner session captured
+seven checkpoints, received evidence-linked feedback about an omitted memory
+analysis, and completed a scripted focused retry from 0/3 to 3/3 supported
+criteria. Interview questions and answer evaluation also worked. The saved
+retry summary survived reload without duplicating the attempt. These are
+functional checks with scripted explanations, not learner-outcome evidence.
+
+## Codex design skills and UI polish
+
+Installed Impeccable 4.8.0, Taste 2.5.1, and Playwright CLI skills for Codex.
+Added `@playwright/cli` 0.1.23 as a frontend development dependency. The skills
+remain outside the app repository; see [tooling](DEVELOPMENT_TOOLS.md).
+
+All 51 existing automated tests pass (38 backend and 13 frontend data tests).
+Build and lint pass, with the existing Monaco bundle-size warning. The
+additional checked-in Playwright CLI function passes in an isolated Chrome
+session with explicitly labeled AI response fixtures. It verifies:
+
+- Score and recommended lesson precede replay, and the next action fits in the
+  desktop viewport. Lesson reading opens and closes with native disclosure.
+- Feedback and retry headings receive focus. The follow-up answer has a visible
+  label and receives focus, and the conversation has an accessible live log.
+- Changing the learning goal during a focused retry returns to the coding view
+  while preserving the working explanation, fixing the blank-workspace bug.
+- The retry summary updates one saved attempt and survives reload.
+- The practice layout has no page-wide horizontal overflow at 1440, 1024, 768,
+  and 390 pixels. Separate feedback checks also passed at 320 pixels.
+
+Inspected desktop and mobile screenshots. The mobile lesson disclosure has a
+44-pixel minimum height and works with Enter. The Impeccable source scan found
+three existing quote-border warnings, retained as semantic quotation markers;
+it reported no errors. Marketing-page layout gates were not applied to this
+task-oriented app. This pass does not add raw-draft recovery or verify voice
+capture, model quality, or actual learner outcomes.
+
+## Full reliability review
+
+The subsequent review verifies 58 backend/API/catalog tests and 13 frontend
+storage/replay tests (71 total), including all 17 real challenge-runner cases.
+The backend tests cover malformed inputs/model output, Unicode-aware scoring,
+CORS preflights, the interview question cap, and debugging stdout. Build and
+lint pass. A live Valid Parentheses run and Gemini analysis both returned HTTP
+200 through the restarted frontend/backend; that smoke check is separate from
+the simulated browser regressions.
+
+The browser suite includes the original practice flow plus
+`frontend/tests/reliability-ui.js`: retry draft retention, delayed-request
+invalidation, frozen follow-up context, malformed-response recovery, simulated
+speech finalization, reset undo, and the dirty-draft navigation guard. AI and
+speech in that regression are labeled simulations. No real microphone recording
+or new learner-outcome measurement is implied. See [full review](REVIEW.md).
+
+## User-approved dark workspace polish
+
+The user selected a compact engineering workspace, neutral charcoal surfaces,
+restrained warm amber accents, and the existing three-column desktop layout.
+The large introduction is replaced by a compact toolbar. All screens share the
+same tokens and control styles; the previous overlapping CSS layers were
+consolidated. The approved design brief is merged in [design](DESIGN.md).
+
+Frontend lint, production build, and all 13 storage/replay data tests pass.
+The existing large Monaco chunk warning remains. The practice browser check
+also covers Previous/Next checkpoint navigation; the reliability browser check
+continues to pass after the control-label and visual changes. No backend code
+changed during this pass.
+
+Inspected practice, feedback, retry, follow-up, challenge picker, progress,
+empty history, loading, runner errors, and feedback errors. Viewport checks at
+1440, 1280, 1024, 820, 768, 390, and 320 pixels found no page-wide horizontal
+overflow. Corrected narrow-screen visibility of the hidden practice workspace
+on Progress and bounded the problem reading pane so it does not push coding
+several screens below the fold. Keyboard focus, native disclosures, selected
+case semantics, reduced motion, and recoverable errors are retained.
+
+Representative contrast checks: muted text on raised surfaces 6.01:1,
+placeholder text on the editor surface 6.79:1, and primary button text 9.34:1.
+These sample checks are not a whole-product accessibility certification.
+The single final Impeccable source detector pass returned no findings.
+
+AI and error responses in this UI review are explicitly labeled fixtures;
+speech finalization remains a simulated regression. This polish does not
+establish live microphone capture or new learner-outcome evidence. Raw drafts
+remain session-only and saved history keeps summaries. Changes are left
+uncommitted for the user's review.
+
+## Purposeful motion pass
+
+The motion pass uses shared 120/180/200ms timings without new application
+packages. It adds a measured sliding tab indicator, native-dialog entrance,
+open-only disclosure arrivals, small button press feedback, and bounded
+arrivals for new feedback, notices, retry results, and interview messages.
+Changing replay checkpoints refreshes only the evidence; code editing and
+transcription do not animate. Focus and native closing remain immediate.
+
+Lint, production build, and all 13 frontend data tests pass. The existing
+practice and reliability browser flows pass with motion enabled. The dedicated
+`frontend/tests/motion-ui.js` uses a fresh context and labeled AI fixtures to
+verify interrupted transitions, preserved code/explanation/answer drafts and
+focus, hidden replay completion followed by reveal/resize, exact checkpoint
+evidence, native disclosure/Escape behavior, and live reduced-motion changes.
+Both WAAPI arrivals and native smooth scrolling honor a preference change;
+reduced-motion mode keeps the actions usable without JS/CSS motion.
+
+The final source detector returned no findings. Browser emulation and a local
+video demonstrate behavior; they do not establish physical-device frame rates,
+live microphone capture, model quality, or learner outcomes. No backend code
+changed in this pass.
+
+
+## Display preferences
+
+Display settings adds three independently saved preferences: interface/editor
+text size (Default/Large/Larger), layout (Columns/Stacked), and reduced motion
+(Follow system/Reduce). The native nonmodal popover is available in Practice
+and Progress, with immediate application and a separate local-storage key.
+
+Lint, production build, and all 13 frontend data tests pass; the existing large
+Monaco bundle warning remains. Practice and motion browser regressions pass.
+The new `frontend/tests/display-ui.js` uses isolated contexts and a labeled
+follow-up fixture, with no live AI or microphone request. It verifies:
+
+- Keyboard opening, Escape focus restoration, close, and outside-click focus.
+- Actual 18px interface and Monaco text, stacked section order, preserved code,
+  explanation and follow-up drafts, and surviving editor undo history.
+- Saved reduction cancelling an active arrival, OS reduction under Follow
+  system, and real Monaco cursor visibility across live OS preference changes.
+- Preference persistence across reload and availability in Progress.
+- Both layouts at Larger text at 320, 700, 1024, and 1440px, with no page-wide
+  horizontal overflow and fully visible workspace tab labels.
+- Safe defaults and working controls when preference storage is malformed or
+  blocked, including an accurate save-failure message.
+
+Desktop and phone screenshots were visually inspected. The rendered-page
+Impeccable check reported zero anti-patterns and one advisory about the existing
+compact heading scale. This feature does not establish full WCAG compliance;
+manual screen-reader and physical-device testing remain separate work.
+
+
+## Requirement changes and curated video lessons
+
+All 70 backend tests and 14 frontend data tests pass, as do lint and production
+build. Backend coverage includes five real variant solutions across 28 combined
+original/added cases, rejecting unknown or mismatched variants, propagating
+updated requirements into AI prompts, malformed adaptation output, and exact
+quote enforcement. Frontend storage tests ensure comparisons do not mix
+ordinary attempts with changed-requirement attempts and still strip raw code
+and transcripts.
+
+Six browser flows pass: practice, reliability, motion, display preferences,
+curveballs, and lesson videos. The new `frontend/tests/curveball-ui.js` uses
+real local Python execution: 3/3 original Two Sum cases, 3/5 after revealing the
+no-match requirement, and 5/5 after adaptation. It verifies frozen before/after
+context, edit-triggered cancellation of delayed reviews, variant propagation
+to analysis/retry/follow-up, labeled saved history, 320/1024/1440px overflow,
+and clearing variant state after a confirmed challenge change. AI responses
+in the browser regression are labeled fixtures.
+
+`frontend/tests/video-ui.js` verifies no external requests before loading,
+curated URLs, no autoplay, accessible iframe title, focus retention, fallback,
+and teardown on close/collapse/navigation using a simulated frame. Separately,
+a real curated YouTube embed was loaded and visually inspected. Resource
+metadata, chapter starts where used, captions, and embeddability were checked;
+playback availability remains dependent on YouTube and the user's network.
+
+A separate live adaptation review with synthetic Two Sum code returned HTTP
+200 through the configured AI provider, 5/5 runner cases, and all three
+communication checks with verified source quotes. This is a smoke check, not
+learner-outcome evidence. No real microphone recording was needed. The changed
+UI source detector returned no findings; screenshots were visually inspected.
+The pre-existing large Monaco bundle warning remains. The local runner's
+public-execution isolation limitation is unchanged.
+
+
+## Adaptive live interview and Gemini audio
+
+The fixed curveball UI regression is replaced by `adaptive-ui.js`. It verifies
+opt-in quiet-pause checks, finalized-microphone turn-taking, cancellation on
+edits/Pause/navigation, generated sentinel-return requirements and replacement
+cases, expiry recovery without lost work, variant propagation and saved labels,
+and 320/1024/1440px layouts. `audio-ui.js` verifies the real playback hook using
+simulated Audio and WAV responses; `voice-flow-ui.js` covers spoken follow-ups,
+evaluation/next-question playback, microphone handoff, mute/replay, and late
+responses after navigation. Simulated audio/recognition do not establish
+physical microphone or speaker behavior.
+
+Backend tests exercise declarative generation across all five problems,
+independent reference expectations, malformed or unsupported proposals,
+registry expiry/capacity, prompt context, voice encoding, cache scope, quota,
+timeouts and invalid audio. Source test counts and build results accompany the
+release report. The original practice, reliability, motion, display and video
+flows continue to run independently of the new opt-in interviewer.
+
+Live Gemini smoke checks returned HTTP 200 for a generated curveball and WAV
+speech (mono 24kHz, 7.64 seconds). The fresh requirement returned values instead
+of indices and ignored zero; an adapted solution passed all 7 actual generated
+cases. These checks use synthetic practice input; they do not measure learning
+outcomes. Generated rule vocabulary is bounded, and server-written reference
+logic determines correctness. The local Python runner still needs isolation
+before public untrusted execution.
+
+
+Final verification: 94 backend tests, 15 frontend data tests, lint and production
+build pass. Eight browser flows pass: practice, reliability, motion, display,
+video, adaptive interviewer, audio hook, and spoken follow-up integration.
+A separate real browser session received a live Gemini continue response,
+generated its audio, reached the actual Audio playing state, and stopped it
+through the UI with no browser exceptions. This checks the player/decoder,
+not audibility through a particular physical speaker. Expiry recovery is also
+verified to pause the live interviewer and clear the generated ID while keeping
+code and explanation.
+
+
+## Hands-free turn-taking and chat
+
+`handsfree-ui.js` verifies one Start through silence detection, finalization,
+one AI request, visible candidate/AI bubbles, audio end and automatic listening
+restart. It covers short answers without full-transcript duplication, automatic
+curveball application and one marked bubble, silent continue decisions,
+Pause/navigation cancellation, denied microphone permission without a restart
+loop, typed fallback, and 320/1024/1440px layouts. The newest AI bubble is checked
+for complete visibility while following the conversation. Recognition, Gemini
+and audio are controlled fixtures; this does not certify physical hardware.
+
+`adaptive-ui.js` is updated for automatic typed replies and the chat surface,
+retaining generated-contract, expiry, API context, saved history and recovery
+coverage. The earlier Check now workflow and pacing description above are
+superseded by hands-free turns. Existing manual practice and follow-up recording
+remain available independently. Chat is kept only in the current session.
+
+Final hands-free verification: 94 backend tests, 15 frontend data tests, lint,
+production build and nine browser flows pass. The additional flow covers the
+automatic recognition/turn/audio loop and chat. Physical microphone and speaker
+quality still require a device rehearsal. The existing Monaco bundle warning
+remains.

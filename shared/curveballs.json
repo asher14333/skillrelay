@@ -1,0 +1,191 @@
+[
+  {
+    "id": "two-sum-no-match",
+    "problemId": "two-sum",
+    "title": "No matching pair",
+    "prompt": "The original problem guarantees a matching pair. What should your function do when no pair exists?",
+    "requirement": "Return an empty list when no two distinct indices add up to the target. Keep returning a valid pair when one exists.",
+    "details": [
+      "A valid pair may not exist. Return [] when no pair exists.",
+      "Do not use the same element twice. When a pair exists, return its indices in any order."
+    ],
+    "constraints": [
+      "2 <= nums.length <= 10⁴",
+      "-10⁹ <= nums[i] <= 10⁹",
+      "There is at most one valid pair. Return [] if there is none."
+    ],
+    "examples": [
+      {
+        "input": "nums = [1,2,3], target = 99",
+        "output": "[]"
+      }
+    ],
+    "testCases": [
+      {
+        "nums": [
+          1,
+          2,
+          3
+        ],
+        "target": 99,
+        "expected": []
+      },
+      {
+        "nums": [
+          3,
+          3
+        ],
+        "target": 7,
+        "expected": []
+      }
+    ]
+  },
+  {
+    "id": "parentheses-ignore-text",
+    "problemId": "valid-parentheses",
+    "title": "Ignore surrounding text",
+    "prompt": "Now the input can contain ordinary text as well as brackets. Can you validate the brackets without treating the text as an error?",
+    "requirement": "Ignore every non-bracket character. Validate only (), [] and {} in their original order.",
+    "details": [
+      "The input may contain ordinary text. Ignore all characters except ()[]{}.",
+      "Bracket types and nesting must still match. Text with no brackets is valid."
+    ],
+    "constraints": [
+      "0 <= s.length <= 10⁴",
+      "s may contain text and bracket characters.",
+      "Ignore every character other than ()[]{}."
+    ],
+    "examples": [
+      {
+        "input": "s = \"a(b)c\"",
+        "output": "true"
+      },
+      {
+        "input": "s = \"a([)]b\"",
+        "output": "false"
+      },
+      {
+        "input": "s = \"plain text\"",
+        "output": "true"
+      }
+    ],
+    "testCases": [
+      {
+        "s": "a(b)c",
+        "expected": true
+      },
+      {
+        "s": "a([)]b",
+        "expected": false
+      },
+      {
+        "s": "plain text",
+        "expected": true
+      }
+    ],
+    "description": "Given a string s that may contain text and brackets, determine whether its bracket characters are correctly matched and nested."
+  },
+  {
+    "id": "duplicates-empty-input",
+    "problemId": "contains-duplicate",
+    "title": "An empty collection",
+    "prompt": "A caller can now pass an empty collection. What result makes sense, and will your implementation handle it?",
+    "requirement": "Accept an empty nums array and return false. Preserve duplicate detection for nonempty inputs.",
+    "details": [
+      "The array may be empty. An empty array contains no duplicate, so return false."
+    ],
+    "constraints": [
+      "0 <= nums.length <= 10⁵",
+      "-10⁹ <= nums[i] <= 10⁹"
+    ],
+    "examples": [
+      {
+        "input": "nums = []",
+        "output": "false"
+      }
+    ],
+    "testCases": [
+      {
+        "nums": [],
+        "expected": false
+      },
+      {
+        "nums": [
+          0,
+          0
+        ],
+        "expected": true
+      }
+    ]
+  },
+  {
+    "id": "stock-empty-prices",
+    "problemId": "best-time-to-buy-and-sell-stock",
+    "title": "Missing price history",
+    "prompt": "The price feed may return no observations. How should the profit calculation behave when there is no trading history?",
+    "requirement": "Accept an empty prices array and return 0. Keep all existing rules for buying before selling.",
+    "details": [
+      "The price feed may be empty. Return 0 when no transaction is possible.",
+      "You must buy before you sell."
+    ],
+    "constraints": [
+      "0 <= prices.length <= 10⁵",
+      "0 <= prices[i] <= 10⁴"
+    ],
+    "examples": [
+      {
+        "input": "prices = []",
+        "output": "0"
+      }
+    ],
+    "testCases": [
+      {
+        "prices": [],
+        "expected": 0
+      },
+      {
+        "prices": [
+          5
+        ],
+        "expected": 0
+      }
+    ]
+  },
+  {
+    "id": "subarray-empty-input",
+    "problemId": "maximum-subarray",
+    "title": "No observations yet",
+    "prompt": "The caller may have no values yet. Return zero for that case, while still choosing a nonempty subarray when values exist. What changes?",
+    "requirement": "Return 0 only for an empty nums array. For nonempty input, the selected subarray must remain nonempty, including all-negative arrays.",
+    "details": [
+      "If nums is empty, return 0.",
+      "If nums is nonempty, choose a nonempty contiguous subarray. All-negative inputs must return their largest value."
+    ],
+    "constraints": [
+      "0 <= nums.length <= 10⁵",
+      "-10⁴ <= nums[i] <= 10⁴"
+    ],
+    "examples": [
+      {
+        "input": "nums = []",
+        "output": "0"
+      },
+      {
+        "input": "nums = [-7]",
+        "output": "-7"
+      }
+    ],
+    "testCases": [
+      {
+        "nums": [],
+        "expected": 0
+      },
+      {
+        "nums": [
+          -7
+        ],
+        "expected": -7
+      }
+    ]
+  }
+]

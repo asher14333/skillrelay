@@ -1,6 +1,6 @@
 # SkillRelay
 
-**Practice skills. Explain your thinking. Connect with people who help you grow.**
+**Practice coding. Explain your thinking. Know what to work on next.**
 
 SkillRelay helps early-career developers practice explaining technical work and
 turn interview feedback into a concrete next learning step. Based on SpeakCode,
@@ -13,6 +13,8 @@ career readiness, and AI-assisted skilling.
 - Spoken or typed explanations alongside the editor, so you can explain while
   coding and running tests.
 - AI rubric feedback and interview follow-up questions using Gemini or OpenAI.
+- Display settings for interface/editor text size, stacked or column layouts,
+  and reduced motion. Preferences apply immediately and stay in this browser.
 - Three learning goals: clear explanations, technical trade-offs, and interview
   confidence.
 - Six curated micro-lessons, recommended from normalized rubric gaps. Your goal
@@ -20,6 +22,13 @@ career readiness, and AI-assisted skilling.
 - A retry action that preserves your explanation and code while showing a
   concrete practice prompt.
 - Saved practice summaries and score comparisons for the same problem and goal.
+- An opt-in live interviewer: Gemini decides whether to let you continue, ask
+  a question, or generate a fresh requirement change and test inputs. Trusted
+  reference functions compute expected results; AI-written test code is never run.
+- Gemini-generated spoken interviewer responses, with mute, stop, replay, and
+  microphone handoff. Text remains available if audio cannot play.
+- Curated, optional YouTube examples matched to the recommended lesson. The
+  player loads only on request, with captions preference and an external fallback.
 - Reasoning replay with timestamped code/explanation checkpoints and
   evidence-linked observations.
 - Focused retries with three criteria, exact before/after quotes, and a saved
@@ -35,13 +44,42 @@ moment. Choose Practice this gap, write a focused answer, and compare evidence.
 Replay is available during the current session; saved history keeps summaries
 only. See [reasoning replay](docs/REPLAY.md) for capture and privacy details.
 
+Choose Start live interview once and allow microphone access. Explain your
+approach while coding; after about 1.5 seconds without new recognized speech,
+the app finalizes the turn and asks Gemini what would help next. Useful
+questions and requirement changes appear as chat bubbles beside the editor
+and play through Gemini voice. Listening resumes after playback ends, with
+no Check now or manual stop/start required for each turn. A continue decision
+can keep the interviewer quiet. Pause interview cancels the entire live loop.
+
+Interview input can be Voice or Text. Text turns are considered automatically
+after a typing pause. If speech recognition is unavailable, typed practice
+still works. Stop/replay/mute remain explicit controls; autoplay or permission
+errors keep text visible. Microphone input stays off during AI generation and
+playback, and late responses cannot restart a paused or hidden interview.
+Chat keeps a bounded, session-only conversation; full explanation text remains
+available below it for review. Nothing in the chat is added to saved summaries.
+
+Generated changes stay within supported, parameterized contracts for the five
+problems. Gemini selects timing, parameters, title, and new test inputs rather
+than a fixed scenario. Server-checked requirements replace original examples
+and recompute expectations. Generated IDs last one hour in the running backend;
+restart/expiry may invalidate them. Return to original requirements keeps your
+code and explanation when recovering from an expired change.
+
+Curveball reviews keep runnable correctness separate from three communication
+checks: understanding the requirement, explaining the implementation decision,
+and explaining verification. Exact source quotes support the checks. Saved
+practice labels requirement changes and compares scores only within the same
+problem, goal, and variant. Raw before/after evidence stays in the session.
+
 History is saved in this browser, up to 100 attempts. Code and transcripts are
 not included in saved summaries. Cloud synchronization, portfolios, and peer
 matching are future work. See the [implementation plan](docs/IMPLEMENTATION_PLAN.md)
 and [demo walkthrough](docs/DEMO.md).
 
-The interface uses a light reading workspace, a locally bundled dark code
-editor, and self-hosted Manrope typography. See [design direction](docs/DESIGN.md)
+The interface uses a compact charcoal workspace, restrained amber actions,
+a locally bundled code editor, and self-hosted Manrope typography. See [design direction](docs/DESIGN.md)
 for the palette, layout decisions, and UI/UX guidance applied.
 
 ## Run locally
@@ -92,6 +130,20 @@ If `AI_PROVIDER` is omitted, a non-empty Gemini key selects Gemini; otherwise
 OpenAI is used, preserving existing OpenAI-only setups. There is no automatic
 fallback to another provider after a failed request.
 
+AI output voice always uses Gemini TTS and the same `GEMINI_API_KEY`; it does
+not use browser speech synthesis. Optional settings in `backend/.env`:
+
+```dotenv
+GEMINI_TTS_MODEL=gemini-3.1-flash-tts-preview
+GEMINI_TTS_VOICE=Kore
+```
+
+The key needs access/quota for that audio model. Voice generation has additional
+latency and quota usage. The backend caches a few short audio replies privately
+for five minutes. Browser autoplay restrictions may require Replay voice.
+Spoken input still uses the browser's speech recognition; only finalized text
+is used by the interviewer. API keys remain on the backend.
+
 Restart the backend after editing `.env`. The backend loads `backend/.env`
 regardless of the working directory; existing shell environment variables take
 precedence. No frontend `.env` or additional Python package is required. Never
@@ -116,6 +168,9 @@ npm --prefix frontend run lint
 
 The tests mock AI calls. See [validation](docs/VALIDATION.md) for checks and
 limitations, including the inherited dependency audit findings.
+
+See [development tooling](docs/DEVELOPMENT_TOOLS.md) for the Codex design skills,
+Playwright CLI setup, and the browser regression check.
 
 ## Source and event context
 
