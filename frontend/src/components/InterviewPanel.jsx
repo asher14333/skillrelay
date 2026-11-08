@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
+import InterviewerVoice from './InterviewerVoice'
 import { animateArrival, scrollWithPreference } from '../lib/motion'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
@@ -11,6 +12,12 @@ export default function InterviewPanel({
   transcript,
   code,
   onError,
+  onSpeak,
+  onStopSpeaking,
+  onRecordingChange,
+  voiceEnabled = false,
+  onVoiceToggle,
+  audio,
   active = true,
 }) {
   const [history, setHistory] = useState([])
@@ -32,6 +39,10 @@ export default function InterviewPanel({
   const previousMessages = useRef({ first: null, length: 0 })
 
   useEffect(() => () => requestRef.current?.abort(), [])
+  useEffect(() => {
+    onRecordingChange?.(isRecording)
+    return () => onRecordingChange?.(false)
+  }, [isRecording, onRecordingChange])
 
   useEffect(() => {
     if (active && history.length && !complete && !isLoading) answerRef.current?.focus()
@@ -106,6 +117,7 @@ export default function InterviewPanel({
   }, [onError])
 
   const startRecording = () => {
+    onStopSpeaking?.()
     onError(null)
     sessionBaseRef.current = currentAnswer ? `${currentAnswer} ` : ''
     try {
@@ -140,6 +152,7 @@ export default function InterviewPanel({
       if (controller.signal.aborted || requestRef.current !== controller) return
       if (typeof data?.question !== 'string' || !data.question.trim()) throw new Error('The interviewer did not return a question. Try starting again.')
       conversationRef.current = context
+      onSpeak?.(data.question.trim())
       setHistory([{ role: 'interviewer', content: data.question.trim() }])
       setComplete(false)
       setOverallNote('')
@@ -198,6 +211,8 @@ export default function InterviewPanel({
         newHistory.push({ role: 'interviewer', content: data.nextQuestion })
       }
 
+      const spoken = [data.answerEvaluation.feedback, data.complete ? data.overallNote : data.nextQuestion].filter(Boolean).join(' ')
+      onSpeak?.(spoken)
       setHistory(newHistory)
       setCurrentAnswer('')
       sessionBaseRef.current = ''
@@ -227,6 +242,7 @@ export default function InterviewPanel({
 
   return (
     <div className="interview-pane">
+      {audio && <InterviewerVoice enabled={voiceEnabled} onToggle={onVoiceToggle} audio={audio} />}
       {history.length === 0 ? (
         <div className="interview-start">
           <h3>Follow-up practice</h3>

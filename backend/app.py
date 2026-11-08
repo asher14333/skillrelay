@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from ai_provider import AIProviderError, call_model
 
@@ -15,6 +15,7 @@ from prompts import (
     normalize_feedback,
 )
 from runner import run_code
+from speech import synthesize_speech, MAX_SPEECH_TEXT
 from replay import CRITERIA, DIMENSIONS, MAX_CODE, MAX_TRANSCRIPT, normalize_insights, normalize_retry, replay_prompt, retry_prompt, validate_moments
 from learning import LESSONS
 from validation import RequestValidationError, conversation_history, normalize_followup, normalize_question, practice_context, problem_context, request_object, text_field
@@ -251,6 +252,14 @@ def review_curveball():
         return jsonify({"error": str(exc)}), 502
     except Exception:
         return jsonify({"error": "Could not review the requirement change. Your code and explanation are still available; try again."}), 502
+
+
+@app.route("/speech", methods=["POST"])
+def interviewer_speech():
+    data = request_object()
+    text = text_field(data, "text", required=True, limit=MAX_SPEECH_TEXT)
+    audio = synthesize_speech(text)
+    return Response(audio, mimetype="audio/wav", headers={"Cache-Control": "no-store"})
 
 
 if __name__ == "__main__":
