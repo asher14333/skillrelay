@@ -6,9 +6,12 @@ import TestConsole from './components/TestConsole'
 import InterviewPanel from './components/InterviewPanel'
 import LearningPlan from './components/LearningPlan'
 import ProgressPanel from './components/ProgressPanel'
+import ReasoningReplay from './components/ReasoningReplay'
+import FocusedRetry from './components/FocusedRetry'
 import Icon, { BrandMark } from './components/Icon'
 import { getLearningGoal, LEARNING_GOALS } from './data/learning'
 import { addAttempt, loadPractice, writePractice } from './data/practiceStorage'
+import { appendCheckpoint, checkpointPayload, MAX_CODE, MAX_EXPLANATION } from './data/sessionReplay'
 import './App.css'
 import './Learning.css'
 
@@ -32,6 +35,7 @@ function App() {
   const [transcript, setTranscript] = useState('')
   const [activeTab, setActiveTab] = useState('code')
   const [isRecording, setIsRecording] = useState(false)
+  const [speechPhase, setSpeechPhase] = useState('idle')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [runResults, setRunResults] = useState(null)
@@ -42,6 +46,8 @@ function App() {
   const [speechSupported, setSpeechSupported] = useState(true)
   const [showProblemList, setShowProblemList] = useState(false)
   const [pendingProblem, setPendingProblem] = useState(null)
+  const [checkpoints, setCheckpoints] = useState([])
+  const [retryTask, setRetryTask] = useState(null)
   const pickerRef = useRef(null)
 
   const recognitionRef = useRef(null)
@@ -50,36 +56,86 @@ function App() {
   const codeRevisionRef = useRef(0)
   const currentCodeRef = useRef(problem.starterCode)
   const currentTranscriptRef = useRef('')
+  const sessionRef = useRef({ startedAt: null, moments: [], timers: {} })
+  const generationRef = useRef(0)
+  const speechGenerationRef = useRef(null)
+  const lastFinalSpeechRef = useRef('')
+
+  const captureMoment = useCallback((kind, extra = {}) => {
+    const session = sessionRef.current
+    const now = Date.now()
+    if (session.startedAt === null) session.startedAt = now
+    session.moments = appendCheckpoint(session.moments, {
+      kind, code: currentCodeRef.current, transcript: currentTranscriptRef.current,
+      elapsedMs: now - session.startedAt, ...extra,
+    })
+    setCheckpoints(session.moments)
+    return session.moments
+  }, [])
+
+  const scheduleMoment = useCallback((kind) => {
+    clearTimeout(sessionRef.current.timers[kind])
+    sessionRef.current.timers[kind] = setTimeout(() => {
+      delete sessionRef.current.timers[kind]
+      captureMoment(kind)
+    }, 1100)
+  }, [captureMoment])
+
+  const flushPendingMoments = useCallback(() => {
+    for (const [kind, timer] of Object.entries(sessionRef.current.timers)) {
+      clearTimeout(timer)
+      delete sessionRef.current.timers[kind]
+      captureMoment(kind)
+    }
+  }, [captureMoment])
+
+  useEffect(() => {
+    const session = sessionRef.current
+    return () => {
+      Object.values(session.timers).forEach(clearTimeout)
+      generationRef.current += 1
+    }
+  }, [])
 
   const invalidateFeedback = useCallback(() => {
     inputRevisionRef.current += 1
     setFeedback(null)
     setAnalysisSnapshot(null)
+    setRetryTask(null)
     setNotice('')
     setActiveTab((tab) => tab === 'feedback' ? 'code' : tab)
   }, [])
 
-  const changeTranscript = useCallback((value) => {
+  const changeTranscript = useCallback((value, shouldCapture = true) => {
     if (currentTranscriptRef.current === value) return
+    if (!sessionRef.current.moments.length) captureMoment('start')
     currentTranscriptRef.current = value
     invalidateFeedback()
     setTranscript(value)
-  }, [invalidateFeedback])
+    if (shouldCapture) scheduleMoment('explanation')
+  }, [invalidateFeedback, captureMoment, scheduleMoment])
 
   const changeCode = useCallback((value = '') => {
     if (currentCodeRef.current === value) return
+    if (!sessionRef.current.moments.length) captureMoment('start')
     currentCodeRef.current = value
     codeRevisionRef.current += 1
     invalidateFeedback()
     setCode(value)
     setRunSnapshot(null)
     setRunResults(null)
-  }, [invalidateFeedback])
+    scheduleMoment('code')
+  }, [invalidateFeedback, captureMoment, scheduleMoment])
 
   const switchProblem = useCallback((slug) => {
     const next = getProblemBySlug(slug)
+    generationRef.current += 1
+    Object.values(sessionRef.current.timers).forEach(clearTimeout)
+    Object.assign(sessionRef.current, { startedAt: null, moments: [], timers: {} })
+    setCheckpoints([])
     recognitionRef.current?.abort()
     setIsRecording(false)
+    setSpeechPhase('idle')
     invalidateFeedback()
     codeRevisionRef.current += 1
     currentCodeRef.current = next.starterCode
@@ -148,27 +204,47 @@ function App() {
     recognition.lang = 'en-US'
 
     recognition.onresult = (event) => {
+      if (speechGenerationRef.current !== generationRef.current) return
       let sessionText = ''
+      let finalText = ''
       for (let i = 0; i < event.results.length; i++) {
         sessionText += event.results[i][0].transcript
+        if (event.results[i].isFinal) finalText += event.results[i][0].transcript
       }
-      changeTranscript((sessionBaseRef.current + sessionText).trim())
+      changeTranscript((sessionBaseRef.current + sessionText).trim(), false)
+      if (finalText && finalText !== lastFinalSpeechRef.current) {
+        lastFinalSpeechRef.current = finalText
+        captureMoment('explanation', { transcript: (sessionBaseRef.current + finalText).trim() })
+      }
+    }
+
+    recognition.onstart = () => {
+      if (speechGenerationRef.current === generationRef.current) {
+        setSpeechPhase('listening')
+        captureMoment('microphone')
+      }
     }
 
     recognition.onerror = (event) => {
+      if (speechGenerationRef.current !== generationRef.current) return
       if (event.error !== 'aborted') {
         setError(`Speech recognition error: ${event.error}`)
       }
       setIsRecording(false)
+      setSpeechPhase('idle')
     }
 
     recognition.onend = () => {
+      if (speechGenerationRef.current !== generationRef.current) return
       setIsRecording(false)
+      setSpeechPhase('idle')
+      if (speechGenerationRef.current === generationRef.current) captureMoment('explanation')
+      speechGenerationRef.current = null
     }
 
     recognitionRef.current = recognition
     return () => recognition.abort()
-  }, [changeTranscript])
+  }, [changeTranscript, captureMoment])
 
   const persistPractice = (nextAttempts, nextGoal = learningGoal) => {
     const result = writePractice(nextGoal, nextAttempts)
@@ -197,6 +273,7 @@ function App() {
         rubric: snapshot.feedback.rubric,
         lesson: snapshot.feedback.learningPlan,
         run: snapshot.run,
+        retrySummary: snapshot.retrySummary,
       })
       if (persistPractice(nextAttempts)) setNotice('Practice saved in this browser. View your progress whenever you are ready.')
     } catch (err) {
@@ -212,9 +289,20 @@ function App() {
       switchProblem(problems[(index + 1) % problems.length].slug)
     } else {
       setLessonFocus(plan)
-      setActiveTab('code')
+      startFocusedRetry(plan.dimension)
     }
     setView('practice')
+  }
+
+  const startFocusedRetry = (dimension, checkpointId = null) => {
+    if (!analysisSnapshot || !dimension) return
+    const spec = analysisSnapshot.feedback.focusedPractice?.[dimension]
+    if (!spec) return
+    const moment = checkpointId ? analysisSnapshot.checkpoints.find((item) => item.id === checkpointId) : null
+    setRetryTask({ id: crypto.randomUUID(), analysisId: analysisSnapshot.id, problemId: analysisSnapshot.problemId,
+      dimension, code: moment ? moment.code : analysisSnapshot.code,
+      before: moment ? moment.transcript : analysisSnapshot.transcript, prompt: spec.prompt, criteria: spec.criteria })
+    setActiveTab('retry')
   }
 
   const startRecording = () => {
@@ -222,20 +310,29 @@ function App() {
     invalidateFeedback()
     setActiveTab('code')
     sessionBaseRef.current = transcript ? `${transcript} ` : ''
+    speechGenerationRef.current = generationRef.current
+    lastFinalSpeechRef.current = ''
+    if (!sessionRef.current.moments.length) captureMoment('start')
     try {
+      setSpeechPhase('starting')
       recognitionRef.current?.start()
       setIsRecording(true)
     } catch {
+      setIsRecording(false)
+      setSpeechPhase('idle')
       setError('Could not start recording. Try again.')
     }
   }
 
   const stopRecording = () => {
+    setSpeechPhase('stopping')
     recognitionRef.current?.stop()
-    setIsRecording(false)
   }
 
   const handleRun = async () => {
+    flushPendingMoments()
+    if (!sessionRef.current.moments.length) captureMoment('start')
+    captureMoment('run')
     const revision = codeRevisionRef.current
     setIsRunning(true)
     setError(null)
@@ -257,6 +354,7 @@ function App() {
         setRunResults(data)
         if (Number.isInteger(data.passed) && Number.isInteger(data.total) && data.total > 0) {
           setRunSnapshot({ code, problemId: problemSlug, passed: data.passed, total: data.total })
+          captureMoment('run-result', { run: { passed: data.passed, total: data.total } })
         }
         const firstFail = data.results?.findIndex((r) => !r.passed)
         setSelectedCase(firstFail >= 0 ? firstFail : 0)
@@ -284,6 +382,13 @@ function App() {
       setActiveTab('code')
       return
     }
+    if (code.length > MAX_CODE || transcript.length > MAX_EXPLANATION) {
+      setError('Keep this session under 12,000 code characters and 6,000 explanation characters to get feedback.')
+      return
+    }
+
+    flushPendingMoments()
+    const reviewCheckpoints = checkpointPayload(captureMoment('review'))
 
     setIsAnalyzing(true)
     setError(null)
@@ -298,6 +403,7 @@ function App() {
         code,
         problemId: problemSlug,
         learningGoal,
+        checkpoints: reviewCheckpoints,
       }, { timeout: 60000 })
       if (revision !== inputRevisionRef.current) return
       setFeedback(data)
@@ -307,6 +413,7 @@ function App() {
         problemId: problemSlug,
         goal: learningGoal,
         feedback: data,
+        code, transcript, checkpoints: reviewCheckpoints,
         run: runSnapshot?.code === code && runSnapshot.problemId === problemSlug
           ? { passed: runSnapshot.passed, total: runSnapshot.total } : null,
       })
@@ -326,6 +433,9 @@ function App() {
       setIsAnalyzing(false)
     }
   }
+
+  const savedAttempt = attempts.find((attempt) => attempt.id === analysisSnapshot?.id)
+  const isCurrentSaved = !!savedAttempt && (!analysisSnapshot?.retrySummary || savedAttempt.retrySummary?.createdAt === analysisSnapshot.retrySummary.createdAt)
 
   return (
     <div className="app">
@@ -421,8 +531,8 @@ function App() {
               <button className={`tab ${activeTab === 'code' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'code'} onClick={() => setActiveTab('code')}>
                 <Icon name="code" size={16} />Code & explain{isRecording && <span className="tab-recording-dot" />}
               </button>
-              <button className={`tab ${activeTab === 'feedback' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'feedback'} disabled={!feedback || isRecording} onClick={() => setActiveTab('feedback')}>
-                <Icon name="book" size={16} />Session feedback
+              <button className={`tab ${['feedback', 'retry'].includes(activeTab) ? 'tab-active' : ''}`} aria-pressed={['feedback', 'retry'].includes(activeTab)} disabled={!feedback || isRecording} onClick={() => setActiveTab('feedback')}>
+                <Icon name="book" size={16} />{activeTab === 'retry' ? 'Focused retry' : 'Session feedback'}
               </button>
               <button className={`tab tab-followup ${activeTab === 'interview' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'interview'} onClick={() => { recognitionRef.current?.stop(); setActiveTab('interview') }}>Follow-up</button>
             </nav>
@@ -431,7 +541,7 @@ function App() {
               <div className={`code-pane concurrent-session ${activeTab !== 'code' ? 'pane-hidden' : ''}`}>
                 <div className="coding-column">
                   <div className="code-toolbar">
-                    <span className="lang-label"><span className="language-dot" />Python 3</span>
+                    <span className="lang-label"><span className="language-dot" />Python 3 <span className="checkpoint-count">{checkpoints.length} replay moments</span></span>
                     <div className="code-toolbar-right">
                       <button className="btn-text" onClick={() => { changeCode(problem.starterCode); setRunResults(null); setConsoleTab('testcase') }}>Reset code</button>
                       <button className="btn-run-lc" onClick={handleRun} disabled={isRunning}><PlayIcon />{isRunning ? 'Running…' : 'Run code'}</button>
@@ -447,8 +557,8 @@ function App() {
                     <p>Explain your choices while you code. Your transcript stays here as you edit and run tests.</p>
                   </div>
                   <div className="session-microphone">
-                    {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording}><StopIcon />Stop microphone</button>}
-                    <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{isRecording ? <><span className="pulse" />Listening while you code</> : 'You can also type your thinking below.'}</span>
+                    {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording} disabled={speechPhase !== 'listening'}><StopIcon />{speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop microphone'}</button>}
+                    <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{speechPhase === 'listening' ? <><span className="pulse" />Listening while you code</> : speechPhase === 'starting' ? 'Waiting for microphone access…' : speechPhase === 'stopping' ? 'Waiting for the final transcript…' : 'You can also type your thinking below.'}</span>
                   </div>
                   {!speechSupported && <p className="warning">Voice input isn’t available in this browser. You can type your explanation while coding.</p>}
                   {activeTab === 'code' && <div className="writing-area live-writing-area">
@@ -458,7 +568,7 @@ function App() {
                     <span className="word-count">{transcript.trim() ? transcript.trim().split(/\s+/).length : 0} words</span>
                   </div>}
                   <div className="session-feedback-action">
-                    <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : 'Review your transcript, then get feedback on this session.'}</p>
+                    <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : 'Feedback uses your code, explanation, and session checkpoints.'}</p>
                     <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}<Icon name="arrow" size={16} /></button>
                   </div>
                 </aside>
@@ -466,17 +576,23 @@ function App() {
 
               <div className={`feedback-pane ${activeTab !== 'feedback' || !feedback ? 'pane-hidden' : ''}`}>
                 {feedback && <>
-                  <div className="feedback-save"><div><h2>Your next learning step</h2><p>{getLearningGoal(analysisSnapshot?.goal || learningGoal).title}</p></div>
-                    <button className="learning-secondary" onClick={saveAttempt} disabled={!analysisSnapshot || attempts.some((attempt) => attempt.id === analysisSnapshot.id)}>
-                      <Icon name={attempts.some((attempt) => attempt.id === analysisSnapshot?.id) ? 'check' : 'save'} size={16} />
-                      {attempts.some((attempt) => attempt.id === analysisSnapshot?.id) ? 'Practice saved' : 'Save practice'}
+                  <div className="feedback-save"><div><h2>Your session, in focus.</h2><p>{getLearningGoal(analysisSnapshot?.goal || learningGoal).title}</p></div>
+                    <button className="learning-secondary" onClick={saveAttempt} disabled={!analysisSnapshot || isCurrentSaved}>
+                      <Icon name={isCurrentSaved ? 'check' : 'save'} size={16} />
+                      {isCurrentSaved ? 'Practice saved' : savedAttempt ? 'Update saved practice' : 'Save practice'}
                     </button>
                   </div>
+                  <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} />
+                  {analysisSnapshot?.retrySummary && <div className="retry-completed"><Icon name="check" /><span>Focused retry: {analysisSnapshot.retrySummary.beforeMet}/{analysisSnapshot.retrySummary.total} → {analysisSnapshot.retrySummary.afterMet}/{analysisSnapshot.retrySummary.total} criteria supported. {isCurrentSaved ? 'Summary saved with this practice.' : 'Save practice to keep this summary.'}</span></div>}
                   <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} />
                   <p className="feedback-storage"><Icon name="shield" size={15} />Saved summaries stay on this device. Code and explanations aren’t included.</p>
                 </>}
                 <RubricFeedback feedback={feedback} />
               </div>
+              {activeTab === 'retry' && retryTask && <div className="retry-pane"><FocusedRetry key={retryTask.id} task={retryTask} onBack={() => setActiveTab('feedback')} onComplete={(result) => setAnalysisSnapshot((snapshot) => {
+                if (!snapshot || snapshot.id !== retryTask.analysisId) return snapshot
+                return { ...snapshot, retrySummary: result ? { dimension: result.dimension, beforeMet: result.beforeMet, afterMet: result.afterMet, total: result.total, createdAt: result.createdAt } : null }
+              })} /></div>}
               <div className={`interview-pane-wrapper ${activeTab !== 'interview' ? 'pane-hidden' : ''}`}>
                 <InterviewPanel key={problemSlug} problemId={problemSlug} transcript={transcript} code={code} active={view === 'practice' && activeTab === 'interview'} speechSupported={speechSupported} onError={setError} />
               </div>

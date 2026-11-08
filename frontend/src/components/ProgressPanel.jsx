@@ -78,6 +78,7 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onRestor
                 </details>
                 <p className="history-lesson"><strong>Next lesson:</strong> {attempt.lesson.title}</p>
                 {attempt.run && <p className="history-run">Code checks: {attempt.run.passed}/{attempt.run.total} passed</p>}
+                {attempt.retrySummary && <p className="history-run">Focused retry · {RUBRIC_LABELS[attempt.retrySummary.dimension]}: {attempt.retrySummary.beforeMet}/{attempt.retrySummary.total} → {attempt.retrySummary.afterMet}/{attempt.retrySummary.total} criteria supported</p>}
                 <button className="history-delete" aria-label={`Remove saved attempt for ${attempt.problemTitle} from ${new Date(attempt.createdAt).toLocaleString()}`} onClick={() => { if (onDelete(attempt.id)) setRemovedAttempt(attempt) }}>Remove attempt</button>
               </article>
             ))}

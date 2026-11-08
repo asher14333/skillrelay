@@ -32,6 +32,13 @@ export function cleanAttempt(value) {
         !Number.isInteger(value.run.passed) || !finiteScore(value.run.passed, value.run.total)) return null
     run = { passed: value.run.passed, total: value.run.total }
   }
+  let retrySummary = null
+  const retry = value.retrySummary
+  if (retry && typeof retry === 'object' && Object.hasOwn(RUBRIC_MAX, retry.dimension) && retry.total === 3 &&
+      Number.isInteger(retry.beforeMet) && finiteScore(retry.beforeMet, 3) && Number.isInteger(retry.afterMet) && finiteScore(retry.afterMet, 3) &&
+      typeof retry.createdAt === 'string' && Number.isFinite(Date.parse(retry.createdAt))) {
+    retrySummary = { dimension: retry.dimension, beforeMet: retry.beforeMet, afterMet: retry.afterMet, total: 3, createdAt: retry.createdAt }
+  }
   return {
     id: value.id,
     createdAt: new Date(value.createdAt).toISOString(),
@@ -42,6 +49,7 @@ export function cleanAttempt(value) {
     rubric,
     lesson: { id: value.lesson.id, title: value.lesson.title, dimension },
     run,
+    ...(retrySummary ? { retrySummary } : {}),
   }
 }
 

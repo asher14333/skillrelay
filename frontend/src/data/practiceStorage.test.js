@@ -93,3 +93,18 @@ test('deleting an attempt and clearing history persist across reload', () => {
   writePractice('technical-tradeoffs', [], storage)
   assert.deepEqual(loadPractice(storage).attempts, [])
 })
+
+test('focused retry summaries update an existing attempt and omit private evidence', () => {
+  const original = attempt('a', 5)
+  const updated = { ...original, checkpoints: [{ code: 'private code' }], retrySummary: {
+    dimension: 'clarity', beforeMet: 1, afterMet: 3, total: 3, createdAt: '2026-11-07T23:00:00Z',
+    before: 'private explanation', checks: ['private quotes'],
+  } }
+  const history = addAttempt([original], updated)
+  assert.equal(history.length, 1)
+  assert.equal(history[0].retrySummary.afterMet, 3)
+  assert.equal('before' in history[0].retrySummary, false)
+  assert.equal('checks' in history[0].retrySummary, false)
+  assert.equal('checkpoints' in history[0], false)
+  assert.equal('retrySummary' in cleanAttempt({ ...original, retrySummary: { ...updated.retrySummary, total: 100 } }), false)
+})
