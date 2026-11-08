@@ -2,30 +2,34 @@ import { useState } from 'react'
 import { getLearningGoal } from '../data/learning'
 import { compareLatest, MAX_ATTEMPTS } from '../data/practiceStorage'
 import { RUBRIC_LABELS } from '../data/problems'
+import Icon from './Icon'
 
-export default function ProgressPanel({ attempts, onPractice, onDelete, onClear }) {
+export default function ProgressPanel({ attempts, onPractice, onDelete, onRestore, onClear }) {
   const [confirmClear, setConfirmClear] = useState(false)
+  const [removedAttempt, setRemovedAttempt] = useState(null)
   const comparison = compareLatest(attempts)
   const latest = attempts[0]
   return (
-    <main className="progress-panel">
+    <section className="progress-panel" aria-labelledby="progress-title">
       <div className="progress-heading">
         <div>
-          <p className="section-eyebrow">Small steps, visible practice</p>
-          <h1>Your practice journey</h1>
+          <h1 id="progress-title">Every attempt is a step forward.</h1>
           <p>Keep a record of what you practiced and what to work on next.</p>
         </div>
-        <button className="learning-primary" onClick={onPractice}>Continue practicing →</button>
+        {latest && <button className="learning-primary" onClick={onPractice}>Continue practice <Icon name="arrow" size={16} /></button>}
       </div>
 
-      <p className="storage-note">Saved in this browser only, up to {MAX_ATTEMPTS} attempts. Code and explanations are not saved. Clearing site data removes this history.</p>
+      <p className="storage-note"><Icon name="shield" size={16} />Saved on this device, up to {MAX_ATTEMPTS} attempts. Code and explanations aren’t included.</p>
+
+      {removedAttempt && <div className="undo-removal" role="status"><span>Practice attempt removed.</span><button onClick={() => { if (onRestore(removedAttempt)) setRemovedAttempt(null) }}>Undo</button></div>}
 
       {!latest ? (
         <section className="progress-empty">
-          <span className="empty-mark" aria-hidden="true">↗</span>
-          <h2>Your next step starts with one attempt</h2>
-          <p>Choose a goal, explain your solution, and save your feedback to start your practice history.</p>
-          <button className="learning-primary" onClick={onPractice}>Start a practice attempt</button>
+          <div className="empty-journey" aria-hidden="true"><span><Icon name="code" size={28} /></span><i /><span><Icon name="mic" size={28} /></span><i /><span><Icon name="book" size={28} /></span></div>
+          <h2>Your first attempt belongs here.</h2>
+          <p>Choose a challenge, explain your approach, and save your feedback. Your practice history will grow with you.</p>
+          <button className="learning-primary" onClick={onPractice}>Start practicing <Icon name="arrow" size={16} /></button>
+          <div className="empty-steps"><span>Find your focus</span><span>Practice your explanation</span><span>Keep your next step</span></div>
         </section>
       ) : (
         <>
@@ -49,7 +53,7 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onClear 
           {confirmClear && (
             <div className="clear-confirmation" role="group" aria-label="Confirm clearing practice history">
               <p>Remove all saved attempts from this browser? This cannot be undone.</p>
-              <button className="learning-danger" onClick={() => { onClear(); setConfirmClear(false) }}>Remove all attempts</button>
+              <button className="learning-danger" onClick={() => { onClear(); setConfirmClear(false); setRemovedAttempt(null) }}>Remove all attempts</button>
               <button className="learning-secondary" onClick={() => setConfirmClear(false)}>Keep my practice</button>
             </div>
           )}
@@ -74,12 +78,12 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onClear 
                 </details>
                 <p className="history-lesson"><strong>Next lesson:</strong> {attempt.lesson.title}</p>
                 {attempt.run && <p className="history-run">Code checks: {attempt.run.passed}/{attempt.run.total} passed</p>}
-                <button className="history-delete" aria-label={`Remove saved attempt for ${attempt.problemTitle} from ${new Date(attempt.createdAt).toLocaleString()}`} onClick={() => onDelete(attempt.id)}>Remove attempt</button>
+                <button className="history-delete" aria-label={`Remove saved attempt for ${attempt.problemTitle} from ${new Date(attempt.createdAt).toLocaleString()}`} onClick={() => { if (onDelete(attempt.id)) setRemovedAttempt(attempt) }}>Remove attempt</button>
               </article>
             ))}
           </div>
         </>
       )}
-    </main>
+    </section>
   )
 }

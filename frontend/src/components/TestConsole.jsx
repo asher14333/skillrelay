@@ -70,25 +70,28 @@ export default function TestConsole({
               </div>
             ) : (
               <div className="result-view">
-                <div
-                  className={`result-status ${runResults.all_passed ? 'result-accepted' : 'result-wrong'}`}
-                >
-                  {runResults.all_passed ? 'Accepted' : 'Wrong Answer'}
-                </div>
+                <div className="result-summary">
+                  <div
+                    className={`result-status ${runResults.all_passed ? 'result-accepted' : 'result-wrong'}`}
+                  >
+                    {runResults.all_passed ? 'Accepted' : 'Wrong Answer'}
+                  </div>
 
-                <div className="case-pills">
-                  {runResults.results.map((r, i) => (
-                    <button
-                      key={r.case}
-                      className={`case-pill ${selectedCase === i ? 'case-pill-active' : ''} ${r.passed ? 'case-pill-pass' : 'case-pill-fail'}`}
-                      onClick={() => setSelectedCase(i)}
-                    >
-                      <span
-                        className={`case-dot ${r.passed ? 'dot-pass' : 'dot-fail'}`}
-                      />
-                      Case {r.case}
-                    </button>
-                  ))}
+                  <div className="case-pills">
+                    {runResults.results.map((r, i) => (
+                      <button
+                        key={r.case}
+                        className={`case-pill ${selectedCase === i ? 'case-pill-active' : ''} ${r.passed ? 'case-pill-pass' : 'case-pill-fail'}`}
+                        onClick={() => setSelectedCase(i)}
+                      >
+                        <span
+                          className={`case-dot ${r.passed ? 'dot-pass' : 'dot-fail'}`}
+                        />
+                        Case {r.case}
+                      </button>
+                    ))}
+                  </div>
+
                 </div>
 
                 {activeResult && (
