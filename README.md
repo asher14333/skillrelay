@@ -12,7 +12,7 @@ career readiness, and AI-assisted skilling.
 - Five coding practice problems with a Monaco editor and Python test runner.
 - Spoken or typed explanations alongside the editor, so you can explain while
   coding and running tests.
-- AI rubric feedback and interview follow-up questions.
+- AI rubric feedback and interview follow-up questions using Gemini or OpenAI.
 - Three learning goals: clear explanations, technical trade-offs, and interview
   confidence.
 - Six curated micro-lessons, recommended from normalized rubric gaps. Your goal
@@ -46,7 +46,7 @@ for the palette, layout decisions, and UI/UX guidance applied.
 
 ## Run locally
 
-Use Node.js 22.14+ (the tested version), Python 3.10+, and an OpenAI
+Use Node.js 22.14+ (the tested version), Python 3.10+, and a Gemini or OpenAI
 API key. Chrome or Edge supports the inherited voice workflow.
 
 Backend:
@@ -57,7 +57,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# Set OPENAI_API_KEY in .env.
+# Set GEMINI_API_KEY in .env (the template selects Gemini).
 python app.py
 ```
 
@@ -72,6 +72,34 @@ npm run dev
 Open the frontend at `http://localhost:5173`; the backend uses
 `http://127.0.0.1:5001`. AI feedback requires the API key. Keep `.env` private.
 
+### AI provider setup
+
+For Gemini, set these values in `backend/.env`:
+
+```dotenv
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_actual_gemini_api_key
+GEMINI_MODEL=gemini-3.8-flash
+```
+
+Get a key from [Google AI Studio](https://aistudio.google.com/apikey). The
+integration uses Google's [generateContent API](https://ai.google.dev/api/generate-content)
+with JSON output; `GEMINI_MODEL` can select another compatible text model.
+
+For OpenAI, set `AI_PROVIDER=openai` and `OPENAI_API_KEY`. Optionally set
+`OPENAI_MODEL` (default `gpt-4o-mini`). Only the selected provider's key is needed.
+If `AI_PROVIDER` is omitted, a non-empty Gemini key selects Gemini; otherwise
+OpenAI is used, preserving existing OpenAI-only setups. There is no automatic
+fallback to another provider after a failed request.
+
+Restart the backend after editing `.env`. The backend loads `backend/.env`
+regardless of the working directory; existing shell environment variables take
+precedence. No frontend `.env` or additional Python package is required. Never
+put API keys in `VITE_` variables. All AI features use the same selected provider,
+including replay observations, focused retries, and interview follow-ups. Code
+and explanations are sent to that provider only when requesting AI features;
+the local code runner does not require an API key.
+
 The inherited runner executes submitted Python on the local machine. Use trusted
 code during local development; public execution requires process isolation.
 
@@ -81,7 +109,7 @@ From the repository root after installing frontend and backend dependencies:
 
 ```sh
 backend/venv/bin/python -m unittest discover -s backend/tests -v
-npm --prefix frontend test
+node --test frontend/src/data/*.test.js
 npm --prefix frontend run build
 npm --prefix frontend run lint
 ```

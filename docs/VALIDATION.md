@@ -150,3 +150,25 @@ the normal backend afterward.
 Live model quality, microphone capture, and actual learner outcomes remain
 unverified. The app does not store or replay raw audio, and checkpoint timing is
 arrival-based rather than exact alignment of words with keystrokes.
+
+## Gemini and OpenAI provider support
+
+Checked November 7, 2026. All 51 automated tests passed: 38 backend/API tests
+and 13 frontend data tests. Production build and lint passed; the existing
+Monaco chunk-size warning remains.
+
+New provider tests verify Gemini header authentication, separate system/user
+content, JSON response mode, custom model selection, and exclusion of thought
+parts. All four AI routes were exercised through the real provider adapter
+with mocked Gemini HTTP responses. Existing OpenAI request behavior, explicit
+provider selection, and OpenAI-only configuration compatibility were checked.
+
+Missing credentials, invalid configuration, authentication failures, quota
+limits, network timeouts, and missing/truncated/blocked/malformed model output
+are covered. Errors returned to the frontend omit upstream exception details.
+No automatic cross-provider fallback occurs after an error.
+
+These checks mock external model services. No live Gemini or OpenAI request was
+made, and they do not establish model quality or account/model access. Add a
+valid key to `backend/.env`, restart the backend, and verify live feedback before
+the demo. No new dependencies were required for this integration.
