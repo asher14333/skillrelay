@@ -13,7 +13,8 @@ export default function InterviewPanel({
 }) {
   const [history, setHistory] = useState([])
   const [currentAnswer, setCurrentAnswer] = useState('')
-  const [isRecording, setIsRecording] = useState(false)
+  const [speechPhase, setSpeechPhase] = useState('idle')
+  const isRecording = speechPhase !== 'idle'
   const [isLoading, setIsLoading] = useState(false)
   const [complete, setComplete] = useState(false)
   const [overallNote, setOverallNote] = useState('')
@@ -24,13 +25,19 @@ export default function InterviewPanel({
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
   const answerRef = useRef(null)
+  const requestRef = useRef(null)
+  const conversationRef = useRef(null)
+
+  useEffect(() => () => requestRef.current?.abort(), [])
 
   useEffect(() => {
     if (active && history.length && !complete && !isLoading) answerRef.current?.focus()
   }, [active, history.length, complete, isLoading])
 
   useEffect(() => {
-    if (!active) recognitionRef.current?.stop()
+    if (!active && recognitionRef.current) {
+      try { recognitionRef.current.stop() } catch { /* Already stopped. */ }
+    }
   }, [active])
 
   useEffect(() => {
@@ -57,6 +64,8 @@ export default function InterviewPanel({
     recognition.interimResults = true
     recognition.lang = 'en-US'
 
+    recognition.onstart = () => setSpeechPhase('listening')
+
     recognition.onresult = (event) => {
       let sessionText = ''
       for (let i = 0; i < event.results.length; i++) {
@@ -69,11 +78,11 @@ export default function InterviewPanel({
       if (event.error !== 'aborted') {
         onError(`Speech recognition error: ${event.error}`)
       }
-      setIsRecording(false)
+      setSpeechPhase('idle')
     }
 
     recognition.onend = () => {
-      setIsRecording(false)
+      setSpeechPhase('idle')
     }
 
     recognitionRef.current = recognition
@@ -87,47 +96,60 @@ export default function InterviewPanel({
     onError(null)
     sessionBaseRef.current = currentAnswer ? `${currentAnswer} ` : ''
     try {
+      if (!recognitionRef.current) throw new Error('Speech is unavailable')
+      setSpeechPhase('starting')
       recognitionRef.current?.start()
-      setIsRecording(true)
     } catch {
+      setSpeechPhase('idle')
       onError('Could not start recording. Try again.')
     }
   }
 
   const stopRecording = () => {
-    recognitionRef.current?.stop()
-    setIsRecording(false)
+    setSpeechPhase('stopping')
+    try {
+      recognitionRef.current?.stop()
+    } catch {
+      setSpeechPhase('idle')
+      onError('Could not finish recording. Review your answer before submitting.')
+    }
   }
 
   const startInterview = async () => {
+    if (requestRef.current || isRecording) return
+    const controller = new AbortController()
+    const context = { problemId, transcript, code }
+    requestRef.current = controller
     setIsLoading(true)
     onError(null)
     try {
-      const { data } = await axios.post(`${API_URL}/interview/start`, {
-        problemId,
-        transcript,
-        code,
-      })
-      setHistory([{ role: 'interviewer', content: data.question }])
+      const { data } = await axios.post(`${API_URL}/interview/start`, context, { timeout: 60000, signal: controller.signal })
+      if (controller.signal.aborted || requestRef.current !== controller) return
+      if (typeof data?.question !== 'string' || !data.question.trim()) throw new Error('The interviewer did not return a question. Try starting again.')
+      conversationRef.current = context
+      setHistory([{ role: 'interviewer', content: data.question.trim() }])
       setComplete(false)
       setOverallNote('')
       setCurrentAnswer('')
     } catch (err) {
+      if (controller.signal.aborted || requestRef.current !== controller) return
       onError(
-        err.response?.data?.error ||
+        err.code === 'ECONNABORTED' ? 'The interviewer is taking longer than expected. Try starting again.' : err.response?.data?.error ||
           err.message ||
           'Failed to start interview.'
       )
     } finally {
-      setIsLoading(false)
+      if (!controller.signal.aborted && requestRef.current === controller) {
+        requestRef.current = null
+        setIsLoading(false)
+      }
     }
   }
 
   const submitAnswer = async () => {
-    if (isRecording) {
-      stopRecording()
-    }
-    if (!currentAnswer.trim()) return
+    if (isRecording || !currentAnswer.trim() || requestRef.current) return
+    const controller = new AbortController()
+    requestRef.current = controller
 
     setIsLoading(true)
     onError(null)
@@ -135,12 +157,15 @@ export default function InterviewPanel({
 
     try {
       const { data } = await axios.post(`${API_URL}/interview/respond`, {
-        problemId,
-        transcript,
-        code,
+        ...conversationRef.current,
         history,
         answer,
-      })
+      }, { timeout: 60000, signal: controller.signal })
+      if (controller.signal.aborted || requestRef.current !== controller) return
+      if (typeof data?.complete !== 'boolean' || typeof data?.answerEvaluation?.feedback !== 'string' || !data.answerEvaluation.feedback.trim() ||
+          (data.complete !== true && (typeof data.nextQuestion !== 'string' || !data.nextQuestion.trim()))) {
+        throw new Error('The interviewer returned an incomplete response. Your answer is still here; try again.')
+      }
 
       const newHistory = [
         ...history,
@@ -156,7 +181,7 @@ export default function InterviewPanel({
         })
       }
 
-      if (data.nextQuestion) {
+      if (!data.complete && data.nextQuestion) {
         newHistory.push({ role: 'interviewer', content: data.nextQuestion })
       }
 
@@ -166,21 +191,26 @@ export default function InterviewPanel({
 
       if (data.complete) {
         setComplete(true)
-        setOverallNote(data.overallNote || '')
+        setOverallNote(data.overallNote || 'Practice complete. Start a new conversation whenever you are ready.')
       }
     } catch (err) {
+      if (controller.signal.aborted || requestRef.current !== controller) return
       onError(
-        err.response?.data?.error ||
+        err.code === 'ECONNABORTED' ? 'The interviewer is taking longer than expected. Your answer is still here; try again.' : err.response?.data?.error ||
           err.message ||
           'Failed to submit answer.'
       )
     } finally {
-      setIsLoading(false)
+      if (!controller.signal.aborted && requestRef.current === controller) {
+        requestRef.current = null
+        setIsLoading(false)
+      }
     }
   }
 
   const lastMsg = history[history.length - 1]
   const awaitingAnswer = !complete && lastMsg?.role === 'interviewer'
+  const contextChanged = conversationRef.current && (conversationRef.current.code !== code || conversationRef.current.transcript !== transcript)
 
   return (
     <div className="interview-pane">
@@ -206,6 +236,7 @@ export default function InterviewPanel({
         </div>
       ) : (
         <div className="interview-chat">
+          {contextChanged && <div className="interview-context-note"><p className="interview-hint">This conversation uses your code and explanation from when it started.</p><button className="btn-text" disabled={isLoading || isRecording} onClick={startInterview}>Restart with current work</button></div>}
           <div className="interview-messages" ref={messagesContainerRef} role="log" aria-label="Follow-up conversation" aria-live="polite">
             {history.map((msg, i) => (
               <div key={i} className={`interview-msg interview-msg-${msg.role}`}>
@@ -240,6 +271,7 @@ export default function InterviewPanel({
               <div className="interview-complete">
                 <span className="msg-role">Interview Complete</span>
                 <p>{overallNote}</p>
+                <button className="btn-interview-start" disabled={isLoading} onClick={startInterview}>{isLoading ? 'Starting…' : 'Start another conversation'}</button>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -261,16 +293,16 @@ export default function InterviewPanel({
                   <button
                     className="btn-interview-stop"
                     onClick={stopRecording}
-                    disabled={isLoading}
+                    disabled={isLoading || speechPhase !== 'listening'}
                   >
                     <StopIcon />
-                    Stop
+                    {speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop'}
                   </button>
                 )}
                 {isRecording && (
                   <span className="recording-badge-top">
                     <span className="pulse" />
-                    Listening…
+                    {speechPhase === 'listening' ? 'Listening…' : speechPhase === 'starting' ? 'Waiting for microphone access…' : 'Waiting for the final transcript…'}
                   </span>
                 )}
               </div>

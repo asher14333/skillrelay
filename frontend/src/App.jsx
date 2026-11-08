@@ -39,6 +39,7 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [runResults, setRunResults] = useState(null)
+  const [resetCodeDraft, setResetCodeDraft] = useState(null)
   const [consoleTab, setConsoleTab] = useState('testcase')
   const [selectedCase, setSelectedCase] = useState(0)
   const [feedback, setFeedback] = useState(null)
@@ -48,6 +49,7 @@ function App() {
   const [pendingProblem, setPendingProblem] = useState(null)
   const [checkpoints, setCheckpoints] = useState([])
   const [retryTask, setRetryTask] = useState(null)
+  const retryTaskIdRef = useRef(null)
   const pickerRef = useRef(null)
   const feedbackHeadingRef = useRef(null)
 
@@ -103,6 +105,7 @@ function App() {
     setFeedback(null)
     setAnalysisSnapshot(null)
     setRetryTask(null)
+    retryTaskIdRef.current = null
     setNotice('')
     setActiveTab((tab) => ['feedback', 'retry'].includes(tab) ? 'code' : tab)
   }, [])
@@ -110,6 +113,13 @@ function App() {
   useEffect(() => {
     if (view === 'practice' && activeTab === 'feedback') feedbackHeadingRef.current?.focus()
   }, [activeTab, view])
+
+  useEffect(() => {
+    if (view !== 'practice' || (code === problem.starterCode && !transcript.trim())) return
+    const warnBeforeLeaving = (event) => { event.preventDefault(); event.returnValue = '' }
+    window.addEventListener('beforeunload', warnBeforeLeaving)
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving)
+  }, [view, code, transcript, problem.starterCode])
 
   const changeTranscript = useCallback((value, shouldCapture = true) => {
     if (currentTranscriptRef.current === value) return
@@ -124,6 +134,7 @@ function App() {
     if (currentCodeRef.current === value) return
     if (!sessionRef.current.moments.length) captureMoment('start')
     currentCodeRef.current = value
+    setResetCodeDraft(null)
     codeRevisionRef.current += 1
     invalidateFeedback()
     setCode(value)
@@ -147,6 +158,7 @@ function App() {
     currentTranscriptRef.current = ''
     sessionBaseRef.current = ''
     setProblemSlug(slug)
+    setResetCodeDraft(null)
     setCode(next.starterCode)
     setTranscript('')
     setFeedback(null)
@@ -303,10 +315,16 @@ function App() {
     if (!analysisSnapshot || !dimension) return
     const spec = analysisSnapshot.feedback.focusedPractice?.[dimension]
     if (!spec) return
+    if (retryTask?.analysisId === analysisSnapshot.id && retryTask.dimension === dimension && retryTask.checkpointId === checkpointId) {
+      setActiveTab('retry')
+      return
+    }
     const moment = checkpointId ? analysisSnapshot.checkpoints.find((item) => item.id === checkpointId) : null
-    setRetryTask({ id: crypto.randomUUID(), analysisId: analysisSnapshot.id, problemId: analysisSnapshot.problemId,
+    const task = { id: crypto.randomUUID(), analysisId: analysisSnapshot.id, problemId: analysisSnapshot.problemId, checkpointId,
       dimension, code: moment ? moment.code : analysisSnapshot.code,
-      before: moment ? moment.transcript : analysisSnapshot.transcript, prompt: spec.prompt, criteria: spec.criteria })
+      before: moment ? moment.transcript : analysisSnapshot.transcript, prompt: spec.prompt, criteria: spec.criteria }
+    retryTaskIdRef.current = task.id
+    setRetryTask(task)
     setActiveTab('retry')
   }
 
@@ -378,6 +396,7 @@ function App() {
   }
 
   const handleAnalyze = async () => {
+    if (isRunning || isAnalyzing) return
     if (isRecording) {
       setError('Stop your explanation before analyzing.')
       return
@@ -539,7 +558,7 @@ function App() {
               <button className={`tab ${['feedback', 'retry'].includes(activeTab) ? 'tab-active' : ''}`} aria-pressed={['feedback', 'retry'].includes(activeTab)} disabled={!feedback || isRecording} onClick={() => setActiveTab('feedback')}>
                 <Icon name="book" size={16} />{activeTab === 'retry' ? 'Focused retry' : 'Session feedback'}
               </button>
-              <button className={`tab tab-followup ${activeTab === 'interview' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'interview'} onClick={() => { recognitionRef.current?.stop(); setActiveTab('interview') }}>Follow-up</button>
+              <button className={`tab tab-followup ${activeTab === 'interview' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'interview'} disabled={isRecording} onClick={() => setActiveTab('interview')}>Follow-up</button>
             </nav>
             {error && <div className="error-banner" role="alert">{error}</div>}
             <div className="panel-content">
@@ -548,7 +567,7 @@ function App() {
                   <div className="code-toolbar">
                     <span className="lang-label"><span className="language-dot" />Python 3 <span className="checkpoint-count">{checkpoints.length} replay moments</span></span>
                     <div className="code-toolbar-right">
-                      <button className="btn-text" onClick={() => { changeCode(problem.starterCode); setRunResults(null); setConsoleTab('testcase') }}>Reset code</button>
+                      <button className="btn-text" disabled={code === problem.starterCode && !resetCodeDraft} onClick={() => { if (resetCodeDraft) { changeCode(resetCodeDraft) } else { const previousCode = code; changeCode(problem.starterCode); setResetCodeDraft(previousCode); setConsoleTab('testcase') } }}>{resetCodeDraft ? 'Undo reset' : 'Reset code'}</button>
                       <button className="btn-run-lc" onClick={handleRun} disabled={isRunning}><PlayIcon />{isRunning ? 'Running…' : 'Run code'}</button>
                     </div>
                   </div>
@@ -557,9 +576,8 @@ function App() {
                 </div>
                 <aside className="live-explanation" aria-labelledby="live-explanation-title">
                   <div className="live-explanation-heading">
-                    <span className="live-label"><Icon name="mic" size={15} />Your explanation</span>
                     <h2 id="live-explanation-title">Think out loud.</h2>
-                    <p>Explain your choices while you code. Your transcript stays here as you edit and run tests.</p>
+                    <p>Explain your choices while you code and test.</p>
                   </div>
                   <div className="session-microphone">
                     {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording} disabled={speechPhase !== 'listening'}><StopIcon />{speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop microphone'}</button>}
@@ -573,8 +591,8 @@ function App() {
                     <span className="word-count">{transcript.trim() ? transcript.trim().split(/\s+/).length : 0} words</span>
                   </div>}
                   <div className="session-feedback-action">
-                    <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : 'Feedback uses your code, explanation, and session checkpoints.'}</p>
-                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}<Icon name="arrow" size={16} /></button>
+                    <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : isRunning ? 'Wait for code checks to finish before getting feedback.' : 'Feedback uses your code, explanation, and checkpoints.'}</p>
+                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || isRunning || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}<Icon name="arrow" size={16} /></button>
                   </div>
                 </aside>
               </div>
@@ -598,8 +616,8 @@ function App() {
                 </>}
                 <RubricFeedback feedback={feedback} />
               </div>
-              {activeTab === 'retry' && retryTask && <div className="retry-pane"><FocusedRetry key={retryTask.id} task={retryTask} onBack={() => setActiveTab('feedback')} onComplete={(result) => setAnalysisSnapshot((snapshot) => {
-                if (!snapshot || snapshot.id !== retryTask.analysisId) return snapshot
+              {retryTask && <div className={`retry-pane ${activeTab !== 'retry' ? 'pane-hidden' : ''}`}><FocusedRetry key={retryTask.id} task={retryTask} active={view === 'practice' && activeTab === 'retry'} onBack={() => setActiveTab('feedback')} onComplete={(result) => setAnalysisSnapshot((snapshot) => {
+                if (!snapshot || snapshot.id !== retryTask.analysisId || retryTaskIdRef.current !== retryTask.id) return snapshot
                 return { ...snapshot, retrySummary: result ? { dimension: result.dimension, beforeMet: result.beforeMet, afterMet: result.afterMet, total: result.total, createdAt: result.createdAt } : null }
               })} /></div>}
               <div className={`interview-pane-wrapper ${activeTab !== 'interview' ? 'pane-hidden' : ''}`}>

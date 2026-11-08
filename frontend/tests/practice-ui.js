@@ -72,6 +72,7 @@ async page => {
   assert(await page.getByRole('log', { name: 'Follow-up conversation' }).isVisible(), 'Conversation should have an accessible live log')
   checks.push('Follow-up answer label, focus, and live log')
   await page.getByRole('link', { name: 'Progress 1', exact: true }).click()
+  await page.getByRole('heading', { name: 'Saved practice', exact: true }).waitFor()
   await page.reload()
   await page.getByRole('heading', { name: 'Saved practice', exact: true }).waitFor()
   assert(await page.getByText(/Focused retry.*0\/3.*3\/3/).isVisible(), 'Retry summary should survive reload on one attempt')

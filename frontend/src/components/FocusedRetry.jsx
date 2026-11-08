@@ -5,23 +5,34 @@ import Icon from './Icon'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
-export default function FocusedRetry({ task, onComplete, onBack }) {
+export default function FocusedRetry({ task, onComplete, onBack, active = true }) {
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const headingRef = useRef(null)
-  useEffect(() => { headingRef.current?.focus() }, [])
+  const requestRef = useRef(null)
+  useEffect(() => { if (active) headingRef.current?.focus() }, [active])
+  useEffect(() => () => requestRef.current?.abort(), [])
   const compare = async () => {
-    if (!answer.trim()) return
+    if (!answer.trim() || requestRef.current) return
+    const controller = new AbortController()
+    requestRef.current = controller
     setLoading(true); setError(''); setResult(null)
     try {
-      const { data } = await axios.post(`${API_URL}/practice/retry`, { problemId: task.problemId, dimension: task.dimension, code: task.code, before: task.before, after: answer }, { timeout: 60000 })
+      const { data } = await axios.post(`${API_URL}/practice/retry`, { problemId: task.problemId, dimension: task.dimension, code: task.code, before: task.before, after: answer }, { timeout: 60000, signal: controller.signal })
+      if (controller.signal.aborted || requestRef.current !== controller) return
       setResult(data)
       onComplete({ ...data, createdAt: new Date().toISOString() })
     } catch (err) {
+      if (controller.signal.aborted || requestRef.current !== controller) return
       setError(err.response?.data?.code === 'AI_NOT_CONFIGURED' ? 'Practice feedback isn’t connected yet. Your answer is still here.' : err.response?.data?.error || 'Couldn’t compare your answer. Try again.')
-    } finally { setLoading(false) }
+    } finally {
+      if (!controller.signal.aborted && requestRef.current === controller) {
+        requestRef.current = null
+        setLoading(false)
+      }
+    }
   }
   return <section className="focused-retry" aria-labelledby="retry-title">
     <div className="retry-heading"><button className="learning-secondary" onClick={onBack}>Back to feedback</button><span>One skill. One focused retry.</span></div>
