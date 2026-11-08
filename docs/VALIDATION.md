@@ -96,3 +96,20 @@ performance work can reduce editor features or evaluate a lighter editor.
 
 Live AI and speech verification remain deferred. The browser fixture was
 stopped and the normal backend restored after UI verification.
+
+## Concurrent coding and explanation
+
+Updated the practice flow so the editor, tests, and explanation share one
+workspace. On desktop, the transcript and microphone controls sit beside code;
+smaller screens stack them in one scrollable session. Running code and editing
+do not invoke microphone stop or clear the transcript. Feedback is requested
+after stopping speech and reviewing the explanation.
+
+- In Chrome, entered an explanation first, edited the code, and ran a known
+  Two Sum solution. The explanation stayed intact and all three cases passed.
+- Visually inspected the shared desktop layout and the stacked 390 x 844 layout,
+  including accessible microphone and feedback controls. Reset the viewport.
+- Production build, lint, and the 16 existing logic/API tests passed.
+- Microphone capture itself remains unverified; no actual recording was made.
+  This check confirms the shared UI and typed-input behavior, not a live speech
+  recognition result. Model calls remain unverified without an API key.

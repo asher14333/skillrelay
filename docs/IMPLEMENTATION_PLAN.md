@@ -11,7 +11,7 @@ specific skill-building activity, then retain evidence of their practice.
 
 The core journey is:
 
-**Choose a goal -> solve a challenge -> explain -> receive feedback -> study a
+**Choose a goal -> code while explaining -> receive feedback -> study a
 targeted micro-lesson -> retry -> save and review progress.**
 
 This extends the existing SpeakCode interview coach toward Prompt 2's career
@@ -62,7 +62,19 @@ change affects the next analysis rather than relabeling an existing result.
 Acceptance: all three choices work with both typed and spoken explanations;
 existing problem selection and code execution continue to work.
 
-### B. Get feedback and a lesson
+### B. Code and explain in one session
+
+The editor, code tests, and explanation are available together. Starting the
+microphone keeps the editor visible; editing and running code do not stop the
+microphone or erase the transcript. Spoken or typed reasoning can be added
+throughout the attempt. Stop voice input and review the transcript before
+requesting feedback on the session's final code and explanation.
+
+On desktop, the explanation sits beside the editor. Smaller screens stack the
+editor and explanation within the same workspace. No separate post-coding
+explanation step is required.
+
+### C. Get feedback and a lesson
 
 Retain the current six rubric dimensions. Add a learning-plan object to the
 analysis response, derived from the normalized feedback rather than a second
@@ -84,7 +96,7 @@ Acceptance: a low complexity score yields the appropriate complexity lesson;
 goal priorities resolve ties consistently; a full-score attempt receives a
 positive next challenge. One analysis still requires only one model call.
 
-### C. Retry deliberately
+### D. Retry deliberately
 
 The lesson remains visible when the learner returns to the explanation tab.
 Retrying preserves their code and current explanation so they can revise it.
@@ -94,7 +106,7 @@ must not be saved against a different problem, explanation, code, or goal.
 Acceptance: a learner can complete feedback -> lesson -> revision -> feedback
 without re-entering code or losing their explanation.
 
-### D. Save and review practice
+### E. Save and review practice
 
 Saving is explicit. Store a summary containing a generated attempt ID,
 timestamp, problem identifier/title, learner goal, score, normalized rubric,
@@ -110,7 +122,7 @@ Acceptance: history survives reload; malformed saved data does not crash the
 app; empty history has a useful first-practice action; learners can remove an
 attempt or clear saved practice with a clear confirmation for bulk deletion.
 
-### E. Show progress honestly
+### F. Show progress honestly
 
 Show saved practice count, distinct problems practiced, and latest score. Show
 score change only between the latest two attempts on the same problem and

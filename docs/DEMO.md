@@ -23,7 +23,9 @@ while feedback still uses the same six rubric dimensions.
 
 ### 0:25-1:00: solve and explain
 
-Choose Two Sum, enter a known solution, and click Run code:
+Choose Two Sum. Start the microphone in the Code & explain workspace and talk
+through the approach while entering a solution. Typed explanations are also
+available in the same workspace. Run code without leaving the session:
 
 ```python
 class Solution:
@@ -35,8 +37,8 @@ class Solution:
             seen[value] = index
 ```
 
-Use Explain your approach to move to the Explain step. Type or use the
-microphone, then choose Get feedback.
+The editor, tests, and explanation remain available together. Stop the
+microphone, review the transcript, then choose Get session feedback.
 For example, explain the input/output, a baseline, and why a map helps. Do not
 pretend that a scripted explanation guarantees a particular model score.
 
@@ -49,7 +51,8 @@ receive transfer practice rather than a fabricated weakness.
 
 Choose Save practice for the first summary, then click Practice this lesson. The code and
 explanation stay in place, and the problem panel shows the current learning
-focus. Revise the explanation and analyze it again.
+focus. Continue coding and explaining in the shared workspace, then request
+feedback again.
 
 ### 1:45-2:30: show continuity
 

@@ -10,7 +10,8 @@ career readiness, and AI-assisted skilling.
 ## Practice, learn, and track your next step
 
 - Five coding practice problems with a Monaco editor and Python test runner.
-- Spoken explanations with transcript review.
+- Spoken or typed explanations alongside the editor, so you can explain while
+  coding and running tests.
 - AI rubric feedback and interview follow-up questions.
 - Three learning goals: clear explanations, technical trade-offs, and interview
   confidence.
@@ -20,7 +21,8 @@ career readiness, and AI-assisted skilling.
   concrete practice prompt.
 - Saved practice summaries and score comparisons for the same problem and goal.
 
-Choose a goal, solve a challenge, explain your thinking, and analyze it. Save
+Choose a goal, talk through your thinking as you solve a challenge, then review
+the transcript and get session feedback. Save
 your feedback, practice the recommended lesson, then save another attempt to
 compare practice scores. AI scores are learning signals, not credentials.
 

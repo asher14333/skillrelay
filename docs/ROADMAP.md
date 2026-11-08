@@ -13,7 +13,8 @@ future extension.
 ## Core demo loop
 
 1. Choose a technical skill and a practice challenge.
-2. Solve the challenge and explain the approach by voice or text.
+2. Explain the approach by voice or text while coding and running tests in the
+   shared workspace.
 3. Receive specific feedback and one recommended next practice step.
 4. Study the recommended micro-lesson and retry with a specific practice prompt.
 5. Save practice summaries and compare attempts on the same problem and goal.

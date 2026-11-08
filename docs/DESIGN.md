@@ -37,11 +37,11 @@ challenge and workspace; constrain the reading panel rather than the page.
 | Make your thinking clear.          Learning focus [select]   |
 | Solve. Explain. Learn what to practice next.                 |
 +----------------------+--------------------------------------+
-| Challenge / Change   | 1 Solve | 2 Explain | 3 Feedback      |
-| Two Sum              |                                      |
-| Requirements         | Editor / explanation / next lesson   |
-| Examples             |                                      |
-| Explanation guide    | Contextual primary action            |
+| Challenge / Change   | Code & explain | Session feedback    |
+| Two Sum              | Editor              | Explanation    |
+| Requirements         |                     | Microphone     |
+| Examples             | Tests               | Transcript     |
+| Explanation guide    |                     | Get feedback   |
 +----------------------+--------------------------------------+
 ```
 
@@ -57,7 +57,8 @@ action. The memorable element is the split study workspace, not decoration.
 
 - Place actions beside the work they affect: run with code, record/analyze with
   the explanation, save/retry with feedback.
-- Label the three main stages as a real sequence and keep follow-ups separate.
+- Keep coding and explaining in one shared session, with feedback and follow-ups
+  available as separate views.
 - Give the challenge picker a native dialog, close control, Escape support,
   focus management, and clear notice when changing a challenge discards a draft.
 - Use real hash links for Practice and Progress so browser navigation works.
@@ -79,6 +80,6 @@ not authorize unrelated account, hosting, or publication changes.
 
 The initial pass was visually checked in Chrome on desktop and at 390 px width.
 Refinements removed nested example borders, kept test inputs/results compact,
-and moved recording/feedback actions into the explanation step. The native
+and placed recording/feedback controls beside the editor. The native
 challenge dialog and history Undo were checked interactively. See
 [validation](VALIDATION.md) for evidence and remaining limitations.
