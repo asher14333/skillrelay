@@ -106,7 +106,8 @@ async page => {
     }
     const checkpointResponse = () => ui.waitForResponse(response => new URL(response.url()).pathname === '/api/interview/checkpoint')
     await editor.waitFor()
-    await ui.getByRole('combobox', { name: 'Interview input', exact: true }).selectOption('text')
+    await ui.getByRole('button', { name: 'Live interview', exact: true }).click()
+    await ui.getByRole('group', { name: 'Answer with', exact: true }).getByRole('button', { name: 'Text', exact: true }).click()
     await explanation.fill(original)
     await ui.waitForTimeout(3300)
     assert(requests.checkpoint.length === 0 && requests.speech.length === 0, 'Before Start, no interview or audio requests should occur')

@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { animateArrival, scrollWithPreference } from '../lib/motion'
 import '../InterviewConversation.css'
 
-export default function InterviewConversation({ messages = [], pending = false, listening = false, speaking = false, active = true }) {
+export default function InterviewConversation({ messages = [], pending = false, listening = false, speaking = false, active = true, emptyState = null }) {
   const logRef = useRef(null)
   const pinnedRef = useRef(true)
   const previousIdsRef = useRef(null)
@@ -36,8 +36,10 @@ export default function InterviewConversation({ messages = [], pending = false, 
         pinnedRef.current = log.scrollHeight - log.scrollTop - log.clientHeight < 64
       }}>
       {!messages.length && !pending && <div className="interview-conversation-empty">
-        <p>Your conversation appears here.</p>
-        <p>Start the live interview and explain your approach.</p>
+        {emptyState || <>
+          <p>Your conversation appears here.</p>
+          <p>Start the live interview and explain your approach.</p>
+        </>}
       </div>}
       {messages.map(message => <article key={message.id} data-conversation-message={message.id}
         className={`conversation-bubble conversation-bubble-${message.role}${message.kind === 'curveball' ? ' conversation-bubble-curveball' : ''}`}>

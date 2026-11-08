@@ -70,6 +70,7 @@ function App() {
   const [voiceEnabled, setVoiceEnabled] = useState(false)
   const [liveInterview, setLiveInterview] = useState(false)
   const [interviewInput, setInterviewInput] = useState('voice')
+  const [practiceMode, setPracticeMode] = useState('practice')
   const [awaitingTurn, setAwaitingTurn] = useState(false)
   const [interviewerBusy, setInterviewerBusy] = useState(false)
   const [spokenTurn, setSpokenTurn] = useState({ number: 0, text: '' })
@@ -522,6 +523,12 @@ function App() {
     recognitionRef.current?.stop()
   }
 
+  const changePracticeMode = (mode) => {
+    if (mode === practiceMode) return
+    if (mode === 'practice') pauseLiveInterview()
+    setPracticeMode(mode)
+  }
+
   const startLiveInterview = () => {
     rapidEndRef.current = 0
     liveControlRef.current.enabled = true
@@ -652,6 +659,13 @@ function App() {
     }
   }
 
+  const liveStatus = !liveInterview ? (conversation.length ? { label: 'Paused', tone: 'idle' } : { label: 'Not started', tone: 'idle' })
+    : interviewerAudio.status === 'speaking' ? { label: 'Interviewer speaking', tone: 'busy' }
+      : interviewerBusy || awaitingTurn || interviewerAudio.status === 'loading' ? { label: 'Thinking…', tone: 'busy' }
+        : speechPhase === 'starting' ? { label: 'Connecting mic…', tone: 'busy' }
+          : speechPhase === 'listening' ? { label: 'Listening', tone: 'live' }
+            : { label: 'Your turn', tone: 'live' }
+
   const savedAttempt = attempts.find((attempt) => attempt.id === analysisSnapshot?.id)
   const isCurrentSaved = !!savedAttempt && (!analysisSnapshot?.retrySummary || savedAttempt.retrySummary?.createdAt === analysisSnapshot.retrySummary.createdAt)
 
@@ -717,12 +731,6 @@ function App() {
               </div>
             </div>
             <div className="problem-body">
-              <LiveInterviewer key={`${problemSlug}:${interviewEpoch}`} problemId={problemSlug} curveballId={curveballId}
-                code={code} transcript={transcript} blocked={isRecording || speechPhase !== 'idle' || isRunning || isAnalyzing || followupRecording || interviewerAudio.status !== 'idle'}
-                active={view === 'practice' && activeTab === 'code'} running={liveInterview} spokenTurn={spokenTurn} inputMode={interviewInput}
-                onInputModeChange={mode => { pauseLiveInterview(); setInterviewInput(mode) }}
-                onMessage={appendConversation} onBusyChange={setInterviewerBusy} onTurnComplete={finishInterviewerTurn} onCurveball={applyCurveball}
-                onSpeak={text => speakForPane('code', text)} onStop={pauseLiveInterview} onStart={startLiveInterview} />
               <CurveballPractice key={`${problemSlug}:${curveballId || 'base'}`} definition={curveballDefinition} session={curveballSession}
                 code={code} transcript={transcript} disabled={isRecording || isRunning || isAnalyzing}
                 onSpeak={text => speakForPane(activeTab, text)} onReturnToOriginal={returnToOriginal} onRunResult={data => {
@@ -784,29 +792,57 @@ function App() {
                   <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} fontSize={{ default: 14, large: 16, larger: 18 }[preferences.textSize]} reducedMotion={reducedMotion} /></Suspense></div>
                   <TestConsole problem={problem} consoleTab={consoleTab} setConsoleTab={setConsoleTab} selectedCase={selectedCase} setSelectedCase={setSelectedCase} runResults={runResults} />
                 </div>
-                <aside className="live-explanation live-explanation-chat" aria-labelledby="live-explanation-title">
-                  <div className="live-explanation-heading">
+                <aside className={`live-explanation live-explanation-chat live-explanation-${practiceMode}`} aria-labelledby="live-explanation-title">
+                  <div className="practice-mode-toggle" role="group" aria-label="Practice mode">
+                    <button type="button" aria-pressed={practiceMode === 'practice'} onClick={() => changePracticeMode('practice')} disabled={isAnalyzing}>
+                      <Icon name="book" size={15} />Practice
+                    </button>
+                    <button type="button" aria-pressed={practiceMode === 'live'} onClick={() => changePracticeMode('live')} disabled={isAnalyzing || (practiceMode === 'practice' && isRecording)}>
+                      <Icon name="mic" size={15} />Live interview
+                    </button>
+                  </div>
+                  {practiceMode === 'live' ? <div className="live-explanation-heading live-chat-heading">
                     <h2 id="live-explanation-title">Interview chat</h2>
-                    <p>Speak naturally. Pause to let the interviewer respond.</p>
-                  </div>
-                  <InterviewerVoice enabled={voiceEnabled} onToggle={() => setVoiceEnabled(value => !value)} audio={interviewerAudio} />
-                  <InterviewConversation messages={conversation} pending={interviewerBusy || (awaitingTurn && speechPhase === 'idle')}
+                    <span className={`live-status live-status-${liveStatus.tone}`} role="status"><span className="live-status-dot" aria-hidden="true" />{liveStatus.label}</span>
+                  </div> : <div className="live-explanation-heading">
+                    <h2 id="live-explanation-title">Your explanation</h2>
+                    <p>Talk or type through your approach while you code, then get session feedback.</p>
+                  </div>}
+                  {practiceMode === 'live' && <InterviewConversation messages={conversation} pending={interviewerBusy || (awaitingTurn && speechPhase === 'idle')}
                     listening={speechPhase === 'listening'} speaking={interviewerAudio.status === 'speaking'}
-                    active={view === 'practice' && activeTab === 'code'} />
-                  <div className="session-microphone">
+                    active={view === 'practice' && activeTab === 'code'} emptyState={<>
+                      <p className="interview-empty-title">How the live interview works</p>
+                      <ol className="interview-empty-steps">
+                        <li>Choose <strong>Voice</strong> or <strong>Text</strong> below, then start the interview.</li>
+                        <li>Explain your approach while you code.</li>
+                        <li>Pause for a moment. The interviewer replies with a question or a new requirement.</li>
+                      </ol>
+                      <p className="interview-empty-note">Your code and explanation go to your AI provider only while the interview is running.</p>
+                    </>} />}
+                  {practiceMode === 'practice' && <div className="session-microphone">
                     {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording} disabled={speechPhase !== 'listening'}><StopIcon />{speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop microphone'}</button>}
-                    {(!liveInterview || ['starting', 'stopping'].includes(speechPhase)) && <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{speechPhase === 'listening' ? <><span className="pulse" />Listening while you code</> : speechPhase === 'starting' ? 'Waiting for microphone access…' : speechPhase === 'stopping' ? 'Waiting for the final transcript…' : 'You can also type your thinking below.'}</span>}
-                  </div>
+                    <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{speechPhase === 'listening' ? <><span className="pulse" />Listening while you code</> : speechPhase === 'starting' ? 'Waiting for microphone access…' : speechPhase === 'stopping' ? 'Waiting for the final transcript…' : 'You can also type your thinking below.'}</span>
+                  </div>}
                   {!speechSupported && <p className="warning">Voice input isn’t available in this browser. You can type your explanation while coding.</p>}
                   {activeTab === 'code' && <div className="writing-area live-writing-area conversation-composer">
                     <label className="sr-only" htmlFor="solution-explanation">Your solution explanation</label>
                     <textarea id="solution-explanation" name="transcript" autoComplete="off" className="transcript-editor" value={transcript} onChange={(event) => changeTranscript(event.target.value)} readOnly={isRecording}
-                      placeholder="Start with your approach. Explain what you change and why." />
+                      placeholder={practiceMode === 'practice' ? 'Start with your approach. Explain what you change and why.'
+                        : interviewInput === 'text' ? 'Type your explanation. The interviewer replies when you stop typing.'
+                        : 'What you say appears here. You can also edit it while paused.'} />
                     <span className="word-count">{transcript.trim() ? transcript.trim().split(/\s+/).length : 0} words</span>
                   </div>}
+                  <LiveInterviewer key={`${problemSlug}:${interviewEpoch}`} hidden={practiceMode !== 'live'} problemId={problemSlug} curveballId={curveballId}
+                    code={code} transcript={transcript} blocked={isRecording || speechPhase !== 'idle' || isRunning || isAnalyzing || followupRecording || interviewerAudio.status !== 'idle'}
+                    active={view === 'practice' && activeTab === 'code' && practiceMode === 'live'} running={liveInterview} spokenTurn={spokenTurn} inputMode={interviewInput}
+                    onInputModeChange={mode => { pauseLiveInterview(); setInterviewInput(mode) }}
+                    onMessage={appendConversation} onBusyChange={setInterviewerBusy} onTurnComplete={finishInterviewerTurn} onCurveball={applyCurveball}
+                    onSpeak={text => speakForPane('code', text)} onStop={pauseLiveInterview} onStart={startLiveInterview}>
+                    <InterviewerVoice enabled={voiceEnabled} onToggle={() => setVoiceEnabled(value => !value)} audio={interviewerAudio} />
+                  </LiveInterviewer>
                   <div className="session-feedback-action">
-                    <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : isRunning ? 'Wait for code checks to finish before getting feedback.' : 'Feedback uses your code, explanation, and checkpoints.'}</p>
-                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || isRunning || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}</button>
+                    <p>{practiceMode === 'live' && liveInterview ? 'Pause the interview when you’re ready for feedback.' : isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : isRunning ? 'Wait for code checks to finish before getting feedback.' : 'Feedback uses your code, explanation, and checkpoints.'}</p>
+                    <button className={practiceMode === 'live' ? 'learning-secondary' : 'learning-primary'} onClick={handleAnalyze} disabled={isAnalyzing || isRecording || isRunning || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}</button>
                   </div>
                 </aside>
               </div>

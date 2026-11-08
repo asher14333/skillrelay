@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api'
 const QUIET_MS = 3000
 
 export default function LiveInterviewer(props) {
-  const { code, transcript, blocked, active, running: live, spokenTurn, inputMode, onInputModeChange, onStop, onStart } = props
+  const { code, transcript, blocked, active, running: live, spokenTurn, inputMode, onInputModeChange, onStop, onStart, hidden = false, children } = props
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const requestRef = useRef(null)
@@ -91,19 +91,25 @@ export default function LiveInterviewer(props) {
     else onStart()
   }
 
-  return <section className="live-interviewer" aria-labelledby="live-interviewer-title">
-    <h3 id="live-interviewer-title"><Icon name="mic" size={16} />Live interviewer</h3>
-    <p>Gemini follows your code and explanation, asks questions, and changes the requirements when it would help you practice.</p>
-    <label className="interview-input-mode">Interview input
-      <select aria-label="Interview input" value={inputMode} onChange={event => onInputModeChange(event.target.value)}>
-        <option value="voice">Voice</option><option value="text">Text</option>
-      </select>
-    </label>
-    <div className="live-interviewer-actions">
-      <button className="learning-secondary" onClick={toggle} aria-pressed={live}>{live ? 'Pause interview' : 'Start live interview'}</button>
-    </div>
-    {live && <p className="live-interviewer-status" role="status">{!active ? 'Paused while you review another view.' : busy ? 'Gemini is considering your turn.' : inputMode === 'text' ? 'Type your turn. Gemini responds automatically after a pause.' : 'Hands-free: speak, pause, and listen. Your conversation appears beside the editor.'}</p>}
-    <p className="live-interviewer-privacy">Starting sends snapshots of your code and finalized explanation to your AI provider. No timer. You can pause at any time.</p>
+  return <section className="live-interviewer" aria-label="Live interview controls" hidden={hidden}>
     {error && <p className="curveball-error" role="alert">{error}</p>}
+    <button className={`${live ? 'learning-secondary' : 'learning-primary'} live-interviewer-toggle`} onClick={toggle} aria-pressed={live}>
+      <Icon name={live ? 'pause' : 'mic'} size={16} />{live ? 'Pause interview' : 'Start live interview'}
+    </button>
+    <div className="live-interviewer-settings">
+      <div className="live-setting">
+        <span className="live-setting-label" id="interview-input-label">Answer with</span>
+        <div className="segmented" role="group" aria-labelledby="interview-input-label">
+          {[['voice', 'mic', 'Voice'], ['text', 'keyboard', 'Text']].map(([value, icon, label]) =>
+            <button key={value} type="button" aria-pressed={inputMode === value} onClick={() => inputMode !== value && onInputModeChange(value)}>
+              <Icon name={icon} size={14} />{label}
+            </button>)}
+        </div>
+      </div>
+      {children && <div className="live-setting">
+        <span className="live-setting-label">Interviewer voice</span>
+        {children}
+      </div>}
+    </div>
   </section>
 }
