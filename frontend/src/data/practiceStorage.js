@@ -1,5 +1,6 @@
 import { DEFAULT_GOAL, getLearningGoal } from './learning.js'
 import { problems } from './problems.js'
+import { findCurveball } from './curveballs.js'
 
 export const STORAGE_KEY = 'skillrelay.practice.v1'
 export const MAX_ATTEMPTS = 100
@@ -26,6 +27,8 @@ export function cleanAttempt(value) {
   if (total !== value.score || !shortText(value.lesson?.id) || !shortText(value.lesson?.title)) return null
   const dimension = value.lesson.dimension
   if (dimension !== null && !Object.hasOwn(RUBRIC_MAX, dimension)) return null
+  const curveball = value.curveballId ? findCurveball(value.curveballId) : null
+  if (value.curveballId && (!curveball || curveball.problemId !== value.problemId)) return null
   let run = null
   if (value.run !== null && value.run !== undefined) {
     if (!Number.isInteger(value.run.total) || value.run.total < 1 || value.run.total > 1000 ||
@@ -45,6 +48,7 @@ export function cleanAttempt(value) {
     problemId: value.problemId,
     problemTitle: problemById.get(value.problemId).title,
     goal: value.goal,
+    ...(curveball ? { curveballId: curveball.id, curveballTitle: curveball.title } : {}),
     score: value.score,
     rubric,
     lesson: { id: value.lesson.id, title: value.lesson.title, dimension },
@@ -104,6 +108,7 @@ export function compareLatest(attempts) {
   const current = history[0]
   if (!current) return null
   const previous = history.slice(1).find((attempt) =>
-    attempt.problemId === current.problemId && attempt.goal === current.goal)
+    attempt.problemId === current.problemId && attempt.goal === current.goal &&
+    (attempt.curveballId || null) === (current.curveballId || null))
   return previous ? { current, previous, delta: Math.round((current.score - previous.score) * 10) / 10 } : null
 }

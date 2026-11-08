@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from ai_provider import AIProviderError, call_model
 
-from problems import get_problem
+from curveballs import normalize_review, review_prompt
 from learning import DEFAULT_GOAL, LEARNING_GOALS, build_learning_plan
 from prompts import (
     build_analyze_prompt,
@@ -16,7 +16,7 @@ from prompts import (
 from runner import run_code
 from replay import CRITERIA, DIMENSIONS, MAX_CODE, MAX_TRANSCRIPT, normalize_insights, normalize_retry, replay_prompt, retry_prompt, validate_moments
 from learning import LESSONS
-from validation import RequestValidationError, conversation_history, normalize_followup, normalize_question, practice_context, request_object, text_field
+from validation import RequestValidationError, conversation_history, normalize_followup, normalize_question, practice_context, problem_context, request_object, text_field
 
 load_dotenv(Path(__file__).with_name(".env"))
 
@@ -71,7 +71,6 @@ def analyze():
     if len(transcript) > MAX_TRANSCRIPT or len(code) > MAX_CODE:
         return jsonify({"error": "The session exceeds 12,000 code characters or 6,000 explanation characters"}), 400
     transcript, code = transcript.strip(), code.strip()
-    slug = data.get("problemId", "two-sum")
     goal = data.get("learningGoal", DEFAULT_GOAL)
 
     if not isinstance(goal, str) or goal not in LEARNING_GOALS:
@@ -85,9 +84,7 @@ def analyze():
     if not transcript:
         return jsonify({"error": "Transcript is required"}), 400
 
-    problem = get_problem(slug) if isinstance(slug, str) else None
-    if not problem:
-        return jsonify({"error": f"Unknown problem: {slug}"}), 400
+    problem = problem_context(data)
 
     try:
         result = call_model(
@@ -121,10 +118,7 @@ def focused_retry():
     dimension = data.get("dimension")
     if not isinstance(dimension, str) or dimension not in DIMENSIONS:
         return jsonify({"error": "Choose a supported practice skill"}), 400
-    slug = data.get("problemId")
-    problem = get_problem(slug) if isinstance(slug, str) else None
-    if not problem:
-        return jsonify({"error": "Choose a supported problem"}), 400
+    problem = problem_context(data)
     before, after, code = data.get("before"), data.get("after"), data.get("code", "")
     if not all(isinstance(value, str) for value in (before, after, code)) or not after.strip():
         return jsonify({"error": "An original explanation and a non-empty retry answer are required"}), 400
@@ -193,11 +187,38 @@ def run_code_route():
     problem, _, code = practice_context(data)
     if not code:
         raise RequestValidationError("Code is required.")
-    result = run_code(problem["slug"], code)
+    result = run_code(problem["slug"], code, problem["curveballId"]) if "curveballId" in problem else run_code(problem["slug"], code)
     if "error" in result and "results" not in result:
         return jsonify(result), 400
 
     return jsonify(result)
+
+
+@app.route("/curveball/review", methods=["POST"])
+def review_curveball():
+    data = request_object()
+    problem, transcript, code = practice_context(data, transcript_required=True)
+    if "curveballId" not in problem:
+        raise RequestValidationError("Start an interview curveball before reviewing your adaptation.")
+    if not code:
+        raise RequestValidationError("Code is required.")
+    before_code = text_field(data, "beforeCode", limit=MAX_CODE)
+    before_transcript = text_field(data, "beforeTranscript")
+    run = run_code(problem["slug"], code, problem["curveballId"])
+    if "error" in run and "results" not in run:
+        return jsonify(run), 400
+    try:
+        raw = call_model(
+            "You are a careful interview communication coach. Review evidence fairly. Return JSON only.",
+            review_prompt(problem, before_code, before_transcript, code, transcript, run),
+        )
+        return jsonify({"run": run, "feedback": normalize_review(raw, transcript)})
+    except AIProviderError:
+        raise
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 502
+    except Exception:
+        return jsonify({"error": "Could not review the requirement change. Your code and explanation are still available; try again."}), 502
 
 
 if __name__ == "__main__":

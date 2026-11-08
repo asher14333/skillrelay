@@ -7,6 +7,7 @@ const MAX_FOLLOWUPS = 3
 
 export default function InterviewPanel({
   problemId,
+  curveballId = null,
   transcript,
   code,
   onError,
@@ -130,7 +131,7 @@ export default function InterviewPanel({
   const startInterview = async () => {
     if (requestRef.current || isRecording) return
     const controller = new AbortController()
-    const context = { problemId, transcript, code }
+    const context = { problemId, curveballId, transcript, code }
     requestRef.current = controller
     setIsLoading(true)
     onError(null)

@@ -84,3 +84,25 @@ stored in history. Peer matching and cloud accounts are future milestones.
   application reuse. A new name and branch alone do not establish eligibility.
 - A private repository needs appropriate judge access. Demo recording, AI-use
   disclosure, and submission are separate work from implementing this branch.
+
+
+## Optional standout sequence: adapt to a changed requirement
+
+1. Start Two Sum with a map solution that handles valid pairs but falls through
+   without a return when there is no match. Explain the approach. Run code: 3/3.
+2. Choose Reveal curveball in the problem pane. Read the no-match requirement;
+   the original explanation and code are available under Before the requirement
+   changed. The original cases remain and two new cases are added.
+3. Run again: 3/5. Add a final `return []` and explain why it belongs after the
+   loop, how the original behavior is preserved, and how the new cases verify
+   the change. Run again: 5/5.
+4. Choose Review my adaptation to see actual execution results alongside
+   evidence-based communication checks. AI review requires the configured key;
+   the test runner does not.
+5. Get session feedback. If a lesson is recommended, choose Practice this
+   lesson and apply the concept to your own code.
+6. Save practice and show the requirement-change label in Progress. Comparisons
+   stay within the same variant, and raw before/after evidence is session-only.
+
+The flow is untimed and supports typed explanations as well as the existing
+microphone input. Display preferences remain available throughout.

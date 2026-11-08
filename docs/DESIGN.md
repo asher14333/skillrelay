@@ -436,3 +436,21 @@ using `auto` on initial placement or under reduced motion.
 
 Implementation QA evidence and limitations belong in [VALIDATION.md](VALIDATION.md).
 This visual-system record does not replace that evidence.
+
+
+## Interview curveballs
+
+Interview curveballs extend the existing Operate workspace rather than adding
+another destination. The problem pane offers a deliberate Reveal curveball
+action; there is no timer or unsolicited interruption. Reveal keeps the editor
+and explanation, freezes a before snapshot, replaces conflicting requirements,
+and adds visibly identified runnable cases. The requirement stays beside the
+work. The learner can inspect the original code/explanation and request a
+separate adaptation review; tests remain usable without AI. Three evidence
+checks assess communication separately from code correctness. Changing code
+or explanation clears the review and cancels any pending result.
+
+The shared server-owned catalog selects the exact same variant for the UI,
+runner, analysis, focused retry, and follow-up. Revealing a requirement change
+starts fresh feedback/replay context. Saved summaries carry the variant label;
+comparisons require matching problem, goal, and variant.

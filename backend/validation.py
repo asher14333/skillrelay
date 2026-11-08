@@ -4,7 +4,7 @@ import math
 
 from flask import request
 
-from problems import get_problem
+from curveballs import get_problem_variant
 from replay import MAX_CODE, MAX_TRANSCRIPT
 
 
@@ -31,11 +31,15 @@ def text_field(data, name, *, required=False, limit=MAX_TRANSCRIPT):
     return value
 
 
+def problem_context(data):
+    try:
+        return get_problem_variant(data.get("problemId", "two-sum"), data.get("curveballId"))
+    except ValueError as exc:
+        raise RequestValidationError(str(exc)) from exc
+
+
 def practice_context(data, *, transcript_required=False):
-    slug = data.get("problemId", "two-sum")
-    problem = get_problem(slug) if isinstance(slug, str) else None
-    if problem is None:
-        raise RequestValidationError("Choose a supported practice problem.")
+    problem = problem_context(data)
     transcript = text_field(data, "transcript", required=transcript_required)
     code = text_field(data, "code", limit=MAX_CODE)
     return problem, transcript, code

@@ -23,7 +23,7 @@ export default function FocusedRetry({ task, onComplete, onBack, active = true }
     requestRef.current = controller
     setLoading(true); setError(''); setResult(null)
     try {
-      const { data } = await axios.post(`${API_URL}/practice/retry`, { problemId: task.problemId, dimension: task.dimension, code: task.code, before: task.before, after: answer }, { timeout: 60000, signal: controller.signal })
+      const { data } = await axios.post(`${API_URL}/practice/retry`, { problemId: task.problemId, curveballId: task.curveballId, dimension: task.dimension, code: task.code, before: task.before, after: answer }, { timeout: 60000, signal: controller.signal })
       if (controller.signal.aborted || requestRef.current !== controller) return
       setResult(data)
       onComplete({ ...data, createdAt: new Date().toISOString() })

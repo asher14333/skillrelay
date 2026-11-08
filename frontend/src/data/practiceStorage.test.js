@@ -108,3 +108,20 @@ test('focused retry summaries update an existing attempt and omit private eviden
   assert.equal('checkpoints' in history[0], false)
   assert.equal('retrySummary' in cleanAttempt({ ...original, retrySummary: { ...updated.retrySummary, total: 100 } }), false)
 })
+
+
+test('curveball summaries persist without raw evidence and compare only the same requirement', () => {
+  const latest = attempt('variant', 8, { curveballId: 'two-sum-no-match', createdAt: '2026-11-08T03:00:00Z', code: 'private', beforeTranscript: 'private' })
+  const ordinary = attempt('ordinary', 9, { createdAt: '2026-11-08T02:00:00Z' })
+  assert.equal(compareLatest([latest, ordinary]), null)
+  const previous = attempt('earlier-variant', 5, { curveballId: 'two-sum-no-match' })
+  assert.equal(compareLatest([latest, ordinary, previous]).delta, 3)
+  const storage = memoryStorage()
+  writePractice('clear-explanations', [latest], storage)
+  const saved = loadPractice(storage).attempts[0]
+  assert.equal(saved.curveballId, 'two-sum-no-match')
+  assert.equal(saved.curveballTitle, 'No matching pair')
+  assert.equal('code' in saved, false)
+  assert.equal('beforeTranscript' in saved, false)
+  assert.equal(cleanAttempt(attempt('wrong', 5, { curveballId: 'stock-empty-prices' })), null)
+})

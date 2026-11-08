@@ -3,6 +3,8 @@ import axios from 'axios'
 import { problems, getProblemBySlug } from './data/problems'
 import RubricFeedback from './components/RubricFeedback'
 import TestConsole from './components/TestConsole'
+import CurveballPractice from './components/CurveballPractice'
+import { getCurveball, withCurveball } from './data/curveballs'
 import InterviewPanel from './components/InterviewPanel'
 import LearningPlan from './components/LearningPlan'
 import ProgressPanel from './components/ProgressPanel'
@@ -20,6 +22,7 @@ import { appendCheckpoint, checkpointPayload, MAX_CODE, MAX_EXPLANATION } from '
 import './App.css'
 import './Learning.css'
 import './DisplaySettings.css'
+import './Curveball.css'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 const CodeEditor = lazy(() => import('./components/CodeEditor'))
@@ -36,7 +39,10 @@ function App() {
   const [runSnapshot, setRunSnapshot] = useState(null)
   const [lessonFocus, setLessonFocus] = useState(null)
   const [problemSlug, setProblemSlug] = useState('two-sum')
-  const problem = getProblemBySlug(problemSlug)
+  const [curveballSession, setCurveballSession] = useState(null)
+  const curveballDefinition = getCurveball(problemSlug)
+  const curveballId = curveballSession?.id || null
+  const problem = withCurveball(getProblemBySlug(problemSlug), curveballId ? curveballDefinition : null)
 
   const [code, setCode] = useState(problem.starterCode)
   const [transcript, setTranscript] = useState('')
@@ -179,6 +185,7 @@ function App() {
     currentTranscriptRef.current = ''
     sessionBaseRef.current = ''
     setProblemSlug(slug)
+    setCurveballSession(null)
     setResetCodeDraft(null)
     setCode(next.starterCode)
     setTranscript('')
@@ -307,6 +314,7 @@ function App() {
         createdAt: snapshot.createdAt,
         problemId: snapshot.problemId,
         goal: snapshot.goal,
+        curveballId: snapshot.curveballId,
         score: snapshot.feedback.score,
         rubric: snapshot.feedback.rubric,
         lesson: snapshot.feedback.learningPlan,
@@ -341,12 +349,29 @@ function App() {
       return
     }
     const moment = checkpointId ? analysisSnapshot.checkpoints.find((item) => item.id === checkpointId) : null
-    const task = { id: crypto.randomUUID(), analysisId: analysisSnapshot.id, problemId: analysisSnapshot.problemId, checkpointId,
+    const task = { id: crypto.randomUUID(), analysisId: analysisSnapshot.id, problemId: analysisSnapshot.problemId, curveballId: analysisSnapshot.curveballId, checkpointId,
       dimension, code: moment ? moment.code : analysisSnapshot.code,
       before: moment ? moment.transcript : analysisSnapshot.transcript, prompt: spec.prompt, criteria: spec.criteria }
     retryTaskIdRef.current = task.id
     setRetryTask(task)
     setActiveTab('retry')
+  }
+
+  const revealCurveball = () => {
+    if (!curveballDefinition || curveballSession || isRunning || isAnalyzing || isRecording) return
+    flushPendingMoments()
+    setCurveballSession({ id: curveballDefinition.id, code, transcript })
+    invalidateFeedback()
+    codeRevisionRef.current += 1
+    setRunSnapshot(null)
+    setRunResults(null)
+    setLessonFocus(null)
+    setSelectedCase(problem.testCases.length)
+    setConsoleTab('testcase')
+    setActiveTab('code')
+    Object.values(sessionRef.current.timers).forEach(clearTimeout)
+    Object.assign(sessionRef.current, { startedAt: null, moments: [], timers: {} })
+    captureMoment('start')
   }
 
   const startRecording = () => {
@@ -389,6 +414,7 @@ function App() {
       const { data } = await axios.post(`${API_URL}/run`, {
         code,
         problemId: problemSlug,
+        curveballId,
       }, { timeout: 30000 })
       if (revision !== codeRevisionRef.current) return
       if (data.error && !data.results) {
@@ -397,7 +423,7 @@ function App() {
       } else {
         setRunResults(data)
         if (Number.isInteger(data.passed) && Number.isInteger(data.total) && data.total > 0) {
-          setRunSnapshot({ code, problemId: problemSlug, passed: data.passed, total: data.total })
+          setRunSnapshot({ code, problemId: problemSlug, curveballId, passed: data.passed, total: data.total })
           captureMoment('run-result', { run: { passed: data.passed, total: data.total } })
         }
         const firstFail = data.results?.findIndex((r) => !r.passed)
@@ -447,6 +473,7 @@ function App() {
         transcript,
         code,
         problemId: problemSlug,
+        curveballId,
         learningGoal,
         checkpoints: reviewCheckpoints,
       }, { timeout: 60000 })
@@ -456,10 +483,11 @@ function App() {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         problemId: problemSlug,
+        curveballId,
         goal: learningGoal,
         feedback: data,
         code, transcript, checkpoints: reviewCheckpoints,
-        run: runSnapshot?.code === code && runSnapshot.problemId === problemSlug
+        run: runSnapshot?.code === code && runSnapshot.problemId === problemSlug && runSnapshot.curveballId === curveballId
           ? { passed: runSnapshot.passed, total: runSnapshot.total } : null,
       })
       setLessonFocus(null)
@@ -544,6 +572,15 @@ function App() {
               </div>
             </div>
             <div className="problem-body">
+              <CurveballPractice key={`${problemSlug}:${curveballId || 'base'}`} definition={curveballDefinition} session={curveballSession}
+                code={code} transcript={transcript} disabled={isRecording || isRunning || isAnalyzing}
+                onReveal={revealCurveball} onRunResult={data => {
+                  setRunResults(data)
+                  setRunSnapshot({ code, problemId: problemSlug, curveballId, passed: data.passed, total: data.total })
+                  setConsoleTab('result')
+                  const failed = data.results.findIndex(result => !result.passed)
+                  setSelectedCase(failed >= 0 ? failed : 0)
+                }} />
               {lessonFocus && <div className="lesson-reminder" role="note">
                 <span className="focus-label"><Icon name="book" /> Your practice focus</span>
                 <h3>{lessonFocus.title}</h3>
@@ -632,6 +669,7 @@ function App() {
                     <p>{feedback.passed ? 'A strong practice attempt' : 'Keep building your explanation'}<small>Use this feedback to choose what to practice next.</small></p>
                   </div>
                   {analysisSnapshot?.retrySummary && <div className="retry-completed"><Icon name="check" /><span>Focused retry: {analysisSnapshot.retrySummary.beforeMet}/{analysisSnapshot.retrySummary.total} → {analysisSnapshot.retrySummary.afterMet}/{analysisSnapshot.retrySummary.total} criteria supported. {isCurrentSaved ? 'Summary saved with this practice.' : 'Save practice to keep this summary.'}</span></div>}
+                  {curveballId && <p className="curveball-context">Requirement change: {curveballDefinition.title}. Feedback uses the updated problem.</p>}
                   <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} />
                   <p className="feedback-storage"><Icon name="shield" size={15} />Saved summaries stay on this device. Code and explanations aren’t included.</p>
                   <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} active={view === 'practice' && activeTab === 'feedback'} />
@@ -643,7 +681,7 @@ function App() {
                 return { ...snapshot, retrySummary: result ? { dimension: result.dimension, beforeMet: result.beforeMet, afterMet: result.afterMet, total: result.total, createdAt: result.createdAt } : null }
               })} /></div>}
               <div className={`interview-pane-wrapper ${activeTab !== 'interview' ? 'pane-hidden' : ''}`}>
-                <InterviewPanel key={problemSlug} problemId={problemSlug} transcript={transcript} code={code} active={view === 'practice' && activeTab === 'interview'} speechSupported={speechSupported} onError={setError} />
+                <InterviewPanel key={`${problemSlug}:${curveballId || 'base'}`} problemId={problemSlug} curveballId={curveballId} transcript={transcript} code={code} active={view === 'practice' && activeTab === 'interview'} speechSupported={speechSupported} onError={setError} />
               </div>
             </div>
           </section>

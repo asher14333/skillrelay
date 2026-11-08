@@ -39,9 +39,9 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onRestor
           </div>
           <div className="practice-comparison">
             {comparison ? (
-              <p><strong>{comparison.delta > 0 ? '+' : ''}{comparison.delta} points</strong> compared with your previous saved attempt on {latest.problemTitle}, with the goal “{getLearningGoal(latest.goal).title}.”</p>
+              <p><strong>{comparison.delta > 0 ? '+' : ''}{comparison.delta} points</strong> compared with your previous saved attempt on {latest.problemTitle}, with the goal “{getLearningGoal(latest.goal).title}”{latest.curveballId ? ` and the curveball “${latest.curveballTitle}.”` : '.'}</p>
             ) : (
-              <p>Save another attempt on <strong>{latest.problemTitle}</strong> with the goal “{getLearningGoal(latest.goal).title}” to compare your practice scores.</p>
+              <p>Save another attempt on <strong>{latest.problemTitle}</strong> with the goal “{getLearningGoal(latest.goal).title}”{latest.curveballId ? ` and the curveball “${latest.curveballTitle}”` : ''} to compare your practice scores.</p>
             )}
             <span>AI practice feedback can vary. These scores are learning signals, not a credential or hiring assessment.</span>
           </div>
@@ -64,6 +64,7 @@ export default function ProgressPanel({ attempts, onPractice, onDelete, onRestor
                     <time dateTime={attempt.createdAt}>{new Date(attempt.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</time>
                     <h3>{attempt.problemTitle}</h3>
                     <p>{getLearningGoal(attempt.goal).title}</p>
+                    {attempt.curveballId && <p className="curveball-history">Curveball: {attempt.curveballTitle}</p>}
                   </div>
                   <strong className="history-score">{attempt.score}<small>/10</small></strong>
                 </div>

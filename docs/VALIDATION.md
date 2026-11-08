@@ -313,3 +313,26 @@ Desktop and phone screenshots were visually inspected. The rendered-page
 Impeccable check reported zero anti-patterns and one advisory about the existing
 compact heading scale. This feature does not establish full WCAG compliance;
 manual screen-reader and physical-device testing remain separate work.
+
+
+## Interview requirement changes
+
+All 70 backend tests and 14 frontend data tests pass, as do lint and production
+build. Five real variant solutions pass 28 combined original/added cases.
+Tests reject unknown or mismatched variants, carry updated requirements into
+AI prompts, validate adaptation output, and enforce exact source quotations.
+Saved summaries compare only matching problem, goal, and variant, and strip
+raw code and transcripts.
+
+The curveball browser regression uses real local Python execution: 3/3 original
+Two Sum cases, 3/5 after revealing the no-match requirement, and 5/5 after
+adaptation. It verifies frozen original context, cancellation after edits,
+variant propagation to analysis/retry/follow-up, saved-history labels,
+320/1024/1440px layouts, and clearing variants after a challenge change.
+AI responses in this browser check are labeled fixtures. Existing practice,
+reliability, motion, and display browser flows also pass.
+
+Separately, a live adaptation review using synthetic code returned HTTP 200,
+5/5 runner cases, and three checks supported by verified source quotations.
+This is a smoke check, not learner-outcome evidence. The existing Monaco
+bundle warning and local-runner isolation limitation remain.

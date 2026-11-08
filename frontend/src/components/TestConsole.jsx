@@ -41,6 +41,7 @@ export default function TestConsole({
       </div>
 
       <div className="lc-console-body">
+        {problem.curveballStartIndex !== undefined && <p className="curveball-context">Includes the original checks and new requirement cases.</p>}
         {consoleTab === 'testcase' && (
           <>
             <div className="case-pills">
@@ -51,7 +52,7 @@ export default function TestConsole({
                   aria-pressed={selectedCase === i}
                   onClick={() => setSelectedCase(i)}
                 >
-                  Case {i + 1}
+                  {i >= (problem.curveballStartIndex ?? Infinity) ? 'New case' : 'Case'} {i + 1}
                 </button>
               ))}
             </div>
@@ -75,9 +76,9 @@ export default function TestConsole({
               <div className="result-view">
                 <div className="result-summary">
                   <div
-                    className={`result-status ${runResults.all_passed ? 'result-accepted' : 'result-wrong'}`}
+                    role="status" className={`result-status ${runResults.all_passed ? 'result-accepted' : 'result-wrong'}`}
                   >
-                    {runResults.all_passed ? 'Accepted' : 'Wrong Answer'}
+                    {runResults.all_passed ? 'Accepted' : 'Wrong Answer'} · {runResults.passed}/{runResults.total} checks passed
                   </div>
 
                   <div className="case-pills">

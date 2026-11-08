@@ -4,7 +4,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from problems import get_problem
+from curveballs import get_problem_variant
 
 RUN_TIMEOUT_SECONDS = 5
 RESULT_MARKER = "__SKILLRELAY_RESULTS__="
@@ -22,6 +22,8 @@ def validate(result, expected, case):
     target = case["target"]
     if not isinstance(result, list):
         return False, f"Expected list, got {type(result).__name__}"
+    if expected == []:
+        return (True, None) if result == [] else (False, "Expected [] when no matching pair exists")
     if len(result) != 2:
         return False, f"Expected 2 indices, got {len(result)}"
     i, j = result
@@ -84,10 +86,11 @@ print("{result_marker}" + json.dumps(results))
 '''
 
 
-def run_code(slug: str, code: str) -> dict:
-    problem = get_problem(slug)
-    if not problem:
-        return {"error": f"Unknown problem: {slug}"}
+def run_code(slug: str, code: str, curveball_id=None) -> dict:
+    try:
+        problem = get_problem_variant(slug, curveball_id)
+    except ValueError as exc:
+        return {"error": str(exc)}
 
     if not code.strip():
         return {"error": "No code provided"}
