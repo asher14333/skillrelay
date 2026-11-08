@@ -1,10 +1,9 @@
-import json
-import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from openai import OpenAI
+from ai_provider import AIProviderError, call_model
 
 from problems import get_problem
 from learning import DEFAULT_GOAL, LEARNING_GOALS, build_learning_plan
@@ -18,31 +17,16 @@ from runner import run_code
 from replay import CRITERIA, DIMENSIONS, MAX_CODE, MAX_TRANSCRIPT, normalize_insights, normalize_retry, replay_prompt, retry_prompt, validate_moments
 from learning import LESSONS
 
-load_dotenv()
+load_dotenv(Path(__file__).with_name(".env"))
 
 app = Flask(__name__)
 CORS(app)
 app.config["MAX_CONTENT_LENGTH"] = 512 * 1024
 
 
-def get_client():
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        return None
-    return OpenAI(api_key=api_key)
-
-
-def call_openai(system: str, user: str) -> dict:
-    client = get_client()
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-        response_format={"type": "json_object"},
-    )
-    return json.loads(response.choices[0].message.content)
+@app.errorhandler(AIProviderError)
+def ai_provider_error(error):
+    return jsonify({"error": str(error), "code": error.code}), error.status
 
 
 @app.route("/problems", methods=["GET"])
@@ -91,11 +75,8 @@ def analyze():
     if not problem:
         return jsonify({"error": f"Unknown problem: {slug}"}), 400
 
-    if not os.getenv("OPENAI_API_KEY"):
-        return jsonify({"error": "OPENAI_API_KEY is not configured"}), 500
-
     try:
-        result = call_openai(
+        result = call_model(
             (
                 "You are a fair technical interviewer. Score each rubric dimension "
                 "independently. Notes must match scores: max score = positive note, "
@@ -112,8 +93,10 @@ def analyze():
                                             "criteria": [{"id": ident, "label": label} for ident, label in checks]}
                                        for key, checks in CRITERIA.items()}
         return jsonify(feedback)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except AIProviderError:
+        raise
+    except Exception:
+        return jsonify({"error": "Could not get AI feedback. Please try again."}), 502
 
 
 @app.route("/practice/retry", methods=["POST"])
@@ -133,11 +116,11 @@ def focused_retry():
         return jsonify({"error": "An original explanation and a non-empty retry answer are required"}), 400
     if len(before) > MAX_TRANSCRIPT or len(after) > MAX_TRANSCRIPT or len(code) > MAX_CODE:
         return jsonify({"error": "The practice answer or code exceeds the session limit"}), 400
-    if not os.getenv("OPENAI_API_KEY"):
-        return jsonify({"error": "OPENAI_API_KEY is not configured"}), 500
     try:
-        raw = call_openai("You are a careful communication coach. Return evidence-based JSON only.", retry_prompt(problem, dimension, before, after, code))
+        raw = call_model("You are a careful communication coach. Return evidence-based JSON only.", retry_prompt(problem, dimension, before, after, code))
         return jsonify(normalize_retry(raw, dimension, before, after))
+    except AIProviderError:
+        raise
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 502
     except Exception:
@@ -158,11 +141,8 @@ def interview_start():
     if not problem:
         return jsonify({"error": f"Unknown problem: {slug}"}), 400
 
-    if not os.getenv("OPENAI_API_KEY"):
-        return jsonify({"error": "OPENAI_API_KEY is not configured"}), 500
-
     try:
-        result = call_openai(
+        result = call_model(
             (
                 "You are a senior engineer conducting interview follow-ups. "
                 "Ask one probing question. Respond with valid JSON only."
@@ -170,8 +150,10 @@ def interview_start():
             build_interview_start_prompt(problem, transcript, code),
         )
         return jsonify({"question": result.get("question", "")})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except AIProviderError:
+        raise
+    except Exception:
+        return jsonify({"error": "Could not get AI feedback. Please try again."}), 502
 
 
 @app.route("/interview/respond", methods=["POST"])
@@ -190,15 +172,12 @@ def interview_respond():
     if not problem:
         return jsonify({"error": f"Unknown problem: {slug}"}), 400
 
-    if not os.getenv("OPENAI_API_KEY"):
-        return jsonify({"error": "OPENAI_API_KEY is not configured"}), 500
-
     updated_history = history + [
         {"role": "candidate", "content": answer},
     ]
 
     try:
-        result = call_openai(
+        result = call_model(
             (
                 "You are a senior engineer evaluating follow-up answers. "
                 "Be fair and specific. Respond with valid JSON only."
@@ -206,8 +185,10 @@ def interview_respond():
             build_interview_prompt(problem, transcript, updated_history, code),
         )
         return jsonify(result)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except AIProviderError:
+        raise
+    except Exception:
+        return jsonify({"error": "Could not get AI feedback. Please try again."}), 502
 
 
 @app.route("/run", methods=["POST"])

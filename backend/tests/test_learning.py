@@ -70,8 +70,8 @@ class AnalyzeLearningTests(unittest.TestCase):
         }
 
     def test_default_goal_preserves_existing_analysis_fields(self):
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-only"}), patch.object(
-            self.module, "call_openai", return_value=feedback(0)
+        with patch.dict(os.environ, {"AI_PROVIDER": "openai", "OPENAI_API_KEY": "test-only"}), patch.object(
+            self.module, "call_model", return_value=feedback(0)
         ) as model:
             response = self.client.post("/analyze", json=self.request)
         self.assertEqual(response.status_code, 200)
@@ -83,8 +83,8 @@ class AnalyzeLearningTests(unittest.TestCase):
         model.assert_called_once()
 
     def test_selected_goal_reaches_recommendation(self):
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-only"}), patch.object(
-            self.module, "call_openai", return_value=feedback(0)
+        with patch.dict(os.environ, {"AI_PROVIDER": "openai", "OPENAI_API_KEY": "test-only"}), patch.object(
+            self.module, "call_model", return_value=feedback(0)
         ):
             response = self.client.post("/analyze", json={
                 **self.request, "learningGoal": "technical-tradeoffs",
@@ -94,7 +94,7 @@ class AnalyzeLearningTests(unittest.TestCase):
 
     def test_invalid_goals_fail_before_model_call(self):
         for goal in ("unknown", [], None, 3):
-            with self.subTest(goal=goal), patch.object(self.module, "call_openai") as model:
+            with self.subTest(goal=goal), patch.object(self.module, "call_model") as model:
                 response = self.client.post("/analyze", json={**self.request, "learningGoal": goal})
                 self.assertEqual(response.status_code, 400)
                 model.assert_not_called()

@@ -18,7 +18,7 @@ export default function FocusedRetry({ task, onComplete, onBack }) {
       setResult(data)
       onComplete({ ...data, createdAt: new Date().toISOString() })
     } catch (err) {
-      setError(err.response?.data?.error?.includes('OPENAI_API_KEY') ? 'Practice feedback isn’t connected yet. Your answer is still here.' : err.response?.data?.error || 'Couldn’t compare your answer. Try again.')
+      setError(err.response?.data?.code === 'AI_NOT_CONFIGURED' ? 'Practice feedback isn’t connected yet. Your answer is still here.' : err.response?.data?.error || 'Couldn’t compare your answer. Try again.')
     } finally { setLoading(false) }
   }
   return <section className="focused-retry" aria-labelledby="retry-title">

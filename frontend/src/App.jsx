@@ -423,7 +423,7 @@ function App() {
       if (revision !== inputRevisionRef.current) return
       const message = err.response?.data?.error
       setError(
-        message?.includes('OPENAI_API_KEY')
+        err.response?.data?.code === 'AI_NOT_CONFIGURED'
           ? 'Feedback isn’t connected yet. You can keep practicing and try again later.'
           : err.code === 'ECONNABORTED'
             ? 'Feedback is taking longer than expected. Your explanation is still here; try again.'

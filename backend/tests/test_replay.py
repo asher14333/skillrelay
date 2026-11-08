@@ -77,7 +77,7 @@ class ReplayApiTests(unittest.TestCase):
     def test_analysis_adds_verified_insights_in_the_existing_model_call(self):
         raw = feedback(0)
         raw["replayInsights"] = [{"checkpointId": "moment-1", "dimension": "spaceComplexity", "kind": "gap", "observation": "Clarify the memory trade-off.", "codeQuote": "seen = {}", "transcriptQuote": None}]
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-only"}), patch.object(self.module, "call_openai", return_value=raw) as model:
+        with patch.dict(os.environ, {"AI_PROVIDER": "openai", "OPENAI_API_KEY": "test-only"}), patch.object(self.module, "call_model", return_value=raw) as model:
             response = self.client.post('/analyze', json=self.payload)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json["replayInsights"]), 1)
@@ -85,33 +85,33 @@ class ReplayApiTests(unittest.TestCase):
         model.assert_called_once()
 
     def test_bad_checkpoints_and_non_object_requests_fail_before_model(self):
-        with patch.object(self.module, "call_openai") as model:
+        with patch.object(self.module, "call_model") as model:
             for payload in ([], {**self.payload, "checkpoints": [moment(kind=[])]}, {**self.payload, "code": []}):
                 self.assertEqual(self.client.post('/analyze', json=payload).status_code, 400)
             model.assert_not_called()
 
     def test_retry_returns_evidence_and_computed_totals(self):
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-only"}), patch.object(self.module, "call_openai", return_value=comparison()) as model:
+        with patch.dict(os.environ, {"AI_PROVIDER": "openai", "OPENAI_API_KEY": "test-only"}), patch.object(self.module, "call_model", return_value=comparison()) as model:
             response = self.client.post('/practice/retry', json={"problemId": "two-sum", "dimension": "clarity", "before": "My plan", "after": "My improved plan", "code": "seen = {}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["afterMet"], 3)
         model.assert_called_once()
 
     def test_empty_checkpoint_explanation_is_a_valid_baseline(self):
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-only"}), patch.object(self.module, "call_openai", return_value=comparison()):
+        with patch.dict(os.environ, {"AI_PROVIDER": "openai", "OPENAI_API_KEY": "test-only"}), patch.object(self.module, "call_model", return_value=comparison()):
             response = self.client.post('/practice/retry', json={"problemId": "two-sum", "dimension": "clarity", "before": "", "after": "My improved plan"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["beforeMet"], 0)
 
     def test_bad_retry_inputs_never_call_model(self):
         valid = {"problemId": "two-sum", "dimension": "clarity", "before": "before", "after": "after"}
-        with patch.object(self.module, "call_openai") as model:
+        with patch.object(self.module, "call_model") as model:
             for payload in ([], {**valid, "dimension": []}, {**valid, "after": ""}, {**valid, "after": "x" * 6001}, {**valid, "problemId": []}):
                 self.assertEqual(self.client.post('/practice/retry', json=payload).status_code, 400)
             model.assert_not_called()
 
     def test_incomplete_model_comparison_returns_retryable_error(self):
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-only"}), patch.object(self.module, "call_openai", return_value={"checks": []}):
+        with patch.dict(os.environ, {"AI_PROVIDER": "openai", "OPENAI_API_KEY": "test-only"}), patch.object(self.module, "call_model", return_value={"checks": []}):
             response = self.client.post('/practice/retry', json={"problemId": "two-sum", "dimension": "clarity", "before": "before", "after": "after"})
         self.assertEqual(response.status_code, 502)
 
