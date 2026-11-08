@@ -159,11 +159,13 @@ class ProviderRouteTests(unittest.TestCase):
             ("/analyze", base),
             ("/practice/retry", {"problemId": "two-sum", "dimension": "clarity", "before": "before", "after": "after"}),
             ("/interview/start", base),
-            ("/interview/respond", {**base, "history": [], "answer": "My answer"}),
+            ("/interview/respond", {**base, "history": [{"role": "interviewer", "content": "Why a map?"}], "answer": "My answer"}),
         ]
 
     def test_all_four_routes_work_with_gemini_and_keep_response_contracts(self):
-        raw = {"rubric": {}, "question": "Why a map?", "nextQuestion": "What about duplicates?", "complete": False,
+        raw = {"rubric": {key: {"score": 0} for key in ("problemUnderstanding", "bruteForce", "optimization", "timeComplexity", "spaceComplexity", "clarity")},
+               "question": "Why a map?", "nextQuestion": "What about duplicates?", "complete": False,
+               "answerEvaluation": {"score": 5, "feedback": "Test feedback.", "quote": None},
                "checks": [{"id": ident, "before": {"met": False, "quote": None, "note": "Missing"},
                            "after": {"met": True, "quote": "after", "note": "Supported"}}
                           for ident, _ in CRITERIA["clarity"]], "summary": "Test fixture", "nextStep": "Practice"}

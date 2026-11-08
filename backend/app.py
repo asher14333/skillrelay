@@ -16,17 +16,31 @@ from prompts import (
 from runner import run_code
 from replay import CRITERIA, DIMENSIONS, MAX_CODE, MAX_TRANSCRIPT, normalize_insights, normalize_retry, replay_prompt, retry_prompt, validate_moments
 from learning import LESSONS
+from validation import RequestValidationError, conversation_history, normalize_followup, normalize_question, practice_context, request_object, text_field
 
 load_dotenv(Path(__file__).with_name(".env"))
 
 app = Flask(__name__)
-CORS(app)
+# The development UI normally uses Vite's same-origin /api proxy. Only the
+# known local UI origins may call this loopback API directly from a browser.
+# This is an origin boundary, not a sandbox for submitted Python code.
+CORS(app, origins=["http://localhost:5173", "http://127.0.0.1:5173"])
 app.config["MAX_CONTENT_LENGTH"] = 512 * 1024
 
 
 @app.errorhandler(AIProviderError)
 def ai_provider_error(error):
     return jsonify({"error": str(error), "code": error.code}), error.status
+
+
+@app.errorhandler(RequestValidationError)
+def request_validation_error(error):
+    return jsonify({"error": str(error)}), 400
+
+
+@app.errorhandler(413)
+def request_too_large(_error):
+    return jsonify({"error": "This practice request is too large. Shorten the code or explanation."}), 413
 
 
 @app.route("/problems", methods=["GET"])
@@ -101,7 +115,7 @@ def analyze():
 
 @app.route("/practice/retry", methods=["POST"])
 def focused_retry():
-    data = request.get_json()
+    data = request_object()
     if not isinstance(data, dict):
         return jsonify({"error": "A practice response is required"}), 400
     dimension = data.get("dimension")
@@ -129,17 +143,8 @@ def focused_retry():
 
 @app.route("/interview/start", methods=["POST"])
 def interview_start():
-    data = request.get_json() or {}
-    transcript = data.get("transcript", "").strip()
-    code = data.get("code", "").strip()
-    slug = data.get("problemId", "two-sum")
-
-    if not transcript:
-        return jsonify({"error": "Transcript is required"}), 400
-
-    problem = get_problem(slug)
-    if not problem:
-        return jsonify({"error": f"Unknown problem: {slug}"}), 400
+    data = request_object()
+    problem, transcript, code = practice_context(data, transcript_required=True)
 
     try:
         result = call_model(
@@ -149,7 +154,7 @@ def interview_start():
             ),
             build_interview_start_prompt(problem, transcript, code),
         )
-        return jsonify({"question": result.get("question", "")})
+        return jsonify(normalize_question(result))
     except AIProviderError:
         raise
     except Exception:
@@ -158,19 +163,10 @@ def interview_start():
 
 @app.route("/interview/respond", methods=["POST"])
 def interview_respond():
-    data = request.get_json() or {}
-    transcript = data.get("transcript", "").strip()
-    code = data.get("code", "").strip()
-    slug = data.get("problemId", "two-sum")
-    history = data.get("history", [])
-    answer = data.get("answer", "").strip()
-
-    if not answer:
-        return jsonify({"error": "Answer is required"}), 400
-
-    problem = get_problem(slug)
-    if not problem:
-        return jsonify({"error": f"Unknown problem: {slug}"}), 400
+    data = request_object()
+    problem, transcript, code = practice_context(data)
+    answer = text_field(data, "answer", required=True)
+    history, question_count = conversation_history(data)
 
     updated_history = history + [
         {"role": "candidate", "content": answer},
@@ -184,7 +180,7 @@ def interview_respond():
             ),
             build_interview_prompt(problem, transcript, updated_history, code),
         )
-        return jsonify(result)
+        return jsonify(normalize_followup(result, answer, question_count))
     except AIProviderError:
         raise
     except Exception:
@@ -193,14 +189,11 @@ def interview_respond():
 
 @app.route("/run", methods=["POST"])
 def run_code_route():
-    data = request.get_json() or {}
-    code = data.get("code", "").strip()
-    slug = data.get("problemId", "two-sum")
-
+    data = request_object()
+    problem, _, code = practice_context(data)
     if not code:
-        return jsonify({"error": "No code provided"}), 400
-
-    result = run_code(slug, code)
+        raise RequestValidationError("Code is required.")
+    result = run_code(problem["slug"], code)
     if "error" in result and "results" not in result:
         return jsonify(result), 400
 

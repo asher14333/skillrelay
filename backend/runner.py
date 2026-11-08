@@ -7,6 +7,7 @@ from pathlib import Path
 from problems import get_problem
 
 RUN_TIMEOUT_SECONDS = 5
+RESULT_MARKER = "__SKILLRELAY_RESULTS__="
 
 VALIDATORS = {
     "equals": """
@@ -79,7 +80,7 @@ for index, case in enumerate(TEST_CASES):
         entry["error"] = str(exc)
     results.append(entry)
 
-print(json.dumps(results))
+print("{result_marker}" + json.dumps(results))
 '''
 
 
@@ -100,6 +101,7 @@ def run_code(slug: str, code: str) -> dict:
         test_cases=repr(problem["test_cases"]),
         method=problem["method"],
         args=repr(problem["args"]),
+        result_marker=RESULT_MARKER,
     )
 
     with tempfile.NamedTemporaryFile(
@@ -125,9 +127,17 @@ def run_code(slug: str, code: str) -> dict:
         return {"error": stderr or "Code failed to run"}
 
     try:
-        results = json.loads(completed.stdout.strip())
+        # A learner's print() diagnostics are useful during practice and must
+        # not make an otherwise correct solution look like a runner failure.
+        _, marker, payload = completed.stdout.rpartition(RESULT_MARKER)
+        if not marker:
+            return {"error": "Code did not return test results"}
+        results = json.loads(payload.strip())
     except json.JSONDecodeError:
         return {"error": "Could not parse execution output"}
+
+    if not isinstance(results, list) or len(results) != len(problem["test_cases"]) or any(not isinstance(item, dict) for item in results):
+        return {"error": "Code returned incomplete test results"}
 
     passed_count = sum(1 for r in results if r.get("passed"))
     return {

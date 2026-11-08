@@ -1,3 +1,4 @@
+import math
 import re
 
 RUBRIC_DIMENSIONS = [
@@ -41,13 +42,11 @@ def is_starter_code(code: str) -> bool:
 
 
 def quote_in_transcript(quote: str | None, transcript: str) -> bool:
-    if not quote or not transcript:
-        return False
-    return quote.strip().lower() in transcript.lower()
+    return isinstance(quote, str) and bool(quote.strip()) and quote in transcript
 
 
 def fix_note(score: float, max_score: float, note: str) -> str:
-    note = (note or "").strip()
+    note = note.strip()[:1200] if isinstance(note, str) else ""
     is_full = score >= max_score
     is_zero = score <= 0
 
@@ -63,81 +62,23 @@ def fix_note(score: float, max_score: float, note: str) -> str:
     return note
 
 
-def transcript_supports_dimension(key: str, transcript: str) -> bool:
-    t = transcript.lower()
-    words = t.split()
-
-    if key == "bruteForce":
-        return any(
-            k in t
-            for k in (
-                "brute",
-                "force",
-                "every pair",
-                "nested",
-                "o(n²)",
-                "o(n^2)",
-                "n squared",
-                "quadratic",
-                "two loop",
-                "double loop",
-            )
-        )
-    if key == "timeComplexity":
-        return any(
-            k in t
-            for k in (
-                "time complexity",
-                "time complex",
-                "o(n)",
-                "o(1)",
-                "o(n²)",
-                "o(n^2)",
-                "linear time",
-                "constant time",
-                "quadratic time",
-                "one pass",
-                "single pass",
-            )
-        )
-    if key == "spaceComplexity":
-        return any(
-            k in t
-            for k in (
-                "space complexity",
-                "space complex",
-                "extra space",
-                "memory",
-                "o(n) space",
-                "auxiliary",
-            )
-        )
-    if key == "optimization":
-        return any(
-            k in t
-            for k in ("hash", "optim", "map", "set", "pointer", "sort", "complement")
-        )
-    if key == "problemUnderstanding":
-        return len(words) >= 12 and any(
-            k in t for k in ("array", "target", "sum", "indices", "find", "return", "number")
-        )
-    if key == "clarity":
-        blah_count = len(re.findall(r"\bblah\b", t))
-        filler_ratio = blah_count / max(len(words), 1)
-        return filler_ratio < 0.15 and len(words) >= 15
-
-    return False
+def has_substantive_explanation(transcript: str) -> bool:
+    words = re.findall(r"[^\W\d_]+", transcript.casefold())
+    filler = {"blah", "um", "uh", "erm", "hmm", "ah"}
+    return bool(words) and not all(word in filler or re.fullmatch(r"(?:blah)+", word) for word in words)
 
 
 def apply_transcript_caps(rubric: dict, transcript: str) -> None:
-    for key, _, max_score in RUBRIC_DIMENSIONS:
-        if transcript_supports_dimension(key, transcript):
-            continue
-        item = rubric[key]
-        if item["score"] > 0:
-            item["score"] = 0
-            item["quote"] = None
-            item["note"] = "Not addressed in the explanation."
+    # Topic keywords cannot prove absence: a valid stack explanation or a
+    # natural-language growth analysis need not say "hash map" or "Big-O".
+    # Only guard text that contains no explanation at all; the model judges
+    # substantive coverage and its quotes are checked against the transcript.
+    if has_substantive_explanation(transcript):
+        return
+    for item in rubric.values():
+        item["score"] = 0
+        item["quote"] = None
+        item["note"] = "No substantive explanation was provided."
 
 
 def improvement_conflicts_with_rubric(text: str, rubric: dict) -> bool:
@@ -151,7 +92,9 @@ def improvement_conflicts_with_rubric(text: str, rubric: dict) -> bool:
 
 
 def normalize_feedback(result: dict, transcript: str) -> dict:
-    raw_rubric = result.get("rubric") or {}
+    raw_rubric = result.get("rubric") if isinstance(result, dict) else None
+    if not isinstance(raw_rubric, dict) or any(not isinstance(raw_rubric.get(key), dict) for key, _, _ in RUBRIC_DIMENSIONS):
+        raise ValueError("The model did not assess every rubric dimension. Try again.")
     rubric = {}
 
     for key, label, max_score in RUBRIC_DIMENSIONS:
@@ -160,10 +103,10 @@ def normalize_feedback(result: dict, transcript: str) -> dict:
             score = float(item.get("score", 0))
         except (TypeError, ValueError):
             score = 0
-        score = max(0, min(max_score, score))
+        score = max(0, min(max_score, score)) if math.isfinite(score) and not isinstance(item.get("score"), bool) else 0
 
         quote = item.get("quote")
-        if quote and not quote_in_transcript(quote, transcript):
+        if not quote_in_transcript(quote, transcript):
             quote = None
 
         rubric[key] = {
@@ -183,22 +126,27 @@ def normalize_feedback(result: dict, transcript: str) -> dict:
     total = sum(item["score"] for item in rubric.values())
 
     strengths = []
-    for item in result.get("strengths") or []:
+    raw_strengths = result.get("strengths") if has_substantive_explanation(transcript) else []
+    for item in raw_strengths[:12] if isinstance(raw_strengths, list) else []:
         if isinstance(item, str):
             text, quote = item, None
-        else:
+        elif isinstance(item, dict):
             text = item.get("text", "")
             quote = item.get("quote")
-        if quote and not quote_in_transcript(quote, transcript):
+        else:
+            continue
+        if not quote_in_transcript(quote, transcript):
             quote = None
-        if text:
-            strengths.append({"text": text, "quote": quote})
+        if isinstance(text, str) and text.strip():
+            strengths.append({"text": text.strip()[:1200], "quote": quote})
 
     improvements = []
-    for item in result.get("improvements") or []:
-        text = item if isinstance(item, str) else item.get("text", "")
-        if not text:
+    raw_improvements = result.get("improvements")
+    for item in raw_improvements[:12] if isinstance(raw_improvements, list) else []:
+        text = item if isinstance(item, str) else item.get("text", "") if isinstance(item, dict) else None
+        if not isinstance(text, str) or not text.strip():
             continue
+        text = text.strip()[:1200]
         if improvement_conflicts_with_rubric(text, rubric):
             continue
         improvements.append({"text": text, "quote": None})
