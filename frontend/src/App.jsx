@@ -5,6 +5,7 @@ import RubricFeedback from './components/RubricFeedback'
 import TestConsole from './components/TestConsole'
 import CurveballPractice from './components/CurveballPractice'
 import LiveInterviewer from './components/LiveInterviewer'
+import FeedbackSummary from './components/FeedbackSummary'
 import { SHORTCUTS, matchShortcut, shortcutText } from './data/shortcuts'
 import InterviewConversation from './components/InterviewConversation'
 import InterviewerVoice from './components/InterviewerVoice'
@@ -30,6 +31,7 @@ import './DisplaySettings.css'
 import './Curveball.css'
 import './LiveInterviewer.css'
 import './Polish.css'
+import './Feedback.css'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 const CodeEditor = lazy(() => import('./components/CodeEditor'))
@@ -908,17 +910,14 @@ function App() {
                       {isCurrentSaved ? 'Practice saved' : savedAttempt ? 'Update saved practice' : 'Save practice'}
                     </button>
                   </div>
-                  <div className="feedback-overview">
-                    <div><span>AI practice score</span><strong>{feedback.score}<small>/10</small></strong></div>
-                    <p>{feedback.passed ? 'A strong practice attempt' : 'Keep building your explanation'}<small>Use this feedback to choose what to practice next.</small></p>
-                  </div>
+                  <FeedbackSummary feedback={feedback} run={analysisSnapshot?.run} retrySummary={analysisSnapshot?.retrySummary} />
                   {analysisSnapshot?.retrySummary && <div className="retry-completed"><Icon name="check" /><span>Focused retry: {analysisSnapshot.retrySummary.beforeMet}/{analysisSnapshot.retrySummary.total} → {analysisSnapshot.retrySummary.afterMet}/{analysisSnapshot.retrySummary.total} criteria supported. {isCurrentSaved ? 'Summary saved with this practice.' : 'Save practice to keep this summary.'}</span></div>}
                   {curveballId && <p className="curveball-context">Requirement change: {curveballDefinition.title}. Feedback uses the updated problem.</p>}
                   <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} active={view === 'practice' && activeTab === 'feedback'} />
-                  <p className="feedback-storage"><Icon name="shield" size={15} />Saved summaries stay on this device. Code and explanations aren’t included.</p>
+                  <RubricFeedback feedback={feedback} />
                   <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} active={view === 'practice' && activeTab === 'feedback'} />
+                  <p className="feedback-storage"><Icon name="shield" size={15} />AI scores are learning signals, not credentials. Saved summaries stay on this device; code and explanations aren’t included.</p>
                 </>}
-                <RubricFeedback feedback={feedback} />
               </div>
               {retryTask && <div className={`retry-pane ${activeTab !== 'retry' ? 'pane-hidden' : ''}`}><FocusedRetry key={retryTask.id} task={retryTask} active={view === 'practice' && activeTab === 'retry'} onBack={() => setActiveTab('feedback')} onComplete={(result) => setAnalysisSnapshot((snapshot) => {
                 if (!snapshot || snapshot.id !== retryTask.analysisId || retryTaskIdRef.current !== retryTask.id) return snapshot

@@ -37,7 +37,7 @@ async page => {
   const feedback = page.getByRole('heading', { name: 'Your practice feedback', exact: true })
   await feedback.waitFor()
   assert(await feedback.evaluate(el => document.activeElement === el), 'Feedback heading should receive focus')
-  const scoreBox = await page.locator('.feedback-overview').boundingBox()
+  const scoreBox = await page.locator('.feedback-summary').boundingBox()
   const lessonBox = await page.locator('.learning-card').boundingBox()
   const replayBox = await page.locator('.replay-panel').boundingBox()
   assert(scoreBox.y < lessonBox.y && lessonBox.y < replayBox.y, 'Score and next lesson should precede replay')
