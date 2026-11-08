@@ -20,11 +20,20 @@ career readiness, and AI-assisted skilling.
 - A retry action that preserves your explanation and code while showing a
   concrete practice prompt.
 - Saved practice summaries and score comparisons for the same problem and goal.
+- Reasoning replay with timestamped code/explanation checkpoints and
+  evidence-linked observations.
+- Focused retries with three criteria, exact before/after quotes, and a saved
+  comparison summary.
 
 Choose a goal, talk through your thinking as you solve a challenge, then review
 the transcript and get session feedback. Save
 your feedback, practice the recommended lesson, then save another attempt to
 compare practice scores. AI scores are learning signals, not credentials.
+
+Use a replay timestamp to inspect what you were coding and explaining at that
+moment. Choose Practice this gap, write a focused answer, and compare evidence.
+Replay is available during the current session; saved history keeps summaries
+only. See [reasoning replay](docs/REPLAY.md) for capture and privacy details.
 
 History is saved in this browser, up to 100 attempts. Code and transcripts are
 not included in saved summaries. Cloud synchronization, portfolios, and peer

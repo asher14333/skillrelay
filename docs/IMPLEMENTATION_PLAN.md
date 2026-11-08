@@ -261,3 +261,9 @@ Deferred verification: live AI feedback and live microphone/speech recognition.
 The API key was absent, so the browser feedback/history checks used an external,
 temporary fixture, not a shipped demo feature. Peer matching, cloud accounts,
 and portfolios remain outside this core delivery.
+
+Reasoning replay and focused retries were subsequently implemented on the same
+branch. See [replay design and contracts](REPLAY.md) for checkpoint retention,
+evidence validation, the retry API, and privacy boundaries. The current suite
+has 21 backend and 13 frontend tests. Replay and retry UI checks used labeled
+model fixtures; live model quality and microphone capture remain unverified.

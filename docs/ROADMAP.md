@@ -18,6 +18,8 @@ future extension.
 3. Receive specific feedback and one recommended next practice step.
 4. Study the recommended micro-lesson and retry with a specific practice prompt.
 5. Save practice summaries and compare attempts on the same problem and goal.
+6. Inspect timestamped reasoning checkpoints, practice a specific gap, and save
+   the before/after criterion summary.
 
 ## Implementation order
 
@@ -29,6 +31,8 @@ future extension.
 - **Implemented on the learning-loop branch:** explicit saved practice summaries
   in browser storage, progress across reloads, and comparisons within the same
   problem and goal. AI scores are labeled as practice feedback.
+- **Implemented on the learning-loop branch:** evidence-linked reasoning replay
+  and focused typed retries with criterion-level before/after comparisons.
 - **Next milestone:** add an opt-in peer practice directory with matching by
   goals, skills, and availability. Clearly label seeded demo profiles.
 - **If time permits:** export a learner-controlled practice portfolio and add

@@ -113,3 +113,40 @@ after stopping speech and reviewing the explanation.
 - Microphone capture itself remains unverified; no actual recording was made.
   This check confirms the shared UI and typed-input behavior, not a live speech
   recognition result. Model calls remain unverified without an API key.
+
+## Reasoning replay and focused retries
+
+Checked November 7, 2026 on the learning-loop branch.
+
+- All 34 automated tests passed: 21 backend/API tests and 13 frontend data tests.
+- Replay validation rejects invalid chronology, duplicate or unknown IDs,
+  unsupported event types, oversized checkpoints, and invented evidence quotes.
+- Focused retry tests cover exact-quote requirements, missing criteria, invalid
+  inputs, empty original explanations, and comparisons that decline rather than
+  improve. Supported counts are computed from validated checks.
+- Frontend tests cover bounded checkpoint retention, stable IDs, event ordering,
+  checkpoint payloads, and updating a saved attempt with a summary that omits
+  raw before/after text, quotes, code, and checkpoint data.
+- Production build and lint passed; the known Monaco chunk warning remains.
+
+### Browser evidence
+
+Used Chrome with a temporary, clearly labeled model fixture outside the repo.
+The code runner remained real. Typed an initial plan, edited and ran Two Sum,
+then analyzed six actual captured checkpoints. Pending edit checkpoints appeared
+before the run and test-result checkpoints. All three code cases passed.
+
+Verified that selecting the starting point showed starter code and no captured
+explanation, while selecting the later review showed the entered solution and
+explanation. Opened a memory-focused retry from its linked gap, entered a new
+answer, and inspected before/after criterion quotes. The fixture showed 1/3
+before and 3/3 after; this was UI test data, not a live learner result.
+
+Saved the baseline first, then updated it after the retry. Progress still showed
+one attempt, and the focused retry summary survived reload. Inspected replay at
+390 x 844 and reset the viewport. Removed the generated test attempt and restored
+the normal backend afterward.
+
+Live model quality, microphone capture, and actual learner outcomes remain
+unverified. The app does not store or replay raw audio, and checkpoint timing is
+arrival-based rather than exact alignment of words with keystrokes.

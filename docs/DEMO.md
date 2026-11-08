@@ -44,22 +44,22 @@ pretend that a scripted explanation guarantees a particular model score.
 
 ### 1:00-1:45: make feedback actionable
 
-Show the recommended lesson, its reason, the three learning steps, the practice
-prompt, and the self-check. The recommendation uses the lowest `score / max`
-ratio; tied dimensions are prioritized by the goal. Fully covered rubrics
-receive transfer practice rather than a fabricated weakness.
+Show Replay your reasoning. Select the starting point, then a later code or
+test checkpoint to show how the captured code and explanation differ. If a
+verified AI observation is available, use View to inspect its source. Do not
+claim an AI observation is guaranteed for every session.
 
-Choose Save practice for the first summary, then click Practice this lesson. The code and
-explanation stay in place, and the problem panel shows the current learning
-focus. Continue coding and explaining in the shared workspace, then request
-feedback again.
+Choose Save practice for the baseline, then Practice this gap. Show its three
+criteria and write a focused retry. For a memory gap, explain what the map
+stores, how it grows with n, and why that means O(n) extra space. Choose Compare
+explanations and show the exact quotes supporting before/after judgments.
 
 ### 1:45-2:30: show continuity
 
-Save the second practice result, open Progress, and reload the page. Saved
-summaries remain available. Expand a rubric breakdown and explain any score
-comparison: only the same problem and goal are compared. The second score
-may go up, down, or stay the same because AI practice feedback can vary.
+Return to feedback and choose Update saved practice. Open Progress and reload
+the page to show that the retry summary remains on the same saved attempt.
+Raw replay is session-only. Explain that criterion counts are AI practice
+judgments, and the retry can improve, decline, or stay unchanged.
 
 ### 2:30-3:00: connect to the prompt
 
