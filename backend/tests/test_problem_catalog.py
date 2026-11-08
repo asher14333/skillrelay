@@ -65,7 +65,7 @@ class ProblemCatalogTests(unittest.TestCase):
         output = subprocess.run(
             ["node", "--input-type=module", "-e",
              "import {problems} from './frontend/src/data/problems.js'; console.log(JSON.stringify(problems))"],
-            cwd=ROOT, capture_output=True, text=True, check=True, timeout=10,
+            cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=True, timeout=10,
         )
         cls.frontend = {item["slug"]: item for item in json.loads(output.stdout)}
 
