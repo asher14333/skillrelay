@@ -60,7 +60,7 @@ export default function InterviewPanel({
     previousMessages.current = { first: history[0], length: history.length }
     if (!active || !messagesContainerRef.current) return
     const added = [...messagesContainerRef.current.querySelectorAll('.interview-msg')].slice(start)
-    const cleanup = added.map(message => animateArrival(message, { offset: 4 }))
+    const cleanup = added.map(message => animateArrival(message, { offset: 10, scale: 0.98 }))
     return () => cleanup.forEach(cancel => cancel())
   }, [history, active])
 

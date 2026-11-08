@@ -9,7 +9,7 @@ export default function InterviewerVoice({ enabled, onToggle, audio }) {
     <div className="interviewer-voice-controls">
       <button type="button" className="learning-secondary interviewer-voice-toggle" aria-pressed={enabled}
         aria-describedby={statusId} onClick={() => onToggle(!enabled)}>
-        <Icon name="mic" size={16} />AI voice {enabled ? 'on' : 'off'}
+        <Icon name="speaker" size={16} />AI voice {enabled ? 'on' : 'off'}
       </button>
       {busy ? <button type="button" className="btn-text" onClick={audio.stop}>Stop voice</button> :
         <button type="button" className="btn-text" onClick={audio.replay} disabled={!enabled || audio.blocked || !audio.lastText}>Replay voice</button>}

@@ -11,6 +11,9 @@ const paths = {
   mic: 'M9 5a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0V5Zm-3 6v1a6 6 0 0 0 12 0v-1m-6 7v4m-4 0h8',
   play: 'm8 5 11 7-11 7V5Z',
   save: 'M5 3h12l4 4v14H3V3h2Zm2 0v6h10V3M7 21v-7h10v7',
+  pause: 'M9 5v14m6-14v14',
+  speaker: 'M4 9v6h4l5 4V5L8 9H4Zm12-1a5 5 0 0 1 0 8',
+  keyboard: 'M3 6h18v12H3V6Zm4 4h.01M11 10h.01M15 10h.01M7 14h10',
 }
 
 export default function Icon({ name, size = 18, ...props }) {

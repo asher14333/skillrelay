@@ -10,7 +10,7 @@ from pathlib import Path
 from problems import get_problem
 from adaptive import dynamic_variant, resolve_dynamic_problem
 
-CURVEBALLS = json.loads((Path(__file__).resolve().parents[1] / "shared" / "curveballs.json").read_text())
+CURVEBALLS = json.loads((Path(__file__).resolve().parents[1] / "shared" / "curveballs.json").read_text(encoding="utf-8"))
 CHECKS = (
     ("requirementUnderstanding", "Explain the changed requirement"),
     ("adaptation", "Explain your implementation decision"),

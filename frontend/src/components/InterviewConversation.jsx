@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { animateArrival, scrollWithPreference } from '../lib/motion'
 import '../InterviewConversation.css'
 
-export default function InterviewConversation({ messages = [], pending = false, listening = false, speaking = false, active = true }) {
+export default function InterviewConversation({ messages = [], pending = false, listening = false, speaking = false, active = true, emptyState = null }) {
   const logRef = useRef(null)
   const pinnedRef = useRef(true)
   const previousIdsRef = useRef(null)
@@ -19,7 +19,7 @@ export default function InterviewConversation({ messages = [], pending = false, 
     const cleanups = []
     if (previousIds && wasActive) {
       for (const bubble of log.querySelectorAll('[data-conversation-message]')) {
-        if (!previousIds.has(bubble.dataset.conversationMessage)) cleanups.push(animateArrival(bubble, { offset: 4 }))
+        if (!previousIds.has(bubble.dataset.conversationMessage)) cleanups.push(animateArrival(bubble, { offset: 10, scale: 0.98 }))
       }
     }
     if (pinnedRef.current) {
@@ -36,8 +36,10 @@ export default function InterviewConversation({ messages = [], pending = false, 
         pinnedRef.current = log.scrollHeight - log.scrollTop - log.clientHeight < 64
       }}>
       {!messages.length && !pending && <div className="interview-conversation-empty">
-        <p>Your conversation appears here.</p>
-        <p>Start the live interview and explain your approach.</p>
+        {emptyState || <>
+          <p>Your conversation appears here.</p>
+          <p>Start the live interview and explain your approach.</p>
+        </>}
       </div>}
       {messages.map(message => <article key={message.id} data-conversation-message={message.id}
         className={`conversation-bubble conversation-bubble-${message.role}${message.kind === 'curveball' ? ' conversation-bubble-curveball' : ''}`}>
