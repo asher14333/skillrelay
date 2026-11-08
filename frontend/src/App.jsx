@@ -56,7 +56,7 @@ function App() {
     setFeedback(null)
     setAnalysisSnapshot(null)
     setNotice('')
-    setActiveTab((tab) => tab === 'feedback' ? 'explain' : tab)
+    setActiveTab((tab) => tab === 'feedback' ? 'code' : tab)
   }, [])
 
   const changeTranscript = useCallback((value) => {
@@ -212,7 +212,7 @@ function App() {
       switchProblem(problems[(index + 1) % problems.length].slug)
     } else {
       setLessonFocus(plan)
-      setActiveTab('explain')
+      setActiveTab('code')
     }
     setView('practice')
   }
@@ -220,7 +220,7 @@ function App() {
   const startRecording = () => {
     setError(null)
     invalidateFeedback()
-    setActiveTab('explain')
+    setActiveTab('code')
     sessionBaseRef.current = transcript ? `${transcript} ` : ''
     try {
       recognitionRef.current?.start()
@@ -281,7 +281,7 @@ function App() {
     }
     if (!transcript.trim()) {
       setError('Please record or type your explanation first.')
-      setActiveTab('explain')
+      setActiveTab('code')
       return
     }
 
@@ -364,7 +364,7 @@ function App() {
         {view === 'practice' && <section className="learning-toolbar" aria-label="Learning goal">
           <div className="learning-intro">
             <h1>Make your thinking clear.</h1>
-            <p>Solve a challenge. Explain your approach. Find your next step.</p>
+            <p>Talk through your approach as you code. Get feedback when you’re ready.</p>
           </div>
           <div className="goal-control">
             <label htmlFor="learning-goal">Your learning focus</label>
@@ -411,55 +411,57 @@ function App() {
                 <ul>{problem.constraints.map((item, i) => <li key={i}>{item}</li>)}</ul>
               </details>
               {!lessonFocus && <div className="explanation-guide">
-                <Icon name="book" /><div><h3>More than a correct answer</h3><p>Explain why your approach works, walk through an example, and make the trade-offs clear.</p></div>
+                <Icon name="book" /><div><h3>Talk as you work</h3><p>Share your plan, explain the choices you make, and walk through what you’re checking as you test.</p></div>
               </div>}
             </div>
           </aside>
 
           <section className="editor-panel" aria-label="Practice workspace">
-            <nav className="panel-tabs" aria-label="Practice stages">
-              {[
-                { id: 'code', number: 1, title: 'Solve' },
-                { id: 'explain', number: 2, title: 'Explain' },
-                { id: 'feedback', number: 3, title: 'Feedback' },
-              ].map((step) => <button key={step.id} className={`tab ${activeTab === step.id ? 'tab-active' : ''}`}
-                aria-pressed={activeTab === step.id} disabled={step.id === 'feedback' && !feedback}
-                onClick={() => { if (step.id !== 'explain') recognitionRef.current?.stop(); setActiveTab(step.id) }}>
-                <span className="step-number">{step.number}</span>{step.title}
-                {step.id === 'explain' && isRecording && <span className="tab-recording-dot" />}
-              </button>)}
+            <nav className="panel-tabs" aria-label="Practice views">
+              <button className={`tab ${activeTab === 'code' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'code'} onClick={() => setActiveTab('code')}>
+                <Icon name="code" size={16} />Code & explain{isRecording && <span className="tab-recording-dot" />}
+              </button>
+              <button className={`tab ${activeTab === 'feedback' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'feedback'} disabled={!feedback || isRecording} onClick={() => setActiveTab('feedback')}>
+                <Icon name="book" size={16} />Session feedback
+              </button>
               <button className={`tab tab-followup ${activeTab === 'interview' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'interview'} onClick={() => { recognitionRef.current?.stop(); setActiveTab('interview') }}>Follow-up</button>
             </nav>
             {error && <div className="error-banner" role="alert">{error}</div>}
             <div className="panel-content">
-              <div className={`code-pane ${activeTab !== 'code' ? 'pane-hidden' : ''}`}>
-                <div className="code-toolbar">
-                  <span className="lang-label"><span className="language-dot" />Python 3</span>
-                  <div className="code-toolbar-right">
-                    <button className="btn-text" onClick={() => { changeCode(problem.starterCode); setRunResults(null); setConsoleTab('testcase') }}>Reset code</button>
-                    <button className="btn-run-lc" onClick={handleRun} disabled={isRunning}><PlayIcon />{isRunning ? 'Running…' : 'Run code'}</button>
+              <div className={`code-pane concurrent-session ${activeTab !== 'code' ? 'pane-hidden' : ''}`}>
+                <div className="coding-column">
+                  <div className="code-toolbar">
+                    <span className="lang-label"><span className="language-dot" />Python 3</span>
+                    <div className="code-toolbar-right">
+                      <button className="btn-text" onClick={() => { changeCode(problem.starterCode); setRunResults(null); setConsoleTab('testcase') }}>Reset code</button>
+                      <button className="btn-run-lc" onClick={handleRun} disabled={isRunning}><PlayIcon />{isRunning ? 'Running…' : 'Run code'}</button>
+                    </div>
                   </div>
+                  <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} /></Suspense></div>
+                  <TestConsole problem={problem} consoleTab={consoleTab} setConsoleTab={setConsoleTab} selectedCase={selectedCase} setSelectedCase={setSelectedCase} runResults={runResults} />
                 </div>
-                <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} /></Suspense></div>
-                <TestConsole problem={problem} consoleTab={consoleTab} setConsoleTab={setConsoleTab} selectedCase={selectedCase} setSelectedCase={setSelectedCase} runResults={runResults} />
-                <div className="flow-footer"><span>A solution is a starting point.</span><button className="learning-primary" onClick={() => setActiveTab('explain')}>Explain your approach <Icon name="arrow" size={16} /></button></div>
-              </div>
-
-              <div className={`explain-pane ${activeTab !== 'explain' ? 'pane-hidden' : ''}`}>
-                {activeTab === 'explain' && <>
-                  <div className="explanation-heading"><h2>Walk through your thinking.</h2><p>Start with the problem, explain your approach, and use an example.</p></div>
-                  {!speechSupported && <p className="warning">Voice input isn’t available in this browser. You can type your explanation below.</p>}
-                  <div className="writing-area"><label className="sr-only" htmlFor="solution-explanation">Your solution explanation</label>
+                <aside className="live-explanation" aria-labelledby="live-explanation-title">
+                  <div className="live-explanation-heading">
+                    <span className="live-label"><Icon name="mic" size={15} />Your explanation</span>
+                    <h2 id="live-explanation-title">Think out loud.</h2>
+                    <p>Explain your choices while you code. Your transcript stays here as you edit and run tests.</p>
+                  </div>
+                  <div className="session-microphone">
+                    {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording}><StopIcon />Stop microphone</button>}
+                    <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{isRecording ? <><span className="pulse" />Listening while you code</> : 'You can also type your thinking below.'}</span>
+                  </div>
+                  {!speechSupported && <p className="warning">Voice input isn’t available in this browser. You can type your explanation while coding.</p>}
+                  {activeTab === 'code' && <div className="writing-area live-writing-area">
+                    <label className="sr-only" htmlFor="solution-explanation">Your solution explanation</label>
                     <textarea id="solution-explanation" name="transcript" autoComplete="off" className="transcript-editor" value={transcript} onChange={(event) => changeTranscript(event.target.value)} readOnly={isRecording}
-                      placeholder="For example: I’m looking for two indices whose values add up to the target. My first approach would be…" />
+                      placeholder="Talk or type as you work. For example: I’ll start by comparing each pair, then look for a way to avoid repeated work…" />
                     <span className="word-count">{transcript.trim() ? transcript.trim().split(/\s+/).length : 0} words</span>
+                  </div>}
+                  <div className="session-feedback-action">
+                    <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : 'Review your transcript, then get feedback on this session.'}</p>
+                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}<Icon name="arrow" size={16} /></button>
                   </div>
-                  <div className="flow-footer explanation-actions">
-                    <div>{!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported}><MicIcon />Use microphone</button> : <button className="learning-danger" onClick={stopRecording}><StopIcon />Stop recording</button>}
-                      {isRecording && <span className="recording-badge-top"><span className="pulse" />Listening…</span>}</div>
-                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get feedback'}<Icon name="arrow" size={16} /></button>
-                  </div>
-                </>}
+                </aside>
               </div>
 
               <div className={`feedback-pane ${activeTab !== 'feedback' || !feedback ? 'pane-hidden' : ''}`}>

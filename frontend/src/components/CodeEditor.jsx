@@ -47,7 +47,7 @@ export default function CodeEditor({ value, onChange }) {
         tabSize: 4,
         insertSpaces: true,
         automaticLayout: true,
-        wordWrap: 'off',
+        wordWrap: 'on',
         overviewRulerLanes: 0,
         hideCursorInOverviewRuler: true,
         stickyScroll: { enabled: false },

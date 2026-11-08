@@ -195,7 +195,7 @@ export default function InterviewPanel({
           </button>
           {!transcript.trim() && (
             <p className="interview-hint">
-              Add a spoken or typed explanation in the Explain step to start.
+              Add a spoken or typed explanation while coding to start.
             </p>
           )}
         </div>
