@@ -67,3 +67,8 @@ For interruption and delayed-response regressions, use another fresh isolated
 session and run `tests/reliability-ui.js` instead of `tests/practice-ui.js`.
 It installs a simulated SpeechRecognition API in that test browser; it never
 requests the microphone. Both scripts use the currently open local origin.
+
+`tests/motion-ui.js` checks animation interruption, draft/focus preservation,
+replay alignment, and reduced-motion behavior. It creates and closes its own
+isolated browser context and uses labeled AI fixtures; it does not use the
+microphone, runner, or regular Chrome practice data.

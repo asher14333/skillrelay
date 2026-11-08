@@ -195,7 +195,19 @@
 .explanation-guide > svg { margin-top: 2px; color: var(--muted); }
 .explanation-guide h3 { margin: 0 0 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
 .explanation-guide p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.75; }
-.panel-tabs { align-items: stretch; gap: 4px; padding: 0 10px; }
+.panel-tabs { position: relative; align-items: stretch; gap: 4px; padding: 0 10px; }
+.panel-tabs[data-motion-indicator='ready'] .tab-active { border-bottom-color: transparent; }
+.tab-indicator {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 1px;
+  height: 2px;
+  background: var(--accent);
+  transform-origin: left center;
+  pointer-events: none;
+  transition: transform var(--motion-standard) var(--motion-ease);
+}
 .tab {
   display: inline-flex;
   align-items: center;
@@ -228,6 +240,7 @@
 }
 /* Mounted hidden panes preserve retry drafts, requests, and conversation history. */
 .pane-hidden { visibility: hidden; pointer-events: none; }
+.pane-hidden .pulse { animation-play-state: paused; }
 .concurrent-session { display: grid; grid-template-columns: minmax(0, 1fr) clamp(264px, 21vw, 296px); }
 .coding-column { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--editor); }
 .code-toolbar { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 8px; min-height: 48px; padding: 5px 10px; border-bottom: 1px solid var(--border); background: var(--surface); }
@@ -275,6 +288,11 @@
 .btn-interview-record:hover:not(:disabled), .icon-button:hover:not(:disabled) {
   border-color: #686868;
   background: var(--hover);
+}
+.learning-primary:active:not(:disabled), .learning-secondary:active:not(:disabled),
+.btn-run-lc:active:not(:disabled), .btn-interview-start:active:not(:disabled),
+.btn-interview-submit:active:not(:disabled), .btn-interview-record:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .learning-danger, .btn-interview-stop { border-color: #68424c; background: var(--danger-soft); color: var(--danger); }
 .learning-danger:hover:not(:disabled), .btn-interview-stop:hover:not(:disabled) { background: #442a33; border-color: #93606d; }
@@ -348,6 +366,13 @@ button:disabled, select:disabled { opacity: 0.45; }
 /* The native dialog supplies focus trapping, Escape, and the top layer. */
 .problem-picker { width: min(540px, calc(100vw - 32px)); max-height: calc(100dvh - 64px); padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); }
 .problem-picker::backdrop { background: #000a; }
+.problem-picker[open] { animation: picker-arrive var(--motion-dialog) var(--motion-ease); }
+.problem-picker[open]::backdrop { animation: backdrop-arrive var(--motion-dialog) ease-out; }
+@keyframes picker-arrive {
+  from { opacity: 0.8; transform: translateY(6px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes backdrop-arrive { from { opacity: 0; } to { opacity: 1; } }
 .picker-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 20px; border-bottom: 1px solid var(--border); }
 .picker-header h2 { margin: 0 0 7px; font-size: 19px; font-weight: 650; letter-spacing: -0.02em; }
 .picker-header p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
@@ -378,6 +403,10 @@ button:disabled, select:disabled { opacity: 0.45; }
   .problem-header, .problem-body { padding-left: 16px; padding-right: 16px; }
   .concurrent-session { grid-template-columns: minmax(0, 1fr) 264px; }
   .live-explanation { padding-left: 14px; padding-right: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .problem-picker::backdrop { animation: none !important; }
+  button:active { transform: none !important; }
 }
 @media (max-width: 1100px) {
   .app-main { padding-left: 12px; padding-right: 12px; }

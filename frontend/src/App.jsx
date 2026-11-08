@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, lazy, Suspense } from 'react'
 import axios from 'axios'
 import { problems, getProblemBySlug } from './data/problems'
 import RubricFeedback from './components/RubricFeedback'
@@ -9,6 +9,9 @@ import ProgressPanel from './components/ProgressPanel'
 import ReasoningReplay from './components/ReasoningReplay'
 import FocusedRetry from './components/FocusedRetry'
 import Icon, { BrandMark } from './components/Icon'
+import Disclosure from './components/Disclosure'
+import TabIndicator from './components/TabIndicator'
+import { animateArrival, useArrival } from './lib/motion'
 import { getLearningGoal, LEARNING_GOALS } from './data/learning'
 import { addAttempt, loadPractice, writePractice } from './data/practiceStorage'
 import { appendCheckpoint, checkpointPayload, MAX_CODE, MAX_EXPLANATION } from './data/sessionReplay'
@@ -52,6 +55,20 @@ function App() {
   const retryTaskIdRef = useRef(null)
   const pickerRef = useRef(null)
   const feedbackHeadingRef = useRef(null)
+  const mainRef = useRef(null)
+  const panelTabsRef = useRef(null)
+  const panelContentRef = useRef(null)
+  const noticeRef = useRef(null)
+  const previousNavigation = useRef({ view, tab: activeTab })
+  useArrival(noticeRef, notice)
+
+  useLayoutEffect(() => {
+    const previous = previousNavigation.current
+    previousNavigation.current = { view, tab: activeTab }
+    if (previous.view === view && previous.tab === activeTab) return
+    if (view === 'progress') return animateArrival(mainRef.current?.querySelector('.progress-panel'))
+    if (activeTab !== 'code') return animateArrival(panelContentRef.current?.querySelector(':scope > :not(.pane-hidden)'))
+  }, [view, activeTab])
 
   const recognitionRef = useRef(null)
   const sessionBaseRef = useRef('')
@@ -475,9 +492,9 @@ function App() {
         <span className="app-edition">Technical interview practice</span>
       </header>
 
-      <main className="app-main" id="main-content" tabIndex={-1}>
+      <main ref={mainRef} className="app-main" id="main-content" tabIndex={-1}>
         {storageWarning && <div className="storage-warning" role="alert">{storageWarning}</div>}
-        {notice && <div className="learning-notice" role="status"><Icon name="check" /><span>{notice}</span><button className="icon-button" aria-label="Dismiss notice" onClick={() => setNotice('')}><Icon name="close" size={16} /></button></div>}
+        {notice && <div ref={noticeRef} className="learning-notice" role="status"><Icon name="check" /><span>{notice}</span><button className="icon-button" aria-label="Dismiss notice" onClick={() => setNotice('')}><Icon name="close" size={16} /></button></div>}
 
         {view === 'progress' && <ProgressPanel
           attempts={attempts}
@@ -531,7 +548,7 @@ function App() {
               </div>}
               <p className="problem-text">{problem.description}</p>
               {problem.details.map((line, i) => <p key={i} className="problem-text">{line}</p>)}
-              <details className="example-disclosure" open>
+              <Disclosure className="example-disclosure" open>
                 <summary>Examples <span>{problem.examples.length}</span></summary>
                 {problem.examples.map((ex, i) => <div key={i} className="example-block">
                   <p className="example-title">Example {i + 1}</p>
@@ -539,11 +556,11 @@ function App() {
                     {ex.explanation && <>{'\n'}<strong>Why:</strong> {ex.explanation}</>}
                   </pre>
                 </div>)}
-              </details>
-              <details className="constraints-block">
+              </Disclosure>
+              <Disclosure className="constraints-block">
                 <summary>Constraints</summary>
                 <ul>{problem.constraints.map((item, i) => <li key={i}>{item}</li>)}</ul>
-              </details>
+              </Disclosure>
               {!lessonFocus && <div className="explanation-guide">
                 <Icon name="book" /><div><h3>Talk as you work</h3><p>Share your plan, explain the choices you make, and walk through what you’re checking as you test.</p></div>
               </div>}
@@ -551,7 +568,7 @@ function App() {
           </aside>
 
           <section className="editor-panel" aria-label="Practice workspace">
-            <nav className="panel-tabs" aria-label="Practice views">
+            <nav ref={panelTabsRef} className="panel-tabs" aria-label="Practice views">
               <button className={`tab ${activeTab === 'code' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'code'} onClick={() => setActiveTab('code')}>
                 <Icon name="code" size={16} />Code & explain{isRecording && <span className="tab-recording-dot" />}
               </button>
@@ -559,9 +576,10 @@ function App() {
                 <Icon name="book" size={16} />{activeTab === 'retry' ? 'Focused retry' : 'Session feedback'}
               </button>
               <button className={`tab tab-followup ${activeTab === 'interview' ? 'tab-active' : ''}`} aria-pressed={activeTab === 'interview'} disabled={isRecording} onClick={() => setActiveTab('interview')}>Follow-up</button>
+              <TabIndicator trackRef={panelTabsRef} activeKey={activeTab} />
             </nav>
             {error && <div className="error-banner" role="alert">{error}</div>}
-            <div className="panel-content">
+            <div ref={panelContentRef} className="panel-content">
               <div className={`code-pane concurrent-session ${activeTab !== 'code' ? 'pane-hidden' : ''}`}>
                 <div className="coding-column">
                   <div className="code-toolbar">
@@ -612,7 +630,7 @@ function App() {
                   {analysisSnapshot?.retrySummary && <div className="retry-completed"><Icon name="check" /><span>Focused retry: {analysisSnapshot.retrySummary.beforeMet}/{analysisSnapshot.retrySummary.total} → {analysisSnapshot.retrySummary.afterMet}/{analysisSnapshot.retrySummary.total} criteria supported. {isCurrentSaved ? 'Summary saved with this practice.' : 'Save practice to keep this summary.'}</span></div>}
                   <LearningPlan plan={feedback.learningPlan} onPractice={practiceLesson} />
                   <p className="feedback-storage"><Icon name="shield" size={15} />Saved summaries stay on this device. Code and explanations aren’t included.</p>
-                  <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} />
+                  <ReasoningReplay key={analysisSnapshot?.id} checkpoints={analysisSnapshot?.checkpoints} insights={feedback.replayInsights} onRetry={startFocusedRetry} active={view === 'practice' && activeTab === 'feedback'} />
                 </>}
                 <RubricFeedback feedback={feedback} />
               </div>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
+import { animateArrival, scrollWithPreference } from '../lib/motion'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 const MAX_FOLLOWUPS = 3
@@ -27,6 +28,7 @@ export default function InterviewPanel({
   const answerRef = useRef(null)
   const requestRef = useRef(null)
   const conversationRef = useRef(null)
+  const previousMessages = useRef({ first: null, length: 0 })
 
   useEffect(() => () => requestRef.current?.abort(), [])
 
@@ -41,14 +43,24 @@ export default function InterviewPanel({
   }, [active])
 
   useEffect(() => {
+    const previous = previousMessages.current
+    const start = previous.first === history[0] ? previous.length : 0
+    previousMessages.current = { first: history[0], length: history.length }
+    if (!active || !messagesContainerRef.current) return
+    const added = [...messagesContainerRef.current.querySelectorAll('.interview-msg')].slice(start)
+    const cleanup = added.map(message => animateArrival(message, { offset: 4 }))
+    return () => cleanup.forEach(cancel => cancel())
+  }, [history, active])
+
+  useEffect(() => {
     const container = messagesContainerRef.current
-    if (!container) return
+    if (!active || !container) return
     const isNearBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight < 120
     if (isNearBottom) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      return scrollWithPreference(behavior => messagesEndRef.current?.scrollIntoView({ behavior, block: 'nearest' }))
     }
-  }, [history, complete, overallNote])
+  }, [history, complete, overallNote, active])
 
   useEffect(() => {
     const SpeechRecognition =

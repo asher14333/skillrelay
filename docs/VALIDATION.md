@@ -261,3 +261,26 @@ speech finalization remains a simulated regression. This polish does not
 establish live microphone capture or new learner-outcome evidence. Raw drafts
 remain session-only and saved history keeps summaries. Changes are left
 uncommitted for the user's review.
+
+## Purposeful motion pass
+
+The motion pass uses shared 120/180/200ms timings without new application
+packages. It adds a measured sliding tab indicator, native-dialog entrance,
+open-only disclosure arrivals, small button press feedback, and bounded
+arrivals for new feedback, notices, retry results, and interview messages.
+Changing replay checkpoints refreshes only the evidence; code editing and
+transcription do not animate. Focus and native closing remain immediate.
+
+Lint, production build, and all 13 frontend data tests pass. The existing
+practice and reliability browser flows pass with motion enabled. The dedicated
+`frontend/tests/motion-ui.js` uses a fresh context and labeled AI fixtures to
+verify interrupted transitions, preserved code/explanation/answer drafts and
+focus, hidden replay completion followed by reveal/resize, exact checkpoint
+evidence, native disclosure/Escape behavior, and live reduced-motion changes.
+Both WAAPI arrivals and native smooth scrolling honor a preference change;
+reduced-motion mode keeps the actions usable without JS/CSS motion.
+
+The final source detector returned no findings. Browser emulation and a local
+video demonstrate behavior; they do not establish physical-device frame rates,
+live microphone capture, model quality, or learner outcomes. No backend code
+changed in this pass.

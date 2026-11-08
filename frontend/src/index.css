@@ -32,6 +32,10 @@
   --radius: 8px;
   --control-radius: 6px;
   --mono: 'Menlo', 'Consolas', 'Monaco', monospace;
+  --motion-fast: 120ms;
+  --motion-standard: 180ms;
+  --motion-dialog: 200ms;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -51,7 +55,8 @@ button, a, select, summary {
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 button, a, select, summary, textarea {
-  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease, transform var(--motion-fast) var(--motion-ease);
 }
 button:focus-visible, a:focus-visible, select:focus-visible,
 summary:focus-visible, textarea:focus-visible, [tabindex='-1']:focus-visible {

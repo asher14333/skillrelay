@@ -135,9 +135,11 @@ area reserved for code. A compact session toolbar leads directly into the work.
 
 This document merges the existing workspace and interaction constraints with
 the implemented dark system. The visual source of truth is
-`frontend/src/index.css`, `App.css`, `Learning.css`, and the Monaco theme in
-`components/CodeEditor.jsx`. Interface copy must continue to describe real
-capabilities and saved data accurately; styling does not establish learner
+`frontend/src/index.css`, `App.css`, `Learning.css`, the Monaco theme in
+`components/CodeEditor.jsx`, and shared behavior in `lib/motion.js`,
+`components/TabIndicator.jsx`, and `components/Disclosure.jsx`. Interface copy
+must continue to describe real capabilities and saved data accurately;
+styling does not establish learner
 outcomes or microphone capture quality.
 
 **Key Characteristics:**
@@ -147,6 +149,7 @@ outcomes or microphone capture quality.
 - Compact, left-aligned Manrope text; monospace for code and test values.
 - Actions beside the work they affect, with evidence available on demand.
 - A three-column desktop workspace that becomes a naturally scrolling stack.
+- Brief motion confirms navigation and newly available content without delaying work.
 
 ## Colors
 
@@ -262,8 +265,9 @@ reserve the dialog top layer for an actual modal task.
 ## Shapes
 
 Use gently rounded panels, tighter controls, and small tag corners from the
-frontmatter radius scale. Borders are generally thin (1px). Active workspace
-and console tabs use an amber bottom rule (2px); keyboard focus uses a visible
+frontmatter radius scale. Borders are generally thin (1px). Workspace tabs use
+a measured amber indicator and console tabs use an amber bottom rule (2px);
+keyboard focus uses a visible
 amber outline (2px) with an offset (3px), inset at textareas. State dots remain
 small circles. The existing brand mark keeps its own rounded square geometry.
 
@@ -280,7 +284,9 @@ Destructive/stop controls use the danger family. Text controls remain quiet
 until hover. Shared controls have minimum height (36px) on desktop and grow
 on phones. A disabled control uses reduced opacity (0.45) and a disabled cursor.
 
-Hover shifts fill and border. Keyboard focus uses the shared outline. Loading
+Hover shifts fill and border. Primary and secondary action buttons move down
+slightly (1px) while pressed; danger and text buttons retain their existing
+stationary press treatment. Keyboard focus uses the shared outline. Loading
 states retain a descriptive action label, such as "Running…" or "Getting
 feedback…", rather than relying on an unexplained spinner.
 
@@ -324,7 +330,9 @@ code and explanation.
 Use real Practice and Progress hash links, including `aria-current` for the
 current destination. The active link has a raised neutral background; its
 small icon receives amber. The work-pane view controls use pressed states
-and an amber underline, with unavailable feedback disabled. Keep hidden
+and an amber underline, with unavailable feedback disabled. The underline
+follows the selected workspace control using measured position and width;
+its first render starts at the measured position. Keep hidden
 work panes mounted so view changes preserve working state. Preserve the
 skip link and focus movement into feedback and retry headings.
 
@@ -332,8 +340,10 @@ skip link and focus movement into feedback and retry headings.
 
 Keep the native challenge dialog with a close control, Escape handling,
 focus management, and a clear draft-loss confirmation. A pending choice uses
-the amber selection treatment. Preserve reset undo, undo for removing an
-individual saved attempt, and confirmation before clearing all saved history.
+the amber selection treatment. The dialog and backdrop arrive briefly on
+opening; closing and Escape retain immediate native behavior. Preserve reset
+undo, undo for removing an individual saved attempt, and confirmation before
+clearing all saved history.
 
 ### Progress and Privacy Copy
 
@@ -347,11 +357,37 @@ assessments. Preserve the existing source attribution and data notices.
 
 ### Motion
 
-Control state changes use short color transitions (150ms, ease). Rubric bars
-use a width transition (200ms, ease). Only the live microphone dots pulse
-(1.6s, ease-in-out); this signals state rather than decoration. Follow-up
-scrolling is smooth where supported. The reduced-motion preference disables
-animations, transitions, and smooth scrolling.
+Shared motion values live alongside the visual tokens in `index.css`:
+`--motion-fast` (120ms) for control state, `--motion-standard` (180ms) for
+arrivals and the workspace indicator, `--motion-dialog` (200ms) for opening
+the challenge dialog, and `--motion-ease` (`cubic-bezier(0.16, 1, 0.3, 1)`)
+for the restrained ease-out response. Control colors and borders use `ease`;
+press movement uses the shared easing. Rubric widths update immediately.
+
+Content arrivals are brief opacity changes (0.72 to 1) after an intentional
+view change, a new notice or retry result, a checkpoint selection, or opening
+lesson/evidence disclosure. Newly added follow-up messages also move a small
+distance (4px) into place. Native disclosures open and close immediately;
+their opened contents may fade without animating height. The measured tab
+indicator uses transform rather than animating layout dimensions. The initial
+page, editor surface, keystrokes, and unrelated state updates do not receive
+arrival animation. Focus and content availability do not wait for motion.
+
+The challenge dialog opens from a subtle offset (6px), scale (0.99), and
+opacity (0.8); its backdrop fades with `ease-out`. There is no animated delay
+before native closing. The live microphone dots retain their status pulse
+(1.6s, ease-in-out); the explanation dot pauses while its pane is hidden.
+Mounted hidden panes and drafts retain their existing behavior.
+
+Reduced motion disables CSS animations and transitions, including the dialog
+backdrop, and removes pressed-button displacement and smooth scrolling. The
+shared Web Animations helper checks the preference before starting and cancels
+active arrivals if that preference changes. It also skips hidden documents,
+unrendered elements, and elements hidden by visibility; replacement or cleanup
+cancels the previous arrival. Follow-up auto-scroll runs only near the bottom
+of the conversation and chooses `auto` when reduced motion is requested.
+Replay scrolls an out-of-view checkpoint into its own horizontal track,
+using `auto` on initial placement or under reduced motion.
 
 ## Do's and Don'ts
 
@@ -363,6 +399,7 @@ animations, transitions, and smooth scrolling.
 - **Do** preserve keyboard focus, native disclosure/dialog behavior, and reduced motion.
 - **Do** keep real saved summaries, explicit data notices, and useful empty states.
 - **Do** retain locally hosted Manrope and use monospace for code and test values.
+- **Do** use brief motion to confirm deliberate navigation and newly available content.
 
 ### Don't:
 
@@ -372,6 +409,7 @@ animations, transitions, and smooth scrolling.
 - **Don't** use color alone to communicate selected, failed, or microphone states.
 - **Don't** invent streaks, activity, learner outcomes, or saved draft recovery.
 - **Don't** imply that visual polish verifies microphone capture, runner isolation, or competition eligibility.
+- **Don't** animate initial page load, editor updates, or keystrokes, or delay focus and native closing for motion.
 
 Implementation QA evidence and limitations belong in [VALIDATION.md](VALIDATION.md).
 This visual-system record does not replace that evidence.
