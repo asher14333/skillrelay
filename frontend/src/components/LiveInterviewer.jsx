@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api'
 const QUIET_MS = 3000
 
 export default function LiveInterviewer(props) {
-  const { code, transcript, blocked, active, running: live, spokenTurn, inputMode, onInputModeChange, onStop, onStart, hidden = false, children } = props
+  const { code, transcript, blocked, active, running: live, spokenTurn, inputMode, onInputModeChange, onStop, onStart, hidden = false, children, toggleProps = {} } = props
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const requestRef = useRef(null)
@@ -93,7 +93,7 @@ export default function LiveInterviewer(props) {
 
   return <section className="live-interviewer" aria-label="Live interview controls" hidden={hidden}>
     {error && <p className="curveball-error" role="alert">{error}</p>}
-    <button className={`${live ? 'learning-secondary' : 'learning-primary'} live-interviewer-toggle`} onClick={toggle} aria-pressed={live}>
+    <button className={`${live ? 'learning-secondary' : 'learning-primary'} live-interviewer-toggle`} onClick={toggle} aria-pressed={live} {...toggleProps}>
       <Icon name={live ? 'pause' : 'mic'} size={16} />{live ? 'Pause interview' : 'Start live interview'}
     </button>
     <div className="live-interviewer-settings">

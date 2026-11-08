@@ -34,19 +34,19 @@ export function scrollWithPreference(scroll, smooth = true) {
   return release
 }
 
-// A bounded arrival, never a delay before content becomes usable.
-export function animateArrival(element, { offset = 0 } = {}) {
+// A bounded arrival, never a delay before content becomes usable: elements stay
+// interactive while they fade and settle into place.
+export function animateArrival(element, { offset = 0, scale = 1, delay = 0, from = 0.35 } = {}) {
   running.get(element)?.cancel()
   if (!element?.animate || prefersReducedMotion() || document.hidden ||
       !element.getClientRects().length || getComputedStyle(element).visibility === 'hidden') return () => {}
 
   const tokens = getComputedStyle(document.documentElement)
-  const duration = parseFloat(tokens.getPropertyValue('--motion-standard')) || 180
+  const duration = parseFloat(tokens.getPropertyValue('--motion-arrive')) || 240
   const easing = tokens.getPropertyValue('--motion-ease').trim() || 'cubic-bezier(0.16, 1, 0.3, 1)'
-  const frames = offset
-    ? [{ opacity: 0.72, transform: `translateY(${offset}px)` }, { opacity: 1, transform: 'translateY(0)' }]
-    : [{ opacity: 0.72 }, { opacity: 1 }]
-  const animation = element.animate(frames, { duration, easing })
+  const start = [offset && `translateY(${offset}px)`, scale !== 1 && `scale(${scale})`].filter(Boolean).join(' ') || 'none'
+  const frames = [{ opacity: from, transform: start }, { opacity: 1, transform: 'none' }]
+  const animation = element.animate(frames, { duration, easing, delay, fill: 'backwards' })
   running.set(element, animation)
   const cancelForPreference = () => { if (prefersReducedMotion()) animation.cancel() }
   const release = () => {
@@ -56,6 +56,13 @@ export function animateArrival(element, { offset = 0 } = {}) {
   const unsubscribe = onMotionChange(cancelForPreference)
   animation.finished.then(release, release)
   return () => { animation.cancel(); release() }
+}
+
+// Arrives a group of elements in order with a short, capped stagger.
+export function animateStagger(elements, { offset = 6, step = 30, max = 6 } = {}) {
+  const cleanups = [...elements].filter(Boolean)
+    .map((element, index) => animateArrival(element, { offset, delay: Math.min(index, max) * step }))
+  return () => cleanups.forEach(cleanup => cleanup())
 }
 
 // Does not animate first render, keystrokes, or unrelated component updates.

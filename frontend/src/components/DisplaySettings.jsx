@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import Icon from './Icon'
+import { SHORTCUTS, keyLabel } from '../data/shortcuts'
 
 export default function DisplaySettings({ preferences, warning, onChange }) {
   const panelRef = useRef(null)
@@ -48,6 +49,27 @@ export default function DisplaySettings({ preferences, warning, onChange }) {
           <select id="display-motion" aria-describedby="display-motion-help" value={preferences.motion} onChange={event => onChange('motion', event.target.value)}>
             <option value="system">Follow system</option><option value="reduce">Reduce</option>
           </select>
+        </div>
+        <div className="display-setting display-setting-shortcuts">
+          <div className="display-setting-row">
+            <div>
+              <span className="display-setting-label" id="display-shortcuts-label">Keyboard shortcuts</span>
+              <p id="display-shortcuts-help">Turn off if they conflict with your assistive technology.</p>
+            </div>
+            <button type="button" role="switch" className="switch" aria-checked={preferences.shortcuts === 'on'}
+              aria-labelledby="display-shortcuts-label" aria-describedby="display-shortcuts-help"
+              onClick={() => onChange('shortcuts', preferences.shortcuts === 'on' ? 'off' : 'on')}>
+              <span className="switch-thumb" aria-hidden="true" />
+            </button>
+          </div>
+          <div className="shortcut-list-wrap" data-open={preferences.shortcuts === 'on'}>
+            <dl className="shortcut-list" aria-label="Keyboard shortcuts" hidden={preferences.shortcuts !== 'on'}>
+              {SHORTCUTS.map(shortcut => <div key={shortcut.id}>
+                <dt>{shortcut.keys.map((key, index) => <span key={key}>{index > 0 && <span className="kbd-plus" aria-hidden="true">+</span>}<kbd>{keyLabel(key)}</kbd></span>)}</dt>
+                <dd>{shortcut.label}</dd>
+              </div>)}
+            </dl>
+          </div>
         </div>
         <p className={`display-settings-note${warning ? ' display-settings-warning' : ''}`} role="status">
           {warning || 'Changes apply immediately and are saved in this browser.'}

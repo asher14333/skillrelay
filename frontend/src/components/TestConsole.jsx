@@ -1,3 +1,6 @@
+import { useRef } from 'react'
+import { useArrival } from '../lib/motion'
+
 export default function TestConsole({
   problem,
   consoleTab,
@@ -8,6 +11,9 @@ export default function TestConsole({
 }) {
   const activeTestCase = problem.testCases[selectedCase]
   const activeResult = runResults?.results?.[selectedCase]
+  const bodyRef = useRef(null)
+  useArrival(bodyRef, consoleTab)
+  useArrival(bodyRef, runResults)
 
   const renderTestCaseFields = (testCase) => {
     if (!testCase) return null
@@ -40,7 +46,7 @@ export default function TestConsole({
         </div>
       </div>
 
-      <div className="lc-console-body">
+      <div ref={bodyRef} className="lc-console-body">
         {problem.curveballStartIndex !== undefined && <p className="curveball-context">Includes the original checks and new requirement cases.</p>}
         {consoleTab === 'testcase' && (
           <>

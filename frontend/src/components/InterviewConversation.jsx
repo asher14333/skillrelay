@@ -19,7 +19,7 @@ export default function InterviewConversation({ messages = [], pending = false, 
     const cleanups = []
     if (previousIds && wasActive) {
       for (const bubble of log.querySelectorAll('[data-conversation-message]')) {
-        if (!previousIds.has(bubble.dataset.conversationMessage)) cleanups.push(animateArrival(bubble, { offset: 4 }))
+        if (!previousIds.has(bubble.dataset.conversationMessage)) cleanups.push(animateArrival(bubble, { offset: 10, scale: 0.98 }))
       }
     }
     if (pinnedRef.current) {

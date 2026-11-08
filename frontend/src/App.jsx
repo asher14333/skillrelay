@@ -5,6 +5,7 @@ import RubricFeedback from './components/RubricFeedback'
 import TestConsole from './components/TestConsole'
 import CurveballPractice from './components/CurveballPractice'
 import LiveInterviewer from './components/LiveInterviewer'
+import { SHORTCUTS, matchShortcut, shortcutText } from './data/shortcuts'
 import InterviewConversation from './components/InterviewConversation'
 import InterviewerVoice from './components/InterviewerVoice'
 import useInterviewerAudio from './lib/useInterviewerAudio'
@@ -19,7 +20,7 @@ import Disclosure from './components/Disclosure'
 import TabIndicator from './components/TabIndicator'
 import DisplaySettings from './components/DisplaySettings'
 import useDisplayPreferences from './lib/useDisplayPreferences'
-import { animateArrival, useArrival } from './lib/motion'
+import { animateArrival, animateStagger, useArrival } from './lib/motion'
 import { getLearningGoal, LEARNING_GOALS } from './data/learning'
 import { addAttempt, loadPractice, writePractice } from './data/practiceStorage'
 import { appendCheckpoint, checkpointPayload, MAX_CODE, MAX_EXPLANATION } from './data/sessionReplay'
@@ -28,6 +29,7 @@ import './Learning.css'
 import './DisplaySettings.css'
 import './Curveball.css'
 import './LiveInterviewer.css'
+import './Polish.css'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 const CodeEditor = lazy(() => import('./components/CodeEditor'))
@@ -99,9 +101,20 @@ function App() {
     const previous = previousNavigation.current
     previousNavigation.current = { view, tab: activeTab }
     if (previous.view === view && previous.tab === activeTab) return
-    if (view === 'progress') return animateArrival(mainRef.current?.querySelector('.progress-panel'))
-    if (activeTab !== 'code') return animateArrival(panelContentRef.current?.querySelector(':scope > :not(.pane-hidden)'))
+    if (view === 'progress') return animateArrival(mainRef.current?.querySelector('.progress-panel'), { offset: 10 })
+    if (previous.view !== view) return animateStagger(mainRef.current?.querySelectorAll('.learning-toolbar, .problem-panel, .editor-panel') || [], { offset: 10, step: 45 })
+    return animateArrival(panelContentRef.current?.querySelector(':scope > :not(.pane-hidden)'), { offset: 6 })
   }, [view, activeTab])
+
+  const explanationRef = useRef(null)
+  const previousModeRef = useRef(practiceMode)
+  useLayoutEffect(() => {
+    if (previousModeRef.current === practiceMode) return
+    previousModeRef.current = practiceMode
+    const aside = explanationRef.current
+    if (!aside) return
+    return animateStagger(aside.querySelectorAll(':scope > :not(.practice-mode-toggle):not([hidden])'), { offset: 8, step: 35 })
+  }, [practiceMode])
 
   const recognitionRef = useRef(null)
   const sessionBaseRef = useRef('')
@@ -659,6 +672,46 @@ function App() {
     }
   }
 
+  // Keyboard shortcuts mirror their buttons: each one only acts when that button could be pressed.
+  const shortcutsOn = preferences.shortcuts !== 'off'
+  const shortcutActionsRef = useRef({})
+  const canUseCodeView = view === 'practice' && activeTab === 'code'
+  const canRun = canUseCodeView && !isRunning
+  const canGetFeedback = canUseCodeView && !(isAnalyzing || isRecording || isRunning || !transcript.trim())
+  const nextMode = practiceMode === 'practice' ? 'live' : 'practice'
+  const canSwitchMode = canUseCodeView && !isAnalyzing && !(nextMode === 'live' && isRecording)
+  shortcutActionsRef.current = {
+    run: canRun ? handleRun : null,
+    feedback: canGetFeedback ? handleAnalyze : null,
+    mic: !canUseCodeView ? null
+      : practiceMode === 'live' ? (liveInterview ? pauseLiveInterview : startLiveInterview)
+        : !isRecording ? (speechSupported && !isAnalyzing ? startRecording : null)
+          : speechPhase === 'listening' ? stopRecording : null,
+    mode: canSwitchMode ? () => changePracticeMode(nextMode) : null,
+    stopVoice: ['loading', 'speaking'].includes(interviewerAudio.status) ? interviewerAudio.stop : null,
+  }
+  useEffect(() => {
+    if (!shortcutsOn) return
+    const onKeyDown = (event) => {
+      const id = matchShortcut(event)
+      if (!id || event.defaultPrevented) return
+      if (document.querySelector('dialog[open], [popover]:popover-open')) return
+      const action = shortcutActionsRef.current[id]
+      if (!action) return
+      event.preventDefault()
+      event.stopPropagation()
+      action()
+    }
+    // Capture phase so the shortcut wins over the code editor's own Ctrl+Enter binding.
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [shortcutsOn])
+  const shortcutProps = (id, label) => {
+    if (!shortcutsOn) return {}
+    const shortcut = SHORTCUTS.find(item => item.id === id)
+    return { title: `${label || shortcut.label} (${shortcutText(id)})`, 'aria-keyshortcuts': shortcut.aria }
+  }
+
   const liveStatus = !liveInterview ? (conversation.length ? { label: 'Paused', tone: 'idle' } : { label: 'Not started', tone: 'idle' })
     : interviewerAudio.status === 'speaking' ? { label: 'Interviewer speaking', tone: 'busy' }
       : interviewerBusy || awaitingTurn || interviewerAudio.status === 'loading' ? { label: 'Thinking…', tone: 'busy' }
@@ -786,24 +839,24 @@ function App() {
                     <span className="lang-label"><span className="language-dot" />Python 3 <span className="checkpoint-count">{checkpoints.length} replay moments</span></span>
                     <div className="code-toolbar-right">
                       <button className="btn-text" disabled={code === problem.starterCode && !resetCodeDraft} onClick={() => { if (resetCodeDraft) { changeCode(resetCodeDraft) } else { const previousCode = code; changeCode(problem.starterCode); setResetCodeDraft(previousCode); setConsoleTab('testcase') } }}>{resetCodeDraft ? 'Undo reset' : 'Reset code'}</button>
-                      <button className="btn-run-lc" onClick={handleRun} disabled={isRunning}><PlayIcon />{isRunning ? 'Running…' : 'Run code'}</button>
+                      <button className="btn-run-lc" onClick={handleRun} disabled={isRunning} {...shortcutProps('run')}><PlayIcon />{isRunning ? 'Running…' : 'Run code'}</button>
                     </div>
                   </div>
                   <div className="monaco-wrapper"><Suspense fallback={<div className="editor-loading" role="status">Opening your editor…</div>}><CodeEditor value={code} onChange={changeCode} fontSize={{ default: 14, large: 16, larger: 18 }[preferences.textSize]} reducedMotion={reducedMotion} /></Suspense></div>
                   <TestConsole problem={problem} consoleTab={consoleTab} setConsoleTab={setConsoleTab} selectedCase={selectedCase} setSelectedCase={setSelectedCase} runResults={runResults} />
                 </div>
-                <aside className={`live-explanation live-explanation-chat live-explanation-${practiceMode}`} aria-labelledby="live-explanation-title">
+                <aside ref={explanationRef} className={`live-explanation live-explanation-chat live-explanation-${practiceMode}`} aria-labelledby="live-explanation-title">
                   <div className="practice-mode-toggle" role="group" aria-label="Practice mode">
-                    <button type="button" aria-pressed={practiceMode === 'practice'} onClick={() => changePracticeMode('practice')} disabled={isAnalyzing}>
+                    <button type="button" {...shortcutProps('mode', 'Switch to Practice')} aria-pressed={practiceMode === 'practice'} onClick={() => changePracticeMode('practice')} disabled={isAnalyzing}>
                       <Icon name="book" size={15} />Practice
                     </button>
-                    <button type="button" aria-pressed={practiceMode === 'live'} onClick={() => changePracticeMode('live')} disabled={isAnalyzing || (practiceMode === 'practice' && isRecording)}>
+                    <button type="button" {...shortcutProps('mode', 'Switch to Live interview')} aria-pressed={practiceMode === 'live'} onClick={() => changePracticeMode('live')} disabled={isAnalyzing || (practiceMode === 'practice' && isRecording)}>
                       <Icon name="mic" size={15} />Live interview
                     </button>
                   </div>
                   {practiceMode === 'live' ? <div className="live-explanation-heading live-chat-heading">
                     <h2 id="live-explanation-title">Interview chat</h2>
-                    <span className={`live-status live-status-${liveStatus.tone}`} role="status"><span className="live-status-dot" aria-hidden="true" />{liveStatus.label}</span>
+                    <span className={`live-status live-status-${liveStatus.tone}`} role="status"><span className="live-status-dot" aria-hidden="true" /><span key={liveStatus.label} className="live-status-label">{liveStatus.label}</span></span>
                   </div> : <div className="live-explanation-heading">
                     <h2 id="live-explanation-title">Your explanation</h2>
                     <p>Talk or type through your approach while you code, then get session feedback.</p>
@@ -820,7 +873,7 @@ function App() {
                       <p className="interview-empty-note">Your code and explanation go to your AI provider only while the interview is running.</p>
                     </>} />}
                   {practiceMode === 'practice' && <div className="session-microphone">
-                    {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording} disabled={speechPhase !== 'listening'}><StopIcon />{speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop microphone'}</button>}
+                    {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing} {...shortcutProps('mic', 'Start microphone')}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording} disabled={speechPhase !== 'listening'} {...shortcutProps('mic', 'Stop microphone')}><StopIcon />{speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop microphone'}</button>}
                     <span className={`session-status ${isRecording ? 'session-status-live' : ''}`} role="status">{speechPhase === 'listening' ? <><span className="pulse" />Listening while you code</> : speechPhase === 'starting' ? 'Waiting for microphone access…' : speechPhase === 'stopping' ? 'Waiting for the final transcript…' : 'You can also type your thinking below.'}</span>
                   </div>}
                   {!speechSupported && <p className="warning">Voice input isn’t available in this browser. You can type your explanation while coding.</p>}
@@ -837,12 +890,12 @@ function App() {
                     active={view === 'practice' && activeTab === 'code' && practiceMode === 'live'} running={liveInterview} spokenTurn={spokenTurn} inputMode={interviewInput}
                     onInputModeChange={mode => { pauseLiveInterview(); setInterviewInput(mode) }}
                     onMessage={appendConversation} onBusyChange={setInterviewerBusy} onTurnComplete={finishInterviewerTurn} onCurveball={applyCurveball}
-                    onSpeak={text => speakForPane('code', text)} onStop={pauseLiveInterview} onStart={startLiveInterview}>
+                    onSpeak={text => speakForPane('code', text)} onStop={pauseLiveInterview} onStart={startLiveInterview} toggleProps={shortcutProps('mic', liveInterview ? 'Pause interview' : 'Start live interview')}>
                     <InterviewerVoice enabled={voiceEnabled} onToggle={() => setVoiceEnabled(value => !value)} audio={interviewerAudio} />
                   </LiveInterviewer>
                   <div className="session-feedback-action">
                     <p>{practiceMode === 'live' && liveInterview ? 'Pause the interview when you’re ready for feedback.' : isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : isRunning ? 'Wait for code checks to finish before getting feedback.' : 'Feedback uses your code, explanation, and checkpoints.'}</p>
-                    <button className={practiceMode === 'live' ? 'learning-secondary' : 'learning-primary'} onClick={handleAnalyze} disabled={isAnalyzing || isRecording || isRunning || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}</button>
+                    <button className={practiceMode === 'live' ? 'learning-secondary' : 'learning-primary'} {...shortcutProps('feedback')} onClick={handleAnalyze} disabled={isAnalyzing || isRecording || isRunning || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}</button>
                   </div>
                 </aside>
               </div>
