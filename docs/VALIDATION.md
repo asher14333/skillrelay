@@ -228,3 +228,36 @@ invalidation, frozen follow-up context, malformed-response recovery, simulated
 speech finalization, reset undo, and the dirty-draft navigation guard. AI and
 speech in that regression are labeled simulations. No real microphone recording
 or new learner-outcome measurement is implied. See [full review](REVIEW.md).
+
+## User-approved dark workspace polish
+
+The user selected a compact engineering workspace, neutral charcoal surfaces,
+restrained warm amber accents, and the existing three-column desktop layout.
+The large introduction is replaced by a compact toolbar. All screens share the
+same tokens and control styles; the previous overlapping CSS layers were
+consolidated. The approved design brief is merged in [design](DESIGN.md).
+
+Frontend lint, production build, and all 13 storage/replay data tests pass.
+The existing large Monaco chunk warning remains. The practice browser check
+also covers Previous/Next checkpoint navigation; the reliability browser check
+continues to pass after the control-label and visual changes. No backend code
+changed during this pass.
+
+Inspected practice, feedback, retry, follow-up, challenge picker, progress,
+empty history, loading, runner errors, and feedback errors. Viewport checks at
+1440, 1280, 1024, 820, 768, 390, and 320 pixels found no page-wide horizontal
+overflow. Corrected narrow-screen visibility of the hidden practice workspace
+on Progress and bounded the problem reading pane so it does not push coding
+several screens below the fold. Keyboard focus, native disclosures, selected
+case semantics, reduced motion, and recoverable errors are retained.
+
+Representative contrast checks: muted text on raised surfaces 6.01:1,
+placeholder text on the editor surface 6.79:1, and primary button text 9.34:1.
+These sample checks are not a whole-product accessibility certification.
+The single final Impeccable source detector pass returned no findings.
+
+AI and error responses in this UI review are explicitly labeled fixtures;
+speech finalization remains a simulated regression. This polish does not
+establish live microphone capture or new learner-outcome evidence. Raw drafts
+remain session-only and saved history keeps summaries. Changes are left
+uncommitted for the user's review.

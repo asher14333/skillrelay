@@ -20,7 +20,7 @@ export default function RubricFeedback({ feedback }) {
     <div className="feedback-pane-inner">
       {rubricEntries.length > 0 && (
         <div className="feedback-block">
-          <h3>Rubric Breakdown</h3>
+          <h3>Rubric breakdown</h3>
           <div className="rubric-grid">
             {rubricEntries.map(([key, item]) => (
               <div key={key} className="rubric-item">

@@ -15,7 +15,7 @@ export default function LearningPlan({ plan, onPractice }) {
         </div>
         <p className="lesson-self-check"><strong>Ask yourself:</strong> {plan.selfCheck}</p>
       </details>
-      <div className="lesson-action"><span>Put this into practice while it’s fresh.</span><button className="learning-primary" onClick={onPractice}>{plan.action === 'transfer' ? 'Try another challenge' : 'Practice this lesson'}<Icon name="arrow" size={16} /></button></div>
+      <div className="lesson-action"><span>Practice one part of your explanation.</span><button className="learning-primary" onClick={onPractice}>{plan.action === 'transfer' ? 'Try another challenge' : 'Practice this lesson'}</button></div>
     </section>
   )
 }

@@ -145,25 +145,25 @@ async page => {
   await page.getByRole('button', { name: 'Follow-up', exact: true }).click()
   await page.getByRole('button', { name: 'Restart with current work', exact: true }).waitFor()
   await answer.fill('My answer must survive a malformed model response.')
-  await page.getByRole('button', { name: 'Submit Answer', exact: true }).click()
+  await page.getByRole('button', { name: 'Submit answer', exact: true }).click()
   await page.getByText('The interviewer returned an incomplete response. Your answer is still here; try again.', { exact: true }).waitFor()
   assert(await answer.inputValue() === 'My answer must survive a malformed model response.', 'Malformed response discarded the entered answer')
-  assert(await page.getByRole('button', { name: 'Submit Answer', exact: true }).isEnabled(), 'Malformed response left submission blocked')
+  assert(await page.getByRole('button', { name: 'Submit answer', exact: true }).isEnabled(), 'Malformed response left submission blocked')
   assert(submittedContexts[0].code === startContext.code && submittedContexts[0].transcript === startContext.transcript,
     'Follow-up request mixed changed code/explanation into an existing conversation')
   responseMode = 'valid'
-  await page.getByRole('button', { name: 'Submit Answer', exact: true }).click()
+  await page.getByRole('button', { name: 'Submit answer', exact: true }).click()
   await page.getByText(`${fixture} What is the trade-off?`, { exact: true }).waitFor()
   checks.push('Follow-up retains its starting code/explanation and recovers without losing an answer after malformed output')
 
-  await page.getByRole('button', { name: 'Start Answer', exact: true }).click()
-  await page.getByRole('button', { name: 'Stop', exact: true }).waitFor()
+  await page.getByRole('button', { name: 'Record answer', exact: true }).click()
+  await page.getByRole('button', { name: 'Stop recording', exact: true }).waitFor()
   await page.evaluate(() => {
     const result = Object.assign([{ transcript: 'An interim answer' }], { isFinal: false })
     window.__skillrelaySimulatedSpeech.onresult({ results: [result] })
   })
-  await page.getByRole('button', { name: 'Stop', exact: true }).click()
-  assert(await page.getByRole('button', { name: 'Submit Answer', exact: true }).isDisabled(), 'Submit enabled before speech finalization')
+  await page.getByRole('button', { name: 'Stop recording', exact: true }).click()
+  assert(await page.getByRole('button', { name: 'Submit answer', exact: true }).isDisabled(), 'Submit enabled before speech finalization')
   await page.getByRole('button', { name: 'Finishing transcript…', exact: true }).waitFor()
   await page.evaluate(() => {
     const recognition = window.__skillrelaySimulatedSpeech
@@ -173,9 +173,9 @@ async page => {
   })
   // Submit remains visible while disabled. Wait for the idle-state control so
   // React has committed both the final transcript and recognition end event.
-  await page.getByRole('button', { name: 'Start Answer', exact: true }).waitFor({ state: 'visible' })
-  assert(await page.getByRole('button', { name: 'Submit Answer', exact: true }).isEnabled(), 'Submit did not recover after final speech event')
-  await page.getByRole('button', { name: 'Submit Answer', exact: true }).click()
+  await page.getByRole('button', { name: 'Record answer', exact: true }).waitFor({ state: 'visible' })
+  assert(await page.getByRole('button', { name: 'Submit answer', exact: true }).isEnabled(), 'Submit did not recover after final speech event')
+  await page.getByRole('button', { name: 'Submit answer', exact: true }).click()
   await page.getByText('The final answer includes O(n) extra space.', { exact: true }).waitFor()
   assert(submittedContexts.at(-1).answer === 'The final answer includes O(n) extra space.', 'Submitted answer omitted finalized simulated speech')
   checks.push('Simulated speech keeps Submit disabled from Stop through final result/onend; final words are submitted')

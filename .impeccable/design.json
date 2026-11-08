@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-08T03:16:54.812170+00:00",
+  "title": "Design System: SkillRelay",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Charcoal Canvas",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Panel Charcoal",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "raised": {
+        "role": "neutral",
+        "displayName": "Raised Charcoal",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "editor": {
+        "role": "neutral",
+        "displayName": "Editor Charcoal",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hover Charcoal",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Off-white Ink",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "body": {
+        "role": "neutral",
+        "displayName": "Reading Gray",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Supporting Gray",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Quiet Border",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "Strong Border",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 0.0)",
+          "oklch(26.0% 0.0000 0.0)",
+          "oklch(38.0% 0.0000 0.0)",
+          "oklch(49.0% 0.0000 0.0)",
+          "oklch(61.0% 0.0000 0.0)",
+          "oklch(72.0% 0.0000 0.0)",
+          "oklch(84.0% 0.0000 0.0)",
+          "oklch(95.0% 0.0000 0.0)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Warm Amber",
+        "tonalRamp": [
+          "oklch(15.0% 0.0389 76.9)",
+          "oklch(26.0% 0.0723 76.9)",
+          "oklch(38.0% 0.1001 76.9)",
+          "oklch(49.0% 0.1112 76.9)",
+          "oklch(61.0% 0.1112 76.9)",
+          "oklch(72.0% 0.1001 76.9)",
+          "oklch(84.0% 0.0667 76.9)",
+          "oklch(95.0% 0.0222 76.9)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Light Amber",
+        "tonalRamp": [
+          "oklch(15.0% 0.0331 78.5)",
+          "oklch(26.0% 0.0615 78.5)",
+          "oklch(38.0% 0.0852 78.5)",
+          "oklch(49.0% 0.0946 78.5)",
+          "oklch(61.0% 0.0946 78.5)",
+          "oklch(72.0% 0.0852 78.5)",
+          "oklch(84.0% 0.0568 78.5)",
+          "oklch(95.0% 0.0189 78.5)"
+        ]
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Amber Wash",
+        "tonalRamp": [
+          "oklch(15.0% 0.0071 76.6)",
+          "oklch(26.0% 0.0132 76.6)",
+          "oklch(38.0% 0.0182 76.6)",
+          "oklch(49.0% 0.0203 76.6)",
+          "oklch(61.0% 0.0203 76.6)",
+          "oklch(72.0% 0.0182 76.6)",
+          "oklch(84.0% 0.0122 76.6)",
+          "oklch(95.0% 0.0041 76.6)"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Dark Amber Ink",
+        "tonalRamp": [
+          "oklch(15.0% 0.0094 75.9)",
+          "oklch(26.0% 0.0174 75.9)",
+          "oklch(38.0% 0.0242 75.9)",
+          "oklch(49.0% 0.0268 75.9)",
+          "oklch(61.0% 0.0268 75.9)",
+          "oklch(72.0% 0.0242 75.9)",
+          "oklch(84.0% 0.0161 75.9)",
+          "oklch(95.0% 0.0054 75.9)"
+        ]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Success Green",
+        "tonalRamp": [
+          "oklch(15.0% 0.0263 157.0)",
+          "oklch(26.0% 0.0488 157.0)",
+          "oklch(38.0% 0.0676 157.0)",
+          "oklch(49.0% 0.0751 157.0)",
+          "oklch(61.0% 0.0751 157.0)",
+          "oklch(72.0% 0.0676 157.0)",
+          "oklch(84.0% 0.0451 157.0)",
+          "oklch(95.0% 0.0150 157.0)"
+        ]
+      },
+      "success-soft": {
+        "role": "semantic",
+        "displayName": "Success Wash",
+        "tonalRamp": [
+          "oklch(15.0% 0.0084 159.4)",
+          "oklch(26.0% 0.0156 159.4)",
+          "oklch(38.0% 0.0215 159.4)",
+          "oklch(49.0% 0.0239 159.4)",
+          "oklch(61.0% 0.0239 159.4)",
+          "oklch(72.0% 0.0215 159.4)",
+          "oklch(84.0% 0.0144 159.4)",
+          "oklch(95.0% 0.0048 159.4)"
+        ]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Danger Rose",
+        "tonalRamp": [
+          "oklch(15.0% 0.0358 6.5)",
+          "oklch(26.0% 0.0665 6.5)",
+          "oklch(38.0% 0.0921 6.5)",
+          "oklch(49.0% 0.1023 6.5)",
+          "oklch(61.0% 0.1023 6.5)",
+          "oklch(72.0% 0.0921 6.5)",
+          "oklch(84.0% 0.0614 6.5)",
+          "oklch(95.0% 0.0205 6.5)"
+        ]
+      },
+      "danger-soft": {
+        "role": "semantic",
+        "displayName": "Danger Wash",
+        "tonalRamp": [
+          "oklch(15.0% 0.0097 356.1)",
+          "oklch(26.0% 0.0180 356.1)",
+          "oklch(38.0% 0.0249 356.1)",
+          "oklch(49.0% 0.0276 356.1)",
+          "oklch(61.0% 0.0276 356.1)",
+          "oklch(72.0% 0.0249 356.1)",
+          "oklch(84.0% 0.0166 356.1)",
+          "oklch(95.0% 0.0055 356.1)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "problem-title": {
+        "displayName": "Problem title",
+        "purpose": "Challenge heading."
+      },
+      "section-title": {
+        "displayName": "Section title",
+        "purpose": "Lesson heading."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Problem, lesson, and conversation reading."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Shared button labels."
+      },
+      "supporting": {
+        "displayName": "Supporting",
+        "purpose": "Status and quiet contextual text."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Monaco editor text; the monospace family also serves compact evidence."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "background-color 150ms ease, color 150ms ease, border-color 150ms ease",
+        "purpose": "State feedback for buttons, links, selects, summaries, and textareas."
+      },
+      {
+        "name": "rubric-width",
+        "value": "width 200ms ease",
+        "purpose": "Rubric score bar updates."
+      },
+      {
+        "name": "recording-pulse",
+        "value": "recording-pulse 1.6s ease-in-out infinite; @keyframes recording-pulse { 50% { opacity: 0.45; } }",
+        "purpose": "Live microphone dot only; reduced motion disables animation."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation: none !important; transition: none !important; scroll-behavior: auto !important;",
+        "purpose": "Applied under prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-wide",
+        "value": "1250px"
+      },
+      {
+        "name": "compact-laptop",
+        "value": "1100px"
+      },
+      {
+        "name": "page-scroll",
+        "value": "980px"
+      },
+      {
+        "name": "single-column",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main feedback or submission action.",
+      "html": "<button class=\"ds-button ds-primary\" type=\"button\">Get session feedback</button>",
+      "css": ".ds-button{font-family:'Manrope','Segoe UI',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:7px 12px;border:1px solid transparent;border-radius:var(--control-radius,6px);font-size:13px;font-weight:650;line-height:1.5;cursor:pointer;transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;}.ds-primary{background:var(--accent,#eab86b);border-color:var(--accent,#eab86b);color:var(--accent-ink,#241b0e);}.ds-primary:hover:not(:disabled){background:var(--accent-hover,#f1c887);border-color:var(--accent-hover,#f1c887);}.ds-button:focus-visible{outline:2px solid var(--accent,#eab86b);outline-offset:3px;}.ds-button:disabled{opacity:.45;cursor:not-allowed;}@media(max-width:700px){.ds-button{min-height:44px;}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    },
+    {
+      "name": "Secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Code, microphone, and save controls.",
+      "html": "<button class=\"ds-button ds-secondary\" type=\"button\">Run code</button>",
+      "css": ".ds-button{font-family:'Manrope','Segoe UI',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:7px 12px;border:1px solid transparent;border-radius:var(--control-radius,6px);font-size:13px;font-weight:650;line-height:1.5;cursor:pointer;transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;}.ds-secondary{background:var(--raised,#232323);border-color:var(--border-strong,#505050);color:var(--ink,#ededed);}.ds-secondary:hover:not(:disabled){background:var(--hover,#2b2b2b);border-color:#686868;}.ds-button:focus-visible{outline:2px solid var(--accent,#eab86b);outline-offset:3px;}.ds-button:disabled{opacity:.45;cursor:not-allowed;}@media(max-width:700px){.ds-button{min-height:44px;}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    },
+    {
+      "name": "Danger action",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Stop microphone or confirm a destructive action.",
+      "html": "<button class=\"ds-button ds-danger\" type=\"button\">Stop microphone</button>",
+      "css": ".ds-button{font-family:'Manrope','Segoe UI',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:7px 12px;border:1px solid transparent;border-radius:var(--control-radius,6px);font-size:13px;font-weight:650;line-height:1.5;cursor:pointer;transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;}.ds-danger{background:var(--danger-soft,#35242a);border-color:#68424c;color:var(--danger,#ee9aab);}.ds-danger:hover:not(:disabled){background:#442a33;border-color:#93606d;}.ds-button:focus-visible{outline:2px solid var(--accent,#eab86b);outline-offset:3px;}.ds-button:disabled{opacity:.45;cursor:not-allowed;}@media(max-width:700px){.ds-button{min-height:44px;}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    },
+    {
+      "name": "Text action",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "Quiet reset or undo-reset action.",
+      "html": "<button class=\"ds-button ds-text\" type=\"button\">Reset code</button>",
+      "css": ".ds-button{font-family:'Manrope','Segoe UI',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:7px 12px;border:1px solid transparent;border-radius:var(--control-radius,6px);font-size:13px;font-weight:650;line-height:1.5;cursor:pointer;transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;}.ds-text{padding:7px 8px;background:transparent;color:var(--muted,#a0a0a0);}.ds-text:hover:not(:disabled){background:var(--hover,#2b2b2b);color:var(--ink,#ededed);}.ds-button:focus-visible{outline:2px solid var(--accent,#eab86b);outline-offset:3px;}.ds-button:disabled{opacity:.45;cursor:not-allowed;}@media(max-width:700px){.ds-button{min-height:44px;}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    },
+    {
+      "name": "Explanation field",
+      "kind": "input",
+      "refersTo": "explanation-field",
+      "description": "A labeled text explanation, also used alongside browser speech input.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-explanation\">Your solution explanation</label><textarea class=\"ds-explanation\" id=\"ds-explanation\" placeholder=\"Start with your approach. Explain what you change and why.\"></textarea>",
+      "css": ".ds-field-label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}.ds-explanation{font-family:'Manrope','Segoe UI',sans-serif;display:block;width:100%;min-height:140px;padding:12px;border:1px solid var(--border-strong,#505050);border-radius:var(--control-radius,6px);background:var(--editor,#181818);color:var(--ink,#ededed);font-size:13px;line-height:1.8;caret-color:var(--accent,#eab86b);resize:none;transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;}.ds-explanation::placeholder{color:var(--muted,#a0a0a0);opacity:1;}.ds-explanation:focus-visible{outline:2px solid var(--accent,#eab86b);outline-offset:3px;outline-offset:-1px;}.ds-explanation:read-only{color:var(--body,#c5c5c5);cursor:default;}@media(max-width:700px){.ds-explanation{min-height:230px;font-size:14px;}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    },
+    {
+      "name": "Main navigation",
+      "kind": "nav",
+      "refersTo": "navigation-link",
+      "description": "Real hash navigation with a neutral selected surface and amber icon.",
+      "html": "<nav class=\"ds-navigation\" aria-label=\"Main navigation\"><a href=\"#practice\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 7-5 5 5 5m8-10 5 5-5 5m-3-14-2 18\"/></svg>Practice</a><a href=\"#progress\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 19V5m0 14h16M8 15l4-4 3 2 5-7\"/></svg>Progress</a></nav>",
+      "css": ".ds-navigation{display:flex;align-items:center;gap:4px;}.ds-navigation a{font-family:'Manrope','Segoe UI',sans-serif;display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:7px 12px;border-radius:var(--control-radius,6px);color:var(--muted,#a0a0a0);font-size:13px;font-weight:600;text-decoration:none;transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;}.ds-navigation a:hover{color:var(--ink,#ededed);background:var(--hover,#2b2b2b);}.ds-navigation a[aria-current]{color:var(--ink,#ededed);background:var(--raised,#232323);}.ds-navigation a[aria-current]>svg{color:var(--accent,#eab86b);}.ds-navigation a:focus-visible{outline:2px solid var(--accent,#eab86b);outline-offset:3px;}@media(max-width:700px){.ds-navigation{gap:0;}.ds-navigation a{min-height:44px;padding:8px 10px;font-size:12px;}.ds-navigation svg{display:none;}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    },
+    {
+      "name": "Topic tag",
+      "kind": "chip",
+      "refersTo": "topic-tag",
+      "description": "Noninteractive metadata accompanying the problem title.",
+      "html": "<span class=\"ds-topic-tag\">Arrays</span>",
+      "css": ".ds-topic-tag{font-family:'Manrope','Segoe UI',sans-serif;display:inline-block;padding:3px 7px;border-radius:4px;font-size:12px;line-height:1.5;color:var(--body,#c5c5c5);background:var(--raised,#232323);}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    },
+    {
+      "name": "Lesson card",
+      "kind": "card",
+      "refersTo": "review-card",
+      "description": "Raised reading surface for the next lesson, with optional reading steps.",
+      "html": "<article class=\"ds-lesson\"><h2>Next lesson</h2><p>Practice explaining the choices you make as you code.</p><details><summary>Read lesson steps</summary><ol><li>State the approach you want to test.</li><li>Explain what you check and why.</li></ol></details></article>",
+      "css": ".ds-lesson{font-family:'Manrope','Segoe UI',sans-serif;padding:20px;border:1px solid var(--border-strong,#505050);border-radius:var(--radius,8px);background:var(--raised,#232323);color:var(--ink,#ededed);}.ds-lesson h2{margin:0;font-size:20px;font-weight:650;letter-spacing:-.02em;line-height:1.4;}.ds-lesson p{max-width:72ch;margin:12px 0;color:var(--body,#c5c5c5);font-size:14px;line-height:1.75;}.ds-lesson summary{width:fit-content;min-height:36px;padding:8px 0;color:var(--accent,#eab86b);font-size:13px;font-weight:600;cursor:pointer;transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;}.ds-lesson summary:hover{color:var(--accent-hover,#f1c887);}.ds-lesson summary:focus-visible{outline:2px solid var(--accent,#eab86b);outline-offset:3px;}.ds-lesson ol{margin:12px 0 20px;padding-left:22px;color:var(--body,#c5c5c5);font-size:14px;line-height:1.8;}.ds-lesson li{padding-left:4px;margin-bottom:10px;}@media(max-width:700px){.ds-lesson{padding:17px;}.ds-lesson h2{font-size:19px;}.ds-lesson summary{min-height:44px;padding:11px 0;}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    },
+    {
+      "name": "Test-case selector",
+      "kind": "custom",
+      "refersTo": "test-case",
+      "description": "Compact test buttons with an explicit pressed state; result variants also have accessible labels.",
+      "html": "<div class=\"ds-cases\"><button type=\"button\" class=\"ds-case\" aria-pressed=\"true\">Case 1</button><button type=\"button\" class=\"ds-case\" aria-pressed=\"false\">Case 2</button></div>",
+      "css": ".ds-cases{display:flex;flex-wrap:wrap;gap:6px;}.ds-case{font-family:'Manrope','Segoe UI',sans-serif;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:5px 9px;border:1px solid var(--border,#343434);border-radius:var(--control-radius,6px);background:var(--raised,#232323);color:var(--body,#c5c5c5);font-size:12px;font-weight:500;cursor:pointer;transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;}.ds-case:hover{color:var(--ink,#ededed);border-color:var(--border-strong,#505050);}.ds-case[aria-pressed=\"true\"]{color:var(--ink,#ededed);border-color:var(--muted,#a0a0a0);background:var(--hover,#2b2b2b);}.ds-case:focus-visible{outline:2px solid var(--accent,#eab86b);outline-offset:3px;}@media(max-width:700px){.ds-case{min-height:44px;}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Focused engineering tool",
+    "overview": "SkillRelay is a deliberate practice workspace for coding, explaining technical choices, and reviewing session feedback. The user-approved system uses neutral charcoal throughout, restrained warm amber, and compact controls. It keeps the problem, code, and explanation adjacent on desktop, with the largest flexible area reserved for code. A compact session toolbar leads directly into the work.\n\nThis document merges the existing workspace and interaction constraints with the implemented dark system. The visual source of truth is `frontend/src/index.css`, `App.css`, `Learning.css`, and the Monaco theme in `components/CodeEditor.jsx`. Interface copy must continue to describe real capabilities and saved data accurately; styling does not establish learner outcomes or microphone capture quality.",
+    "keyCharacteristics": [
+      "Neutral dark surfaces separated by tone and thin borders.",
+      "Warm amber for the primary action, selection, and keyboard focus.",
+      "Compact, left-aligned Manrope text; monospace for code and test values.",
+      "Actions beside the work they affect, with evidence available on demand.",
+      "A three-column desktop workspace that becomes a naturally scrolling stack."
+    ],
+    "rules": [
+      {
+        "name": "The Restrained Accent Rule",
+        "body": "Use amber for action, selection, and focus; keep ordinary containers and reading surfaces neutral.",
+        "section": "colors"
+      },
+      {
+        "name": "The Working Type Rule",
+        "body": "Keep Manrope for interface text and reserve monospace for actual code, examples, and test values.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tonal Depth Rule",
+        "body": "Separate working regions with tone and borders; reserve the dialog top layer for an actual modal task.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the problem, code, and live explanation adjacent on desktop.",
+      "Do use neutral surfaces and reserve amber for action, selection, and focus.",
+      "Do keep controls beside the work they affect and preserve visible labels.",
+      "Do preserve keyboard focus, native disclosure/dialog behavior, and reduced motion.",
+      "Do keep real saved summaries, explicit data notices, and useful empty states.",
+      "Do retain locally hosted Manrope and use monospace for code and test values."
+    ],
+    "donts": [
+      "Don't restore the large introduction or add a marketing hero to the workspace.",
+      "Don't add decorative gradients, glow, generic icon tiles, or repeated colored cards.",
+      "Don't shrink supporting text to compensate for excess chrome.",
+      "Don't use color alone to communicate selected, failed, or microphone states.",
+      "Don't invent streaks, activity, learner outcomes, or saved draft recovery.",
+      "Don't imply that visual polish verifies microphone capture, runner isolation, or competition eligibility."
+    ]
+  }
+}

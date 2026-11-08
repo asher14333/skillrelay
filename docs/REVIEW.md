@@ -1,5 +1,12 @@
 # Full code and interface review
 
+This is the review snapshot before the user-approved dark workspace polish.
+Its light/teal theme, contrast measurements, UI scores, and three detector
+warnings describe that earlier interface and are superseded by the current
+[design system](DESIGN.md) and the [dark polish validation](VALIDATION.md#user-approved-dark-workspace-polish).
+The functional findings and remaining product limits remain useful history;
+their original test evidence has not been relabeled as a new run.
+
 Reviewed November 7, 2026. Scope: backend/API/provider handling, scoring,
 all five challenge catalogs and runner cases, frontend state and persistence,
 recording lifecycle, accessibility, responsive layout, and the hackathon demo.
@@ -17,7 +24,7 @@ The fixes below make the local prototype more dependable. They do not prove
 employment outcomes, learner improvement, competition eligibility, or safety
 for publicly executing untrusted code.
 
-## Technical UI audit
+## Technical UI audit before the dark polish
 
 These are review judgments, not an accessibility certification.
 
@@ -81,7 +88,7 @@ AI fixtures are clearly labeled; real model quality is not established by a
 mocked response. Canonical solutions pass all 17 cases across the five problems,
 and the two problem catalogs agree.
 
-Impeccable's source detector reports three existing quote-border warnings:
+The original Impeccable source detector reported three quote-border warnings:
 `App.css` rubric quotes, `Learning.css` saved-history quotes, and retry quotes.
 These are retained as semantic quotation markers, not decorative card accents.
 The detector reported no errors; its result is separate from visual judgment.

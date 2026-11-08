@@ -25,15 +25,17 @@ export default function TestConsole({
         <div className="lc-console-tabs">
           <button
             className={`lc-console-tab ${consoleTab === 'testcase' ? 'lc-console-tab-active' : ''}`}
+            aria-pressed={consoleTab === 'testcase'}
             onClick={() => setConsoleTab('testcase')}
           >
-            Testcase
+            Test cases
           </button>
           <button
             className={`lc-console-tab ${consoleTab === 'result' ? 'lc-console-tab-active' : ''}`}
+            aria-pressed={consoleTab === 'result'}
             onClick={() => setConsoleTab('result')}
           >
-            Test Result
+            Test results
           </button>
         </div>
       </div>
@@ -46,6 +48,7 @@ export default function TestConsole({
                 <button
                   key={i}
                   className={`case-pill ${selectedCase === i ? 'case-pill-active' : ''}`}
+                  aria-pressed={selectedCase === i}
                   onClick={() => setSelectedCase(i)}
                 >
                   Case {i + 1}
@@ -60,7 +63,7 @@ export default function TestConsole({
           <>
             {!runResults ? (
               <p className="console-empty">
-                Click <strong>Run</strong> to execute your code against the test
+                Choose <strong>Run code</strong> to execute your code against the test
                 cases.
               </p>
             ) : runResults.error && !runResults.results?.length ? (
@@ -82,6 +85,8 @@ export default function TestConsole({
                       <button
                         key={r.case}
                         className={`case-pill ${selectedCase === i ? 'case-pill-active' : ''} ${r.passed ? 'case-pill-pass' : 'case-pill-fail'}`}
+                        aria-pressed={selectedCase === i}
+                        aria-label={`Case ${r.case}, ${r.passed ? 'passed' : 'failed'}`}
                         onClick={() => setSelectedCase(i)}
                       >
                         <span

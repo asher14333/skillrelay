@@ -477,7 +477,7 @@ function App() {
 
       <main className="app-main" id="main-content" tabIndex={-1}>
         {storageWarning && <div className="storage-warning" role="alert">{storageWarning}</div>}
-        {notice && <div className="learning-notice" role="status"><Icon name="check" />{notice}</div>}
+        {notice && <div className="learning-notice" role="status"><Icon name="check" /><span>{notice}</span><button className="icon-button" aria-label="Dismiss notice" onClick={() => setNotice('')}><Icon name="close" size={16} /></button></div>}
 
         {view === 'progress' && <ProgressPanel
           attempts={attempts}
@@ -497,25 +497,25 @@ function App() {
 
         {view === 'practice' && <section className="learning-toolbar" aria-label="Learning goal">
           <div className="learning-intro">
-            <h1>Make your thinking clear.</h1>
-            <p>Talk through your approach as you code. Get feedback when you’re ready.</p>
+            <h1>Practice workspace</h1>
+            <p>Explain your choices as you code.</p>
           </div>
           <div className="goal-control">
             <label htmlFor="learning-goal">Your learning focus</label>
-            <select id="learning-goal" name="learningGoal" value={learningGoal} onChange={(event) => changeGoal(event.target.value)} disabled={isRecording}>
+            <select id="learning-goal" name="learningGoal" aria-describedby="learning-goal-description" value={learningGoal} onChange={(event) => changeGoal(event.target.value)} disabled={isRecording}>
               {LEARNING_GOALS.map((goal) => <option key={goal.id} value={goal.id}>{goal.title}</option>)}
             </select>
-            <p>{getLearningGoal(learningGoal).description}</p>
+            <p id="learning-goal-description">{getLearningGoal(learningGoal).description}</p>
           </div>
         </section>}
 
         <div className={`workspace ${view !== 'practice' ? 'workspace-hidden' : ''}`}>
           <aside className="problem-panel" aria-labelledby="challenge-title">
+            <div className="problem-panel-toolbar">
+              <span><Icon name="book" size={15} />Problem</span>
+              <button className="change-challenge" onClick={() => setShowProblemList(true)} disabled={isRecording} aria-haspopup="dialog">Change <ChevronIcon /></button>
+            </div>
             <div className="problem-header">
-              <div className="challenge-heading">
-                <span>Challenge {String(problem.id).padStart(2, '0')} <span className="challenge-total">/ {String(problems.length).padStart(2, '0')}</span></span>
-                <button className="change-challenge" onClick={() => setShowProblemList(true)} disabled={isRecording} aria-haspopup="dialog">Change <ChevronIcon /></button>
-              </div>
               <h2 id="challenge-title">{problem.title}</h2>
               <div className="problem-meta">
                 <span className={`difficulty difficulty-${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</span>
@@ -576,8 +576,8 @@ function App() {
                 </div>
                 <aside className="live-explanation" aria-labelledby="live-explanation-title">
                   <div className="live-explanation-heading">
-                    <h2 id="live-explanation-title">Think out loud.</h2>
-                    <p>Explain your choices while you code and test.</p>
+                    <h2 id="live-explanation-title">Live explanation</h2>
+                    <p>Talk through your choices as you code.</p>
                   </div>
                   <div className="session-microphone">
                     {!isRecording ? <button className="learning-secondary" onClick={startRecording} disabled={!speechSupported || isAnalyzing}><MicIcon />Start microphone</button> : <button className="learning-danger" onClick={stopRecording} disabled={speechPhase !== 'listening'}><StopIcon />{speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop microphone'}</button>}
@@ -587,12 +587,12 @@ function App() {
                   {activeTab === 'code' && <div className="writing-area live-writing-area">
                     <label className="sr-only" htmlFor="solution-explanation">Your solution explanation</label>
                     <textarea id="solution-explanation" name="transcript" autoComplete="off" className="transcript-editor" value={transcript} onChange={(event) => changeTranscript(event.target.value)} readOnly={isRecording}
-                      placeholder="Talk or type as you work. For example: I’ll start by comparing each pair, then look for a way to avoid repeated work…" />
+                      placeholder="Start with your approach. Explain what you change and why." />
                     <span className="word-count">{transcript.trim() ? transcript.trim().split(/\s+/).length : 0} words</span>
                   </div>}
                   <div className="session-feedback-action">
                     <p>{isRecording ? 'Stop the microphone when you’re ready to review your transcript.' : isRunning ? 'Wait for code checks to finish before getting feedback.' : 'Feedback uses your code, explanation, and checkpoints.'}</p>
-                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || isRunning || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}<Icon name="arrow" size={16} /></button>
+                    <button className="learning-primary" onClick={handleAnalyze} disabled={isAnalyzing || isRecording || isRunning || !transcript.trim()}>{isAnalyzing ? 'Getting feedback…' : 'Get session feedback'}</button>
                   </div>
                 </aside>
               </div>

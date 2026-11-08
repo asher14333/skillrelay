@@ -40,8 +40,8 @@ not included in saved summaries. Cloud synchronization, portfolios, and peer
 matching are future work. See the [implementation plan](docs/IMPLEMENTATION_PLAN.md)
 and [demo walkthrough](docs/DEMO.md).
 
-The interface uses a light reading workspace, a locally bundled dark code
-editor, and self-hosted Manrope typography. See [design direction](docs/DESIGN.md)
+The interface uses a compact charcoal workspace, restrained amber actions,
+a locally bundled code editor, and self-hosted Manrope typography. See [design direction](docs/DESIGN.md)
 for the palette, layout decisions, and UI/UX guidance applied.
 
 ## Run locally

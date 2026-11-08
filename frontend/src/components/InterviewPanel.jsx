@@ -216,10 +216,10 @@ export default function InterviewPanel({
     <div className="interview-pane">
       {history.length === 0 ? (
         <div className="interview-start">
-          <h3>Practice the follow-up questions.</h3>
+          <h3>Follow-up practice</h3>
           <p>
-            The AI interviewer will ask up to {MAX_FOLLOWUPS} follow-up questions
-            based on your explanation — just like a real interview.
+            Answer up to {MAX_FOLLOWUPS} AI follow-up questions about your
+            approach and trade-offs.
           </p>
           <button
             className="btn-interview-start"
@@ -269,7 +269,7 @@ export default function InterviewPanel({
             ))}
             {complete && overallNote && (
               <div className="interview-complete">
-                <span className="msg-role">Interview Complete</span>
+                <span className="msg-role">Practice complete</span>
                 <p>{overallNote}</p>
                 <button className="btn-interview-start" disabled={isLoading} onClick={startInterview}>{isLoading ? 'Starting…' : 'Start another conversation'}</button>
               </div>
@@ -287,7 +287,7 @@ export default function InterviewPanel({
                     disabled={!speechSupported || isLoading}
                   >
                     <MicIcon />
-                    Start Answer
+                    Record answer
                   </button>
                 ) : (
                   <button
@@ -296,7 +296,7 @@ export default function InterviewPanel({
                     disabled={isLoading || speechPhase !== 'listening'}
                   >
                     <StopIcon />
-                    {speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop'}
+                    {speechPhase === 'starting' ? 'Connecting microphone…' : speechPhase === 'stopping' ? 'Finishing transcript…' : 'Stop recording'}
                   </button>
                 )}
                 {isRecording && (
@@ -324,7 +324,7 @@ export default function InterviewPanel({
                 onChange={(e) => setCurrentAnswer(e.target.value)}
                 readOnly={isRecording}
                 disabled={isLoading}
-                placeholder="Click Start Answer and speak, or type your response…"
+                placeholder="Record an answer or type your response."
                 rows={3}
               />
               <button
@@ -332,7 +332,7 @@ export default function InterviewPanel({
                 onClick={submitAnswer}
                 disabled={isLoading || isRecording || !currentAnswer.trim()}
               >
-                {isLoading ? 'Submitting…' : 'Submit Answer'}
+                {isLoading ? 'Submitting…' : 'Submit answer'}
               </button>
             </div>
           )}
